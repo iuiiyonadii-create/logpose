@@ -14,17 +14,31 @@ import com.uriel.logpose.ui.theme.LogPoseTheme
 class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
+
         super.onCreate(savedInstanceState)
+
+        AppContainer.initialize(applicationContext)
+
         enableEdgeToEdge()
 
         setContent {
+
             LogPoseTheme {
-                Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
+
+                Scaffold(
+                    modifier = Modifier.fillMaxSize()
+                ) { innerPadding ->
+
                     LogPoseScreen(
                         modifier = Modifier.padding(innerPadding)
                     )
+
                 }
+
             }
+
         }
+
     }
+
 }

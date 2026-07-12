@@ -8,19 +8,43 @@ class BluetoothViewModel : ViewModel() {
 
     private val repository = AppContainer.bluetoothRepository
 
-    fun isBluetoothEnabled(): Boolean {
-        return repository.isBluetoothEnabled()
+    var uiState = BluetoothUiState()
+        private set
+
+    init {
+        refresh()
     }
 
-    fun getPairedDevices(): List<LogPoseDevice> {
-        return repository.getPairedDevices()
+    fun refresh() {
+
+        val devices = repository.getPairedDevices()
+        val selectedDevice = repository.getSelectedDevice()
+
+        uiState = uiState.copy(
+            bluetoothEnabled = repository.isBluetoothEnabled(),
+            devices = devices,
+            selectedDevice = selectedDevice,
+            loading = false,
+            error = null
+        )
     }
 
-    fun getSelectedDevice(): LogPoseDevice? {
-        return repository.getSelectedDevice()
+    fun selectDevice(device: LogPoseDevice) {
+
+        uiState = uiState.copy(
+            selectedDevice = device
+        )
+
     }
 
-    fun saveSelectedDevice(mac: String) {
-        repository.saveSelectedDevice(mac)
+    fun saveSelectedDevice() {
+
+        uiState.selectedDevice?.let {
+
+            repository.saveSelectedDevice(it.mac)
+
+        }
+
     }
+
 }
