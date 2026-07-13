@@ -7,6 +7,7 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import androidx.annotation.RequiresPermission
+import com.uriel.logpose.engine.LogPoseEngine
 import com.uriel.logpose.model.DeviceType
 import com.uriel.logpose.model.LogPoseDevice
 
@@ -31,9 +32,7 @@ class BluetoothReceiver(
                     BluetoothDevice.EXTRA_DEVICE
                 ) ?: return
 
-                onDeviceFound(
-                    device.toLogPoseDevice(false)
-                )
+                onDeviceFound(device.toLogPoseDevice(false))
             }
 
             BluetoothAdapter.ACTION_DISCOVERY_FINISHED -> {
@@ -46,9 +45,11 @@ class BluetoothReceiver(
                     BluetoothDevice.EXTRA_DEVICE
                 ) ?: return
 
-                onDeviceConnected?.invoke(
-                    device.toLogPoseDevice(true)
-                )
+                val logPoseDevice = device.toLogPoseDevice(true)
+
+                LogPoseEngine.onBluetoothConnected(logPoseDevice)
+
+                onDeviceConnected?.invoke(logPoseDevice)
             }
 
             BluetoothDevice.ACTION_ACL_DISCONNECTED -> {
@@ -57,9 +58,11 @@ class BluetoothReceiver(
                     BluetoothDevice.EXTRA_DEVICE
                 ) ?: return
 
-                onDeviceDisconnected?.invoke(
-                    device.toLogPoseDevice(false)
-                )
+                val logPoseDevice = device.toLogPoseDevice(false)
+
+                LogPoseEngine.onBluetoothDisconnected(logPoseDevice)
+
+                onDeviceDisconnected?.invoke(logPoseDevice)
             }
         }
     }

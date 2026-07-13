@@ -1,7 +1,10 @@
 package com.uriel.logpose.ui
 
-import android.content.Intent
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
@@ -9,21 +12,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import com.uriel.logpose.bluetooth.BluetoothRepository
+import com.uriel.logpose.engine.LogPoseEngine
 import com.uriel.logpose.model.LogPoseDevice
-import com.uriel.logpose.service.LogPoseService
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
-import androidx.compose.material3.Button
 
 @Composable
 fun LogPoseScreen(
     modifier: Modifier = Modifier
 ) {
-
-    var activo by remember {
-        mutableStateOf(false)
-    }
 
     var bluetoothEnabled by remember {
         mutableStateOf(false)
@@ -67,10 +62,7 @@ fun LogPoseScreen(
         Spacer(modifier = Modifier.height(20.dp))
 
         Text(
-            text = if (activo)
-                "Estado: Activo"
-            else
-                "Estado: Detenido"
+            text = "Estado: ${LogPoseEngine.getState()}"
         )
 
         Text(
@@ -85,26 +77,26 @@ fun LogPoseScreen(
         Button(
             onClick = {
 
-                if (activo) {
-                    context.stopService(
-                        Intent(context, LogPoseService::class.java)
-                    )
-                } else {
-                    context.startService(
-                        Intent(context, LogPoseService::class.java)
-                    )
-                }
+                if (LogPoseEngine.getState().name == "STOPPED") {
 
-                activo = !activo
+                    selectedDevice?.let {
+                        LogPoseEngine.onBluetoothConnected(it)
+                    }
+
+                } else {
+
+                    LogPoseEngine.stop()
+
+                }
 
             }
         ) {
 
             Text(
-                text = if (activo)
-                    "Detener LogPose"
-                else
+                text = if (LogPoseEngine.getState().name == "STOPPED")
                     "Iniciar LogPose"
+                else
+                    "Detener LogPose"
             )
 
         }

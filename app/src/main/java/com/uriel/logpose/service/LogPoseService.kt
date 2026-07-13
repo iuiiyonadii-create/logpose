@@ -7,7 +7,7 @@ import android.util.Log
 import android.app.Notification
 import androidx.core.app.NotificationCompat
 import com.uriel.logpose.R
-import com.uriel.logpose.notification.NotificationHelper
+import com.uriel.logpose.notifications.NotificationHelper
 
 class LogPoseService : Service() {
 

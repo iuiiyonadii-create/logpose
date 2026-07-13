@@ -9,6 +9,7 @@ import com.uriel.logpose.model.LogPoseDevice
 
 class BluetoothManager {
 
+    @Suppress("DEPRECATION")
     private val bluetoothAdapter: BluetoothAdapter? =
         BluetoothAdapter.getDefaultAdapter()
 
@@ -24,14 +25,18 @@ class BluetoothManager {
     @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
     fun getPairedDevices(): List<LogPoseDevice> {
 
-        val connectedMac = bluetoothAdapter
+        val bondedDevices = bluetoothAdapter
             ?.bondedDevices
-            ?.firstOrNull { it.bondState == BluetoothDevice.BOND_BONDED }
+            .orEmpty()
+
+        val connectedMac = bondedDevices
+            .firstOrNull {
+                it.bondState == BluetoothDevice.BOND_BONDED
+            }
             ?.address
 
-        return bluetoothAdapter
-            ?.bondedDevices
-            ?.map { device ->
+        return bondedDevices
+            .map { device ->
 
                 LogPoseDevice(
                     mac = device.address,
@@ -41,36 +46,44 @@ class BluetoothManager {
                 )
 
             }
-            ?.sortedBy { it.name }
-            ?: emptyList()
+            .sortedBy { it.name }
+
     }
 
     @RequiresPermission(Manifest.permission.BLUETOOTH_SCAN)
     fun startDiscovery(): Boolean {
 
-        bluetoothAdapter ?: return false
+        val adapter = bluetoothAdapter ?: return false
 
-        if (bluetoothAdapter.isDiscovering) {
-            bluetoothAdapter.cancelDiscovery()
+        if (adapter.isDiscovering) {
+            adapter.cancelDiscovery()
         }
 
-        return bluetoothAdapter.startDiscovery()
+        return adapter.startDiscovery()
+
     }
 
     @RequiresPermission(Manifest.permission.BLUETOOTH_SCAN)
     fun cancelDiscovery() {
 
-        if (bluetoothAdapter?.isDiscovering == true) {
-            bluetoothAdapter.cancelDiscovery()
+        bluetoothAdapter?.let { adapter ->
+
+            if (adapter.isDiscovering) {
+                adapter.cancelDiscovery()
+            }
+
         }
 
     }
 
+    @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
     private fun detectDeviceType(
         device: BluetoothDevice
     ): DeviceType {
 
-        val name = device.name?.lowercase().orEmpty()
+        val name = device.name
+            ?.lowercase()
+            .orEmpty()
 
         return when {
 
@@ -105,6 +118,9 @@ class BluetoothManager {
 
             else ->
                 DeviceType.UNKNOWN
+
         }
+
     }
+
 }

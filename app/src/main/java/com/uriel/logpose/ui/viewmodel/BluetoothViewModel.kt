@@ -1,4 +1,4 @@
-package com.uriel.logpose.viewmodel
+package com.uriel.logpose.ui.viewmodel
 
 import androidx.lifecycle.ViewModel
 import com.uriel.logpose.AppContainer

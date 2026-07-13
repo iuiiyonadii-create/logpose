@@ -1,4 +1,4 @@
-package com.uriel.logpose.notification
+package com.uriel.logpose.notifications
 
 import android.app.NotificationChannel
 import android.app.NotificationManager
