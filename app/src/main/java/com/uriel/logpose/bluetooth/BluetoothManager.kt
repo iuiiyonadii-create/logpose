@@ -4,7 +4,7 @@ import android.Manifest
 import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothDevice
 import androidx.annotation.RequiresPermission
-import com.uriel.logpose.model.DeviceType
+import com.uriel.logpose.core.DeviceClassifier
 import com.uriel.logpose.model.LogPoseDevice
 
 class BluetoothManager {
@@ -41,7 +41,9 @@ class BluetoothManager {
                 LogPoseDevice(
                     mac = device.address,
                     name = device.name ?: "Desconocido",
-                    type = detectDeviceType(device),
+                    type = DeviceClassifier.detect(
+                        device.name.orEmpty()
+                    ),
                     connected = device.address == connectedMac
                 )
 
@@ -71,53 +73,6 @@ class BluetoothManager {
             if (adapter.isDiscovering) {
                 adapter.cancelDiscovery()
             }
-
-        }
-
-    }
-
-    @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
-    private fun detectDeviceType(
-        device: BluetoothDevice
-    ): DeviceType {
-
-        val name = device.name
-            ?.lowercase()
-            .orEmpty()
-
-        return when {
-
-            "cardo" in name ||
-                    "sena" in name ||
-                    "freedconn" in name ||
-                    "lexin" in name ||
-                    "fodsports" in name ||
-                    "interphone" in name ->
-                DeviceType.INTERCOM
-
-            "buds" in name ||
-                    "airpods" in name ||
-                    "headset" in name ||
-                    "earbuds" in name ->
-                DeviceType.HEADPHONES
-
-            "car" in name ||
-                    "vw" in name ||
-                    "ford" in name ||
-                    "chevrolet" in name ||
-                    "fiat" in name ||
-                    "renault" in name ||
-                    "peugeot" in name ||
-                    "toyota" in name ->
-                DeviceType.CAR
-
-            "speaker" in name ||
-                    "jbl" in name ||
-                    "sony" in name ->
-                DeviceType.SPEAKER
-
-            else ->
-                DeviceType.UNKNOWN
 
         }
 

@@ -1,4 +1,4 @@
-package com.uriel.logpose.ui
+package com.uriel.logpose.ui.screen
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*

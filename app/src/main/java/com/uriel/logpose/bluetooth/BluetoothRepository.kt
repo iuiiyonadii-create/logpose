@@ -4,6 +4,7 @@ import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothDevice
 import android.content.Context
 import android.content.IntentFilter
+import com.uriel.logpose.compat.PermissionManager
 import com.uriel.logpose.model.LogPoseDevice
 import com.uriel.logpose.storage.DevicePreferences
 
@@ -13,32 +14,32 @@ class BluetoothRepository(
 
     private val bluetoothManager = BluetoothManager()
 
-    private val permissionManager =
-        BluetoothPermissionManager(context)
-
     private val devicePreferences =
         DevicePreferences(context)
 
-    private val appContext = context.applicationContext
+    private val appContext =
+        context.applicationContext
 
     private var receiver: BluetoothReceiver? = null
 
     fun isBluetoothEnabled(): Boolean {
 
-        if (!permissionManager.hasBluetoothPermission()) {
+        if (!PermissionManager.hasBluetoothPermission(appContext)) {
             return false
         }
 
         return bluetoothManager.isBluetoothEnabled()
+
     }
 
     fun getPairedDevices(): List<LogPoseDevice> {
 
-        if (!permissionManager.hasBluetoothPermission()) {
+        if (!PermissionManager.hasBluetoothPermission(appContext)) {
             return emptyList()
         }
 
         return bluetoothManager.getPairedDevices()
+
     }
 
     fun startDiscovery(
@@ -48,7 +49,7 @@ class BluetoothRepository(
         onDeviceDisconnected: ((LogPoseDevice) -> Unit)? = null
     ) {
 
-        if (!permissionManager.hasBluetoothPermission()) {
+        if (!PermissionManager.hasBluetoothPermission(appContext)) {
             onFinished()
             return
         }
@@ -74,7 +75,10 @@ class BluetoothRepository(
 
         }
 
-        appContext.registerReceiver(receiver, filter)
+        appContext.registerReceiver(
+            receiver,
+            filter
+        )
 
         bluetoothManager.startDiscovery()
 
@@ -96,20 +100,30 @@ class BluetoothRepository(
 
     }
 
-    fun saveSelectedDevice(mac: String) {
+    fun saveSelectedDevice(
+        mac: String
+    ) {
+
         devicePreferences.saveSelectedDevice(mac)
+
     }
 
     fun getSelectedDeviceMac(): String? {
+
         return devicePreferences.getSelectedDevice()
+
     }
 
     fun getSelectedDevice(): LogPoseDevice? {
 
-        val mac = getSelectedDeviceMac() ?: return null
+        val mac =
+            getSelectedDeviceMac()
+                ?: return null
 
         return getPairedDevices().find {
+
             it.mac == mac
+
         }
 
     }
