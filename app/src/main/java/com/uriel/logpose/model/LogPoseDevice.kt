@@ -6,6 +6,8 @@ data class LogPoseDevice(
 
     val name: String,
 
-    val type: DeviceType
+    val type: DeviceType,
+
+    val connected: Boolean = false
 
 )

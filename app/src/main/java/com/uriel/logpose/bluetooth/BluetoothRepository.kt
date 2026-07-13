@@ -1,5 +1,7 @@
 package com.uriel.logpose.bluetooth
 
+import android.bluetooth.BluetoothAdapter
+import android.bluetooth.BluetoothDevice
 import android.content.Context
 import android.content.IntentFilter
 import com.uriel.logpose.model.LogPoseDevice
@@ -41,7 +43,9 @@ class BluetoothRepository(
 
     fun startDiscovery(
         onDeviceFound: (LogPoseDevice) -> Unit,
-        onFinished: () -> Unit
+        onFinished: () -> Unit,
+        onDeviceConnected: ((LogPoseDevice) -> Unit)? = null,
+        onDeviceDisconnected: ((LogPoseDevice) -> Unit)? = null
     ) {
 
         if (!permissionManager.hasBluetoothPermission()) {
@@ -53,17 +57,27 @@ class BluetoothRepository(
 
         receiver = BluetoothReceiver(
             onDeviceFound = onDeviceFound,
-            onDiscoveryFinished = onFinished
+            onDiscoveryFinished = onFinished,
+            onDeviceConnected = onDeviceConnected,
+            onDeviceDisconnected = onDeviceDisconnected
         )
 
         val filter = IntentFilter().apply {
-            addAction(android.bluetooth.BluetoothDevice.ACTION_FOUND)
-            addAction(android.bluetooth.BluetoothAdapter.ACTION_DISCOVERY_FINISHED)
+
+            addAction(BluetoothDevice.ACTION_FOUND)
+
+            addAction(BluetoothAdapter.ACTION_DISCOVERY_FINISHED)
+
+            addAction(BluetoothDevice.ACTION_ACL_CONNECTED)
+
+            addAction(BluetoothDevice.ACTION_ACL_DISCONNECTED)
+
         }
 
         appContext.registerReceiver(receiver, filter)
 
         bluetoothManager.startDiscovery()
+
     }
 
     fun stopDiscovery() {
@@ -71,12 +85,15 @@ class BluetoothRepository(
         bluetoothManager.cancelDiscovery()
 
         receiver?.let {
+
             runCatching {
                 appContext.unregisterReceiver(it)
             }
+
         }
 
         receiver = null
+
     }
 
     fun saveSelectedDevice(mac: String) {
@@ -94,5 +111,7 @@ class BluetoothRepository(
         return getPairedDevices().find {
             it.mac == mac
         }
+
     }
+
 }

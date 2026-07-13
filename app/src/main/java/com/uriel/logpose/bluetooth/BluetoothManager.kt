@@ -24,22 +24,25 @@ class BluetoothManager {
     @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
     fun getPairedDevices(): List<LogPoseDevice> {
 
-        val devices = mutableListOf<LogPoseDevice>()
+        val connectedMac = bluetoothAdapter
+            ?.bondedDevices
+            ?.firstOrNull { it.bondState == BluetoothDevice.BOND_BONDED }
+            ?.address
 
-        bluetoothAdapter?.bondedDevices?.forEach { device ->
+        return bluetoothAdapter
+            ?.bondedDevices
+            ?.map { device ->
 
-            devices.add(
                 LogPoseDevice(
                     mac = device.address,
                     name = device.name ?: "Desconocido",
-                    type = detectDeviceType(device)
+                    type = detectDeviceType(device),
+                    connected = device.address == connectedMac
                 )
-            )
 
-        }
-
-        return devices.sortedBy { it.name }
-
+            }
+            ?.sortedBy { it.name }
+            ?: emptyList()
     }
 
     @RequiresPermission(Manifest.permission.BLUETOOTH_SCAN)
@@ -52,7 +55,6 @@ class BluetoothManager {
         }
 
         return bluetoothAdapter.startDiscovery()
-
     }
 
     @RequiresPermission(Manifest.permission.BLUETOOTH_SCAN)
@@ -96,11 +98,13 @@ class BluetoothManager {
                     "toyota" in name ->
                 DeviceType.CAR
 
+            "speaker" in name ||
+                    "jbl" in name ||
+                    "sony" in name ->
+                DeviceType.SPEAKER
+
             else ->
                 DeviceType.UNKNOWN
-
         }
-
     }
-
 }

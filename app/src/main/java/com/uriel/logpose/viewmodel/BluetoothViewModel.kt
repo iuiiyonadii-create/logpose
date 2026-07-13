@@ -61,6 +61,53 @@ class BluetoothViewModel : ViewModel() {
                     discovering = false
                 )
 
+            },
+
+            onDeviceConnected = { connectedDevice ->
+
+                val updated = devices.map {
+
+                    if (it.mac == connectedDevice.mac) {
+
+                        it.copy(connected = true)
+
+                    } else {
+
+                        it.copy(connected = false)
+
+                    }
+
+                }
+
+                uiState = uiState.copy(
+                    devices = updated,
+                    selectedDevice = updated.find {
+                        it.mac == connectedDevice.mac
+                    }
+                )
+
+            },
+
+            onDeviceDisconnected = { disconnectedDevice ->
+
+                val updated = devices.map {
+
+                    if (it.mac == disconnectedDevice.mac) {
+
+                        it.copy(connected = false)
+
+                    } else {
+
+                        it
+
+                    }
+
+                }
+
+                uiState = uiState.copy(
+                    devices = updated
+                )
+
             }
 
         )
@@ -88,16 +135,17 @@ class BluetoothViewModel : ViewModel() {
     fun saveSelectedDevice() {
 
         uiState.selectedDevice?.let {
-
             repository.saveSelectedDevice(it.mac)
-
         }
 
     }
 
     override fun onCleared() {
+
         repository.stopDiscovery()
+
         super.onCleared()
+
     }
 
 }

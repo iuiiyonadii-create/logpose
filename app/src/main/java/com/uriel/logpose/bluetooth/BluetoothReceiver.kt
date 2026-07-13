@@ -12,7 +12,9 @@ import com.uriel.logpose.model.LogPoseDevice
 
 class BluetoothReceiver(
     private val onDeviceFound: (LogPoseDevice) -> Unit,
-    private val onDiscoveryFinished: () -> Unit
+    private val onDiscoveryFinished: () -> Unit,
+    private val onDeviceConnected: ((LogPoseDevice) -> Unit)? = null,
+    private val onDeviceDisconnected: ((LogPoseDevice) -> Unit)? = null
 ) : BroadcastReceiver() {
 
     @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
@@ -30,21 +32,53 @@ class BluetoothReceiver(
                 ) ?: return
 
                 onDeviceFound(
-                    LogPoseDevice(
-                        mac = device.address,
-                        name = device.name ?: "Desconocido",
-                        type = detectDeviceType(device)
-                    )
+                    device.toLogPoseDevice(false)
                 )
             }
 
             BluetoothAdapter.ACTION_DISCOVERY_FINISHED -> {
                 onDiscoveryFinished()
             }
+
+            BluetoothDevice.ACTION_ACL_CONNECTED -> {
+
+                val device = intent.getParcelableExtra<BluetoothDevice>(
+                    BluetoothDevice.EXTRA_DEVICE
+                ) ?: return
+
+                onDeviceConnected?.invoke(
+                    device.toLogPoseDevice(true)
+                )
+            }
+
+            BluetoothDevice.ACTION_ACL_DISCONNECTED -> {
+
+                val device = intent.getParcelableExtra<BluetoothDevice>(
+                    BluetoothDevice.EXTRA_DEVICE
+                ) ?: return
+
+                onDeviceDisconnected?.invoke(
+                    device.toLogPoseDevice(false)
+                )
+            }
         }
     }
 
-    private fun detectDeviceType(device: BluetoothDevice): DeviceType {
+    private fun BluetoothDevice.toLogPoseDevice(
+        connected: Boolean
+    ): LogPoseDevice {
+
+        return LogPoseDevice(
+            mac = address,
+            name = name ?: "Desconocido",
+            type = detectDeviceType(this),
+            connected = connected
+        )
+    }
+
+    private fun detectDeviceType(
+        device: BluetoothDevice
+    ): DeviceType {
 
         val name = device.name?.lowercase().orEmpty()
 
@@ -73,6 +107,11 @@ class BluetoothReceiver(
                     "peugeot" in name ||
                     "toyota" in name ->
                 DeviceType.CAR
+
+            "speaker" in name ||
+                    "jbl" in name ||
+                    "sony" in name ->
+                DeviceType.SPEAKER
 
             else ->
                 DeviceType.UNKNOWN
