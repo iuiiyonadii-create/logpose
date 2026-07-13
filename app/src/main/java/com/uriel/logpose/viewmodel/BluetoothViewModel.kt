@@ -17,16 +17,64 @@ class BluetoothViewModel : ViewModel() {
 
     fun refresh() {
 
-        val devices = repository.getPairedDevices()
-        val selectedDevice = repository.getSelectedDevice()
-
         uiState = uiState.copy(
             bluetoothEnabled = repository.isBluetoothEnabled(),
-            devices = devices,
-            selectedDevice = selectedDevice,
+            devices = repository.getPairedDevices(),
+            selectedDevice = repository.getSelectedDevice(),
+            discovering = false,
             loading = false,
             error = null
         )
+
+    }
+
+    fun startDiscovery() {
+
+        val devices = repository
+            .getPairedDevices()
+            .toMutableList()
+
+        uiState = uiState.copy(
+            discovering = true,
+            devices = devices
+        )
+
+        repository.startDiscovery(
+
+            onDeviceFound = { device ->
+
+                if (devices.none { it.mac == device.mac }) {
+
+                    devices.add(device)
+
+                    uiState = uiState.copy(
+                        devices = devices.sortedBy { it.name }
+                    )
+
+                }
+
+            },
+
+            onFinished = {
+
+                uiState = uiState.copy(
+                    discovering = false
+                )
+
+            }
+
+        )
+
+    }
+
+    fun stopDiscovery() {
+
+        repository.stopDiscovery()
+
+        uiState = uiState.copy(
+            discovering = false
+        )
+
     }
 
     fun selectDevice(device: LogPoseDevice) {
@@ -45,6 +93,11 @@ class BluetoothViewModel : ViewModel() {
 
         }
 
+    }
+
+    override fun onCleared() {
+        repository.stopDiscovery()
+        super.onCleared()
     }
 
 }

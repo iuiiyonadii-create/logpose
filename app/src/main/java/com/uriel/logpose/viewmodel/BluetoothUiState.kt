@@ -6,6 +6,8 @@ data class BluetoothUiState(
 
     val bluetoothEnabled: Boolean = false,
 
+    val discovering: Boolean = false,
+
     val devices: List<LogPoseDevice> = emptyList(),
 
     val selectedDevice: LogPoseDevice? = null,
