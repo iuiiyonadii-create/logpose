@@ -1,4 +1,4 @@
-package com.uriel.logpose.logcore.core.intent.capability
+package com.uriel.logpose.logcore.core.capability
 
 /**
  * Represents an action that LogCore is capable of performing.
