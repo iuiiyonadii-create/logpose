@@ -1,3 +1,11 @@
 package com.uriel.logpose.logcore.core.action
 
-interface ActionResult
+sealed interface ActionResult {
+
+    data object Success : ActionResult
+
+    data class Failure(
+        val message: String
+    ) : ActionResult
+
+}
