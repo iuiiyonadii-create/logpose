@@ -15,7 +15,5 @@ class LogCore(
     ): ActionResult {
 
         return actionEngine.dispatch(action)
-
     }
-
 }

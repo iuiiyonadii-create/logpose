@@ -2,12 +2,7 @@ package com.uriel.logpose.logcore.orchestrator
 
 import com.uriel.logpose.logcore.core.action.ActionRequest
 import com.uriel.logpose.logcore.core.action.ActionResult
-import com.uriel.logpose.logcore.core.capability.IsPlaying
-import com.uriel.logpose.logcore.core.capability.NextSong
-import com.uriel.logpose.logcore.core.capability.PauseMusic
-import com.uriel.logpose.logcore.core.capability.PlayMusic
-import com.uriel.logpose.logcore.core.capability.PreviousSong
-import com.uriel.logpose.logcore.core.capability.StopMusic
+import com.uriel.logpose.logcore.core.capability.Capability
 import com.uriel.logpose.logcore.orchestrator.validator.ActionValidator
 import com.uriel.logpose.logcore.orchestrator.validator.ValidationResult
 import com.uriel.logpose.logcore.services.MusicService
@@ -27,7 +22,6 @@ class ActionEngine(
 
             is ValidationResult.Invalid ->
                 return ActionResult.Failure(validation.reason)
-
         }
 
         val service = resolver.resolve(action)
@@ -38,34 +32,43 @@ class ActionEngine(
 
                 when (action.capability) {
 
-                    PlayMusic -> service.play()
+                    Capability.PlayMusic -> service.play()
 
-                    PauseMusic -> service.pause()
+                    Capability.PauseMusic -> service.pause()
 
-                    StopMusic -> service.stop()
+                    Capability.NextTrack -> service.next()
 
-                    NextSong -> service.next()
+                    Capability.PreviousTrack -> service.previous()
 
-                    PreviousSong -> service.previous()
-
-                    IsPlaying -> {
-                        return ActionResult.BooleanResult(
-                            service.isPlaying()
-                        )
+                    Capability.RepeatTrack -> {
+                        // TODO
                     }
 
+                    Capability.SetVolume -> {
+                        // TODO
+                    }
+
+                    Capability.Mute -> {
+                        // TODO
+                    }
+
+                    Capability.Silence -> {
+                        // TODO
+                    }
+
+                    else -> {
+                        return ActionResult.Failure(
+                            "Capability no soportada por MusicService: ${action.capability}"
+                        )
+                    }
                 }
 
                 ActionResult.Success
-
             }
 
             else -> ActionResult.Failure(
                 "Service no soportado"
             )
-
         }
-
     }
-
 }
