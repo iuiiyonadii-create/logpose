@@ -1,7 +1,11 @@
 package com.uriel.logpose.logcore.orchestrator
 
 import com.uriel.logpose.logcore.core.action.ActionRequest
+import com.uriel.logpose.logcore.core.capability.NextSong
+import com.uriel.logpose.logcore.core.capability.PauseMusic
 import com.uriel.logpose.logcore.core.capability.PlayMusic
+import com.uriel.logpose.logcore.core.capability.PreviousSong
+import com.uriel.logpose.logcore.core.capability.StopMusic
 import com.uriel.logpose.logcore.services.MusicService
 
 class ServiceResolver(
@@ -14,9 +18,13 @@ class ServiceResolver(
 
         return when (action.capability) {
 
-            PlayMusic -> musicService
+            PlayMusic,
+            PauseMusic,
+            StopMusic,
+            NextSong,
+            PreviousSong -> musicService
 
-            else -> throw IllegalArgumentException(
+            else -> error(
                 "No existe un Service para ${action.capability}"
             )
 
