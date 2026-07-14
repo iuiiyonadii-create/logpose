@@ -2,6 +2,7 @@ package com.uriel.logpose.logcore.orchestrator
 
 import com.uriel.logpose.logcore.core.action.ActionRequest
 import com.uriel.logpose.logcore.core.action.ActionResult
+import com.uriel.logpose.logcore.core.capability.IsPlaying
 import com.uriel.logpose.logcore.core.capability.NextSong
 import com.uriel.logpose.logcore.core.capability.PauseMusic
 import com.uriel.logpose.logcore.core.capability.PlayMusic
@@ -46,6 +47,12 @@ class ActionEngine(
                     NextSong -> service.next()
 
                     PreviousSong -> service.previous()
+
+                    IsPlaying -> {
+                        return ActionResult.BooleanResult(
+                            service.isPlaying()
+                        )
+                    }
 
                 }
 

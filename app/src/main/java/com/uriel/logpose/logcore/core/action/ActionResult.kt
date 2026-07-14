@@ -8,4 +8,8 @@ sealed interface ActionResult {
         val message: String
     ) : ActionResult
 
+    data class BooleanResult(
+        val value: Boolean
+    ) : ActionResult
+
 }
