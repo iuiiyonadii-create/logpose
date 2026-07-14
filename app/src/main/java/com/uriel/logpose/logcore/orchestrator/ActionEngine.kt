@@ -8,7 +8,6 @@ import com.uriel.logpose.logcore.services.MusicService
 class ActionEngine(
 
     private val resolver: ServiceResolver,
-
     private val validator: ActionValidator
 
 ) {
@@ -17,9 +16,7 @@ class ActionEngine(
 
         when (validator.validate(action)) {
 
-            ValidationResult.Valid -> {
-                // Continúa
-            }
+            ValidationResult.Valid -> Unit
 
             is ValidationResult.Invalid -> {
                 return
@@ -30,15 +27,11 @@ class ActionEngine(
 
         when (service) {
 
-            is MusicService -> {
-                service.play()
-            }
+            is MusicService -> service.play()
 
-            else -> {
-                throw IllegalStateException(
-                    "Service no soportado: ${service::class.simpleName}"
-                )
-            }
+            else -> error(
+                "Service no soportado: ${service::class.simpleName}"
+            )
         }
     }
 }
