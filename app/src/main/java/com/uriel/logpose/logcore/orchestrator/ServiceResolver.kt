@@ -1,7 +1,7 @@
 package com.uriel.logpose.logcore.orchestrator
 
 import com.uriel.logpose.logcore.core.action.ActionRequest
-import com.uriel.logpose.logcore.core.capability.Capability
+import com.uriel.logpose.logcore.core.intent.capability.Capability
 import com.uriel.logpose.logcore.services.MusicService
 
 class ServiceResolver(
