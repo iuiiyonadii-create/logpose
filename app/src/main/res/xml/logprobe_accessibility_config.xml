@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Configuracion del AccessibilityService de LogProbe.
+  canRetrieveWindowContent=true es necesario para leer el arbol de nodos.
+  NO se declara canPerformGestures ni flagRequestFilterKeyEvents:
+  LogProbe es de solo lectura, nunca automatiza ni intercepta input.
+-->
+<accessibility-service xmlns:android="http://schemas.android.com/apk/res/android"
+    android:accessibilityEventTypes="typeAllMask"
+    android:accessibilityFeedbackType="feedbackGeneric"
+    android:accessibilityFlags="flagReportViewIds|flagRetrieveInteractiveWindows"
+    android:canRetrieveWindowContent="true"
+    android:notificationTimeout="100"
+    android:description="@string/logprobe_accessibility_description" />

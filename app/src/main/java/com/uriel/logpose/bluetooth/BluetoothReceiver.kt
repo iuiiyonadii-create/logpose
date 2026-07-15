@@ -7,7 +7,7 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import androidx.annotation.RequiresPermission
-import com.uriel.logpose.core.DeviceClassifier
+import com.uriel.logpose.compat.core.DeviceClassifier
 import com.uriel.logpose.engine.LogPoseEngine
 import com.uriel.logpose.model.LogPoseDevice
 

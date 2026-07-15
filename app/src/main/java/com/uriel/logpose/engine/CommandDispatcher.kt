@@ -1,7 +1,7 @@
 package com.uriel.logpose.engine
 
-import com.uriel.logpose.core.Command
-import com.uriel.logpose.core.LogPoseLogger
+import com.uriel.logpose.compat.core.Command
+import com.uriel.logpose.compat.core.LogPoseLogger
 
 object CommandDispatcher {
 

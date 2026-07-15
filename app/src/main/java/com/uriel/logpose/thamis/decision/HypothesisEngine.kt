@@ -36,7 +36,8 @@ object HypothesisEngine {
                 hypotheses.add(
                     Hypothesis(
                         intent = entry.intent,
-                        score = bestScore
+                        score = bestScore,
+                        evidence = TODO()
                     )
                 )
             }

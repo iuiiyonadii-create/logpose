@@ -1,7 +1,7 @@
 package com.uriel.logpose.engine
 
-import com.uriel.logpose.core.AppState
-import com.uriel.logpose.core.LogPoseLogger
+import com.uriel.logpose.compat.core.AppState
+import com.uriel.logpose.compat.core.LogPoseLogger
 import com.uriel.logpose.model.LogPoseDevice
 
 object LogPoseEngine {

@@ -4,7 +4,7 @@ import android.Manifest
 import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothDevice
 import androidx.annotation.RequiresPermission
-import com.uriel.logpose.core.DeviceClassifier
+import com.uriel.logpose.compat.core.DeviceClassifier
 import com.uriel.logpose.model.LogPoseDevice
 
 class BluetoothManager {

@@ -1,3 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
+
     <string name="app_name">LogPose</string>
+
+    <string name="logprobe_accessibility_description">
+        LogProbe Accessibility Service
+    </string>
+
 </resources>
