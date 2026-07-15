@@ -5,8 +5,8 @@ import android.bluetooth.BluetoothDevice
 import android.content.Context
 import android.content.IntentFilter
 import com.uriel.logpose.core.compat.PermissionManager
+import com.uriel.logpose.data.preferences.DevicePreferences
 import com.uriel.logpose.domain.models.LogPoseDevice
-import com.uriel.logpose.core.storage.DevicePreferences
 
 class BluetoothRepository(
     context: Context
@@ -64,15 +64,10 @@ class BluetoothRepository(
         )
 
         val filter = IntentFilter().apply {
-
             addAction(BluetoothDevice.ACTION_FOUND)
-
             addAction(BluetoothAdapter.ACTION_DISCOVERY_FINISHED)
-
             addAction(BluetoothDevice.ACTION_ACL_CONNECTED)
-
             addAction(BluetoothDevice.ACTION_ACL_DISCONNECTED)
-
         }
 
         appContext.registerReceiver(
@@ -89,11 +84,9 @@ class BluetoothRepository(
         bluetoothManager.cancelDiscovery()
 
         receiver?.let {
-
             runCatching {
                 appContext.unregisterReceiver(it)
             }
-
         }
 
         receiver = null
@@ -121,9 +114,7 @@ class BluetoothRepository(
                 ?: return null
 
         return getPairedDevices().find {
-
             it.mac == mac
-
         }
 
     }
