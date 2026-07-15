@@ -5299,6 +5299,3113 @@ END OF BLOCK 025
 
 ==============================================================================
 
+==============================================================================
+CHATGPT MEMORY
+BLOCK 026 — ENGINEERING BIBLE SUMMARY
+==============================================================================
+
+# ENGINEERING BIBLE SUMMARY
+
+## Overview
+
+The Engineering Bible is the official engineering authority of the LogPose project.
+
+Its purpose is to define the standards, principles and rules that guide all technical development.
+
+The Engineering Bible exists to ensure that the project grows with consistency, quality and long-term maintainability.
+
+---
+
+# Purpose
+
+The Engineering Bible defines:
+
+- Engineering principles.
+- Development standards.
+- Architectural rules.
+- Coding expectations.
+- Decision-making processes.
+- Quality requirements.
+
+It acts as the foundation for technical decisions.
+
+---
+
+# Authority
+
+The Engineering Bible has the highest engineering authority within the project.
+
+When conflicts appear between:
+
+- Code.
+- Documentation.
+- Temporary decisions.
+- Previous implementations.
+
+The Engineering Bible must be reviewed before modifying established standards.
+
+---
+
+# Core Principles
+
+## Architecture Before Implementation
+
+No major implementation should begin without a clear architectural design.
+
+Architecture defines the solution.
+
+Code follows architecture.
+
+---
+
+## Clean Architecture
+
+The project follows separation of responsibilities.
+
+Main objectives:
+
+- Independent business logic.
+- Clear module boundaries.
+- Reduced coupling.
+- Easier maintenance.
+
+---
+
+## Single Responsibility
+
+Every component must have a clear purpose.
+
+Classes, modules and systems should avoid unrelated responsibilities.
+
+---
+
+## Documentation First
+
+Important engineering knowledge must be documented.
+
+Documentation is part of development, not an optional activity.
+
+---
+
+## Quality Over Speed
+
+Fast implementation is not more important than a stable foundation.
+
+The project prioritizes:
+
+- Correctness.
+- Maintainability.
+- Scalability.
+- Readability.
+
+---
+
+# Development Philosophy
+
+The official engineering process:
+
+Research
+
+↓
+
+Architecture
+
+↓
+
+Planning
+
+↓
+
+Implementation
+
+↓
+
+Review
+
+↓
+
+Documentation
+
+↓
+
+Knowledge Preservation
+
+---
+
+# Coding Standards
+
+Production code should prioritize:
+
+- Readability.
+- Clear naming.
+- Maintainable structure.
+- Small responsibilities.
+- Minimal coupling.
+
+Complexity should only exist when it provides real value.
+
+---
+
+# Architecture Standards
+
+Permanent architecture rules:
+
+- Dependencies must remain controlled.
+- Business logic must stay separated.
+- Modules require clear responsibilities.
+- Circular dependencies must be avoided.
+- Architecture changes require approval.
+
+---
+
+# Decision Standards
+
+Important engineering decisions must include:
+
+- Context.
+- Problem.
+- Decision.
+- Reason.
+- Impact.
+
+Decisions should remain traceable throughout project history.
+
+---
+
+# Review Standards
+
+Before integration, important work should be reviewed for:
+
+- Correctness.
+- Architecture compliance.
+- Security.
+- Performance.
+- Maintainability.
+
+---
+
+# Knowledge Standards
+
+Engineering knowledge is considered a project asset.
+
+Important information must survive:
+
+- Conversation changes.
+- AI changes.
+- Project evolution.
+- Time.
+
+Knowledge preservation is part of engineering.
+
+---
+
+# AI Collaboration Standards
+
+AI systems operate with defined responsibilities.
+
+Roles must remain clear.
+
+AI recommendations are valuable, but architectural authority remains centralized.
+
+---
+
+# Long-Term Objective
+
+The Engineering Bible exists to ensure that LogPose can continue evolving professionally.
+
+The goal is not only creating software that works.
+
+The goal is creating software that can grow without losing quality.
+
+==============================================================================
+
+END OF BLOCK 026
+
+==============================================================================
+
+==============================================================================
+CHATGPT MEMORY
+BLOCK 027 — DEVELOPMENT STANDARDS
+==============================================================================
+
+# DEVELOPMENT STANDARDS
+
+## Overview
+
+This section defines the permanent development standards used during LogPose development.
+
+These standards exist to maintain consistency, quality and predictability throughout the project lifecycle.
+
+---
+
+# Development Philosophy
+
+Development must follow a controlled process.
+
+The project prioritizes:
+
+- Correct architecture.
+- Clear responsibilities.
+- Maintainable code.
+- Documented decisions.
+- Long-term scalability.
+
+---
+
+# Standard Development Flow
+
+Every important task follows:
+
+Research
+
+↓
+
+Architecture
+
+↓
+
+Ticket Definition
+
+↓
+
+Implementation
+
+↓
+
+Review
+
+↓
+
+Documentation
+
+↓
+
+Knowledge Update
+
+---
+
+# Research Standards
+
+Before implementing unknown technology or complex functionality:
+
+The problem must be researched.
+
+Research should identify:
+
+- Available solutions.
+- Technical limitations.
+- Risks.
+- Alternatives.
+- Recommendations.
+
+Research output should help architectural decisions.
+
+---
+
+# Architecture Standards
+
+Before implementation:
+
+The following must be defined:
+
+- Objective.
+- Responsibilities.
+- Components involved.
+- Dependencies.
+- Expected behavior.
+- Impact.
+
+Architecture should be reviewed before coding begins.
+
+---
+
+# Ticket Standards
+
+Every significant change should be represented as a ticket.
+
+A ticket should contain:
+
+## Version
+
+Current project version.
+
+## Objective
+
+What problem is being solved.
+
+## Files Affected
+
+Files that will change.
+
+## Technical Plan
+
+How the change will be implemented.
+
+## Validation
+
+How success will be confirmed.
+
+## Result
+
+Final outcome.
+
+---
+
+# Implementation Standards
+
+Production implementation must:
+
+- Follow approved architecture.
+- Respect module responsibilities.
+- Avoid unnecessary complexity.
+- Maintain existing standards.
+- Include required documentation.
+
+---
+
+# Code Change Standards
+
+When modifying important files:
+
+Preferred approach:
+
+Provide complete files instead of isolated fragments.
+
+Reason:
+
+- Reduce copy errors.
+- Preserve consistency.
+- Make changes easier to review.
+
+---
+
+# Refactoring Standards
+
+Refactoring is allowed when it improves:
+
+- Readability.
+- Maintainability.
+- Architecture.
+- Organization.
+
+Refactoring should not create unnecessary changes.
+
+---
+
+# Testing Standards
+
+Important changes should consider:
+
+- Functional validation.
+- Compatibility.
+- Error handling.
+- Performance impact.
+
+Testing requirements depend on the complexity of the change.
+
+---
+
+# Review Standards
+
+Before accepting significant work:
+
+Review:
+
+- Architecture compliance.
+- Code quality.
+- Security.
+- Performance.
+- Documentation.
+
+---
+
+# Documentation Standards
+
+Documentation must remain synchronized with development.
+
+Important changes should update:
+
+- KnowledgeBase.
+- Engineering documents.
+- Project state.
+- Relevant technical documentation.
+
+---
+
+# Git Standards
+
+Git is used to preserve project history.
+
+Commits should:
+
+- Represent meaningful changes.
+- Have clear messages.
+- Allow future understanding.
+
+Examples:
+
+Good:
+
+"Add Bluetooth permission handling"
+
+"Create KnowledgeBase foundation"
+
+Bad:
+
+"changes"
+
+"update"
+
+---
+
+# Knowledge Preservation Standards
+
+Completed engineering work should produce permanent knowledge when appropriate.
+
+The project should never depend only on memory inside conversations.
+
+---
+
+# Standard Quality Rule
+
+A completed task is not only working code.
+
+A completed task is:
+
+Working code
+
++
+
+Correct architecture
+
++
+
+Documentation
+
++
+
+Preserved knowledge
+
+==============================================================================
+
+END OF BLOCK 027
+
+==============================================================================
+
+==============================================================================
+CHATGPT MEMORY
+BLOCK 028 — CODING STANDARDS
+==============================================================================
+
+# CODING STANDARDS
+
+## Overview
+
+This section defines the coding standards used throughout the LogPose project.
+
+The purpose is to maintain code quality, readability and consistency as the project grows.
+
+Code is considered a long-term asset and should be written for future maintenance.
+
+---
+
+# General Coding Philosophy
+
+The project follows this principle:
+
+Readable code is better than clever code.
+
+The objective is not creating the shortest implementation.
+
+The objective is creating understandable, maintainable and reliable software.
+
+---
+
+# Naming Standards
+
+Names should clearly communicate purpose.
+
+Avoid:
+
+- Generic names.
+- Ambiguous names.
+- Unnecessary abbreviations.
+
+Prefer:
+
+- Descriptive class names.
+- Clear function names.
+- Meaningful variables.
+
+Example:
+
+Good:
+
+
+Bad:
+
+
+---
+
+# Class Standards
+
+Each class must have:
+
+- One clear responsibility.
+- A defined purpose.
+- Controlled dependencies.
+
+Avoid:
+
+- Large classes.
+- Multiple unrelated responsibilities.
+- Classes that become global containers.
+
+---
+
+# Function Standards
+
+Functions should:
+
+- Perform one clear action.
+- Have understandable names.
+- Avoid unnecessary complexity.
+
+Prefer:
+
+Small functions with clear responsibilities.
+
+Avoid:
+
+Large functions that handle multiple processes.
+
+---
+
+# File Organization
+
+Files should be located according to their responsibility.
+
+Examples:
+
+Domain logic:
+domain/
+Data handling:
+data/
+UI:
+features/
+Shared infrastructure:
+core/
+Documentation:
+engineering/
+KnowledgeBase/
+
+
+---
+
+# Architecture Compliance
+
+Code must respect project architecture.
+
+Rules:
+
+- UI should not contain business logic.
+- Domain should remain independent.
+- Data should handle external sources.
+- Dependencies must remain controlled.
+
+---
+
+# Dependency Rules
+
+Avoid:
+
+- Circular dependencies.
+- Hidden dependencies.
+- Unnecessary coupling.
+
+Prefer:
+
+- Interfaces.
+- Clear contracts.
+- Dependency injection.
+
+---
+
+# Kotlin Standards
+
+The project uses Kotlin best practices.
+
+Preferred:
+
+- Immutable data where possible.
+- Clear null handling.
+- Kotlin idioms.
+- Readable coroutines usage.
+
+Avoid:
+
+- Unnecessary complexity.
+- Unsafe shortcuts.
+- Hard-to-maintain patterns.
+
+---
+
+# Android Standards
+
+Android-specific code should:
+
+- Respect lifecycle behavior.
+- Handle permissions correctly.
+- Consider device limitations.
+- Avoid unnecessary resource usage.
+
+---
+
+# Jetpack Compose Standards
+
+UI components should:
+
+- Remain focused.
+- Avoid business logic.
+- Use proper state management.
+
+Composable functions should describe UI behavior, not application rules.
+
+---
+
+# Error Handling
+
+Errors should be:
+
+- Expected.
+- Managed.
+- Documented.
+
+Avoid:
+
+- Silent failures.
+- Hidden exceptions.
+- Ignoring error states.
+
+---
+
+# Comments and Documentation
+
+Comments should explain:
+
+- Why something exists.
+- Important decisions.
+- Non-obvious behavior.
+
+Avoid comments that only repeat the code.
+Increase counter
+Bad:
+Reset counter after successful device synchronization
+Good:
+
+
+---
+
+# Code Review Requirements
+
+Before accepting code:
+
+Review:
+
+- Architecture compliance.
+- Readability.
+- Naming.
+- Complexity.
+- Security.
+- Maintainability.
+
+---
+
+# Production Code Rule
+
+Production code must be:
+
+- Understandable.
+- Documented.
+- Reviewable.
+- Consistent with project standards.
+
+---
+
+# Coding Quality Principle
+
+The project follows:
+
+Clean code today prevents expensive problems tomorrow.
+
+Every line should contribute to a maintainable system.
+
+==============================================================================
+
+END OF BLOCK 028
+
+==============================================================================
+
+==============================================================================
+CHATGPT MEMORY
+BLOCK 029 — PROJECT ROADMAP
+==============================================================================
+
+# PROJECT ROADMAP
+
+## Overview
+
+This section defines the long-term evolution path of LogPose.
+
+The roadmap represents direction and priorities.
+
+It is not a fixed schedule.
+
+Future changes may modify priorities based on:
+
+- User research.
+- Technical discoveries.
+- Engineering decisions.
+- Market validation.
+
+---
+
+# Roadmap Philosophy
+
+LogPose development follows controlled growth.
+
+The project prioritizes:
+
+Foundation
+
+↓
+
+Validation
+
+↓
+
+Core Features
+
+↓
+
+Advanced Capabilities
+
+---
+
+# PHASE 1 — Engineering Foundation
+
+## Objective
+
+Create the technical and organizational foundation required for long-term development.
+
+## Main Goals
+
+- Complete KnowledgeBase.
+- Complete CHATGPT_MEMORY.md.
+- Maintain Engineering Bible.
+- Establish development standards.
+- Define architecture.
+- Prepare Git workflow.
+
+## Status
+
+Active.
+
+---
+
+# PHASE 2 — Core Android Foundation
+
+## Objective
+
+Create stable Android foundations.
+
+## Main Goals
+
+- Application structure.
+- Dependency management.
+- Core modules.
+- Domain foundation.
+- Data layer.
+- Permission management.
+- Service infrastructure.
+
+## Status
+
+Foundation development.
+
+---
+
+# PHASE 3 — Bluetooth Foundation
+
+## Objective
+
+Provide reliable communication with external devices.
+
+## Main Goals
+
+- Bluetooth device management.
+- Permission handling.
+- Device state management.
+- Repository architecture.
+- Intercom compatibility foundation.
+
+## Status
+
+Initial foundation implemented.
+
+---
+
+# PHASE 4 — Voice Interaction System
+
+## Objective
+
+Create the primary hands-free interaction layer.
+
+## Possible Capabilities
+
+- Voice commands.
+- Speech recognition.
+- Command processing.
+- Voice responses.
+
+## Requirements
+
+Must prioritize:
+
+- Reliability.
+- Low distraction.
+- Performance.
+
+## Status
+
+Future phase.
+
+---
+
+# PHASE 5 — Rider Assistant Features
+
+## Objective
+
+Implement validated rider-focused features.
+
+Possible areas:
+
+- Calls.
+- Notifications.
+- Music control.
+- Riding mode.
+- Hands-free interactions.
+
+Features require validation before implementation.
+
+## Status
+
+Future phase.
+
+---
+
+# PHASE 6 — User Validation
+
+## Objective
+
+Validate LogPose with real users.
+
+Possible activities:
+
+- Rider interviews.
+- Closed beta.
+- Feedback collection.
+- Usability testing.
+
+## Status
+
+Planned.
+
+---
+
+# PHASE 7 — Advanced Ecosystem
+
+## Objective
+
+Expand LogPose capabilities.
+
+Possible future areas:
+
+- AI assistance.
+- Advanced voice interaction.
+- Intelligent riding features.
+- Additional ecosystem components.
+
+## Status
+
+Long-term vision.
+
+---
+
+# Development Priority Rules
+
+When choosing the next task:
+
+Priority should consider:
+
+1. User value.
+2. Safety impact.
+3. Architectural importance.
+4. Technical risk.
+5. Development cost.
+
+---
+
+# Roadmap Constraints
+
+The project should avoid:
+
+- Building unnecessary features.
+- Ignoring architecture.
+- Growing complexity without validation.
+- Sacrificing quality for speed.
+
+---
+
+# Long-Term Vision
+
+The final objective is creating a reliable voice-first motorcycle assistant.
+
+The roadmap exists to guide evolution while preserving engineering quality.
+
+==============================================================================
+
+END OF BLOCK 029
+
+==============================================================================
+
+==============================================================================
+CHATGPT MEMORY
+BLOCK 029 — PROJECT ROADMAP
+==============================================================================
+
+# PROJECT ROADMAP
+
+## Overview
+
+This section defines the long-term evolution path of LogPose.
+
+The roadmap represents direction and priorities.
+
+It is not a fixed schedule.
+
+Future changes may modify priorities based on:
+
+- User research.
+- Technical discoveries.
+- Engineering decisions.
+- Market validation.
+
+---
+
+# Roadmap Philosophy
+
+LogPose development follows controlled growth.
+
+The project prioritizes:
+
+Foundation
+
+↓
+
+Validation
+
+↓
+
+Core Features
+
+↓
+
+Advanced Capabilities
+
+---
+
+# PHASE 1 — ENGINEERING FOUNDATION
+
+## Objective
+
+Create the technical and organizational foundation required for long-term development.
+
+## Main Goals
+
+- Complete KnowledgeBase.
+- Maintain CHATGPT_MEMORY.md.
+- Maintain Engineering Bible.
+- Establish development standards.
+- Define architecture.
+- Maintain Git workflow.
+
+## Status
+
+Active.
+
+---
+
+# PHASE 2 — CORE ANDROID FOUNDATION
+
+## Objective
+
+Create stable Android foundations.
+
+## Main Goals
+
+- Application structure.
+- Dependency management.
+- Core modules.
+- Domain foundation.
+- Data layer.
+- Permission management.
+- Service infrastructure.
+
+## Status
+
+Foundation development.
+
+---
+
+# PHASE 3 — BLUETOOTH FOUNDATION
+
+## Objective
+
+Provide reliable communication with external devices.
+
+## Main Goals
+
+- Bluetooth device management.
+- Permission handling.
+- Device state management.
+- Repository architecture.
+- Intercom compatibility foundation.
+
+## Status
+
+Initial foundation implemented.
+
+---
+
+# PHASE 4 — VOICE INTERACTION SYSTEM
+
+## Objective
+
+Create the primary hands-free interaction layer.
+
+## Possible Capabilities
+
+- Voice commands.
+- Speech recognition.
+- Command processing.
+- Voice responses.
+
+## Status
+
+Future phase.
+
+---
+
+# PHASE 5 — RIDER ASSISTANT FEATURES
+
+## Objective
+
+Implement validated rider-focused features.
+
+Possible areas:
+
+- Calls.
+- Notifications.
+- Music control.
+- Riding mode.
+- Hands-free interaction.
+
+## Status
+
+Future phase.
+
+---
+
+# PHASE 6 — USER VALIDATION
+
+## Objective
+
+Validate LogPose with real users.
+
+Possible activities:
+
+- Rider interviews.
+- Closed beta.
+- Feedback collection.
+- Usability testing.
+
+## Status
+
+Planned.
+
+---
+
+# PHASE 7 — ADVANCED ECOSYSTEM
+
+## Objective
+
+Expand LogPose capabilities.
+
+Possible areas:
+
+- AI assistance.
+- Advanced voice interaction.
+- Intelligent riding features.
+- Ecosystem components.
+
+## Status
+
+Long-term vision.
+
+---
+
+# Roadmap Rule
+
+The roadmap guides development but does not replace engineering decisions.
+
+New priorities require evaluation.
+
+==============================================================================
+
+END OF BLOCK 029
+
+
+==============================================================================
+CHATGPT MEMORY
+BLOCK 030 — KNOWN RISKS
+==============================================================================
+
+# KNOWN RISKS
+
+## Overview
+
+This section preserves known risks that may affect LogPose development.
+
+The objective is to identify problems before they become major issues.
+
+---
+
+# RISK 001 — Project Complexity Growth
+
+## Description
+
+The project may become too complex as new features are added.
+
+## Mitigation
+
+Maintain:
+
+- Clear architecture.
+- Modular design.
+- Feature prioritization.
+
+---
+
+# RISK 002 — Feature Over Expansion
+
+## Description
+
+Adding too many features can reduce product focus.
+
+## Mitigation
+
+Every feature must solve a validated problem.
+
+---
+
+# RISK 003 — Android Compatibility
+
+## Description
+
+Different Android versions and devices may behave differently.
+
+## Mitigation
+
+Test compatibility and handle platform differences.
+
+---
+
+# RISK 004 — Low-End Device Performance
+
+## Description
+
+Target users may use limited hardware.
+
+## Mitigation
+
+Prioritize:
+
+- Efficiency.
+- Low resource consumption.
+- Lightweight design.
+
+---
+
+# RISK 005 — Bluetooth Reliability
+
+## Description
+
+Bluetooth behavior can vary between devices.
+
+## Mitigation
+
+Maintain abstraction and test real hardware.
+
+---
+
+# RISK 006 — Knowledge Loss
+
+## Description
+
+Important information may be lost without documentation.
+
+## Mitigation
+
+Maintain KnowledgeBase.
+
+---
+
+# RISK 007 — AI Collaboration Conflicts
+
+## Description
+
+Multiple AI systems may produce inconsistent suggestions.
+
+## Mitigation
+
+Maintain clear AI roles and centralized decisions.
+
+---
+
+# Risk Principle
+
+Identifying risks early improves engineering decisions.
+
+==============================================================================
+
+END OF BLOCK 030
+
+
+==============================================================================
+CHATGPT MEMORY
+BLOCK 031 — OPEN DECISIONS
+==============================================================================
+
+# OPEN DECISIONS
+
+## Overview
+
+This section preserves decisions that are not finalized yet.
+
+The purpose is to avoid pretending that unknown information has already been decided.
+
+---
+
+# OPEN DECISION 001 — Voice Engine
+
+## Status
+
+Open.
+
+## Question
+
+Which voice recognition and processing system will be used?
+
+## Current State
+
+Research required.
+
+---
+
+# OPEN DECISION 002 — AI Integration
+
+## Status
+
+Open.
+
+## Question
+
+How will artificial intelligence capabilities be integrated?
+
+## Current State
+
+Architecture undefined.
+
+---
+
+# OPEN DECISION 003 — Backend Requirements
+
+## Status
+
+Open.
+
+## Question
+
+Which features require cloud services?
+
+## Current State
+
+Not defined.
+
+---
+
+# OPEN DECISION 004 — Monetization
+
+## Status
+
+Open.
+
+## Question
+
+What will be the future business model?
+
+## Current State
+
+MVP remains focused on product validation.
+
+---
+
+# OPEN DECISION 005 — Advanced Intercom Features
+
+## Status
+
+Open.
+
+## Question
+
+How deeply should LogPose interact with motorcycle intercom systems?
+
+## Current State
+
+Requires research.
+
+---
+
+# OPEN DECISION 006 — External Integrations
+
+## Status
+
+Open.
+
+## Question
+
+Which external applications should receive direct integration?
+
+## Current State
+
+No final decisions.
+
+---
+
+# Decision Rule
+
+Open decisions remain open until supported by:
+
+- Research.
+- Testing.
+- Architecture review.
+- Explicit approval.
+
+==============================================================================
+
+END OF BLOCK 031
+
+
+==============================================================================
+CHATGPT MEMORY
+BLOCK 032 — FUTURE IDEAS
+==============================================================================
+
+# FUTURE IDEAS
+
+## Overview
+
+This section preserves possible future concepts.
+
+These ideas are not commitments.
+
+They exist to prevent losing interesting possibilities.
+
+---
+
+# IDEA 001 — Advanced Voice Assistant
+
+Possible future:
+
+A more intelligent voice interaction system specialized for riders.
+
+Status:
+
+Future concept.
+
+---
+
+# IDEA 002 — Intelligent Riding Mode
+
+Possible future:
+
+A mode optimized for motorcycle use.
+
+Possible capabilities:
+
+- Reduced distraction.
+- Smart notifications.
+- Context-aware behavior.
+
+Status:
+
+Future concept.
+
+---
+
+# IDEA 003 — Ecosystem Expansion
+
+Possible future:
+
+Additional systems connected to the LogPose ecosystem.
+
+Related concepts:
+
+- LogCore.
+- THAMIS.
+
+Status:
+
+Long-term vision.
+
+---
+
+# IDEA 004 — Advanced Rider Analytics
+
+Possible future:
+
+Understanding riding patterns and improving user experience.
+
+Status:
+
+Research required.
+
+---
+
+# IDEA 005 — Vehicle Integration
+
+Possible future:
+
+Interaction with vehicle systems or motorcycle accessories.
+
+Status:
+
+Undefined.
+
+---
+
+# Future Idea Rule
+
+Future ideas must not become implementation tasks without:
+
+Research
+
+↓
+
+Validation
+
+↓
+
+Architecture
+
+↓
+
+Decision
+
+---
+
+# Summary
+
+Future ideas represent possibilities, not commitments.
+
+They preserve creativity while maintaining engineering discipline.
+
+==============================================================================
+
+END OF BLOCK 032
+
+==============================================================================
+CHATGPT MEMORY
+BLOCK 033 — CURRENT SESSION
+==============================================================================
+
+# CURRENT SESSION
+
+## Overview
+
+This section defines the current active development context of LogPose.
+
+Unlike permanent memory, this section represents the immediate working state.
+
+It changes frequently.
+
+---
+
+# Purpose
+
+The objective of this section is allowing a new conversation to continue the current work without losing the active context.
+
+---
+
+# Current Project Focus
+
+Current focus:
+
+KnowledgeBase construction and preservation of LogPose engineering context.
+
+Current priority:
+
+Complete the persistent project memory system before expanding development.
+
+---
+
+# Current Active Work
+
+Active tasks:
+
+- Building CHATGPT_MEMORY.md.
+- Organizing permanent engineering knowledge.
+- Preserving project history.
+- Establishing AI workflow.
+
+---
+
+# Current Development Mode
+
+Mode:
+
+Architecture and documentation foundation.
+
+The project is preparing the knowledge infrastructure required for future implementation.
+
+---
+
+# Current Session Rule
+
+Temporary progress belongs here.
+
+Permanent decisions belong in permanent memory blocks.
+
+---
+
+# Next Immediate Action
+
+Continue completing CHATGPT_MEMORY.md blocks.
+
+==============================================================================
+
+END OF BLOCK 033
+
+
+==============================================================================
+CHATGPT MEMORY
+BLOCK 034 — CURRENT IMPLEMENTATION STATUS
+==============================================================================
+
+# CURRENT IMPLEMENTATION STATUS
+
+## Overview
+
+This section describes the current technical implementation state of LogPose.
+
+---
+
+# Application Status
+
+Project:
+
+LogPose Android Application
+
+Status:
+
+Active Development
+
+Phase:
+
+Engineering Foundation
+
+---
+
+# Implemented Foundations
+
+Current implemented areas:
+
+- Android project structure.
+- Modular organization.
+- Bluetooth foundation.
+- Permission handling.
+- Service foundation.
+- KnowledgeBase system.
+
+---
+
+# Architecture Status
+
+Current architecture:
+
+Clean Architecture principles applied.
+
+Known layers:
+
+- Presentation.
+- Domain.
+- Data.
+- Core infrastructure.
+
+---
+
+# Bluetooth Status
+
+Bluetooth foundation exists.
+
+Implemented concepts:
+
+- BluetoothManager.
+- BluetoothRepository.
+- Bluetooth permissions.
+- Bluetooth state handling.
+- Device models.
+- Bluetooth UI connection.
+
+---
+
+# UI Status
+
+Current UI direction:
+
+Jetpack Compose.
+
+Purpose:
+
+Provide modern and maintainable Android interfaces.
+
+---
+
+# Knowledge System Status
+
+KnowledgeBase:
+
+Under construction.
+
+CHATGPT_MEMORY.md:
+
+Active.
+
+Purpose:
+
+Preserve project continuity.
+
+---
+
+# Implementation Rule
+
+Current implementation should continue respecting established architecture.
+
+==============================================================================
+
+END OF BLOCK 034
+
+
+==============================================================================
+CHATGPT MEMORY
+BLOCK 035 — CURRENT MODULE STATUS
+==============================================================================
+
+# CURRENT MODULE STATUS
+
+## Overview
+
+This section defines the current state of project modules.
+
+---
+
+# app
+
+Status:
+
+Active.
+
+Responsibility:
+
+Application entry point.
+
+---
+
+# core
+
+Status:
+
+Active.
+
+Responsibility:
+
+Shared infrastructure and common components.
+
+---
+
+# domain
+
+Status:
+
+Active foundation.
+
+Responsibility:
+
+Business logic and rules.
+
+---
+
+# data
+
+Status:
+
+Active foundation.
+
+Responsibility:
+
+Data access, storage and repositories.
+
+---
+
+# features
+
+Status:
+
+Active foundation.
+
+Responsibility:
+
+User-facing functionality.
+
+---
+
+# engineering
+
+Status:
+
+Active.
+
+Responsibility:
+
+Engineering documentation and standards.
+
+---
+
+# KnowledgeBase
+
+Status:
+
+Under construction.
+
+Responsibility:
+
+Persistent project memory.
+
+---
+
+# logcore
+
+Status:
+
+Planned.
+
+Responsibility:
+
+Future ecosystem foundation.
+
+---
+
+# logprobe
+
+Status:
+
+Planned.
+
+Responsibility:
+
+Future analysis and investigation capabilities.
+
+---
+
+# thamis
+
+Status:
+
+Conceptual.
+
+Responsibility:
+
+Future intelligent system concept.
+
+---
+
+# Module Rule
+
+A module exists because it represents a meaningful architectural boundary.
+
+==============================================================================
+
+END OF BLOCK 035
+
+
+==============================================================================
+CHATGPT MEMORY
+BLOCK 036 — CURRENT RESEARCH
+==============================================================================
+
+# CURRENT RESEARCH
+
+## Overview
+
+This section preserves active research topics.
+
+Research exists to support engineering decisions.
+
+---
+
+# Active Research Areas
+
+## Voice Interaction
+
+Status:
+
+Research required.
+
+Topics:
+
+- Speech recognition.
+- Voice command processing.
+- Response systems.
+
+---
+
+## Bluetooth Ecosystem
+
+Status:
+
+Ongoing.
+
+Topics:
+
+- Intercom compatibility.
+- Audio routing.
+- Device behavior.
+
+---
+
+## AI Integration
+
+Status:
+
+Research required.
+
+Topics:
+
+- AI assistant capabilities.
+- Local versus cloud processing.
+- Architecture impact.
+
+---
+
+## Rider Workflow
+
+Status:
+
+Ongoing.
+
+Topics:
+
+- Delivery rider needs.
+- Smartphone interaction problems.
+- Safety improvements.
+
+---
+
+# Research Rules
+
+Research does not automatically become implementation.
+
+Process:
+
+Research
+
+↓
+
+Analysis
+
+↓
+
+Architecture
+
+↓
+
+Decision
+
+↓
+
+Implementation
+
+---
+
+# Research Quality
+
+Research should identify:
+
+- Benefits.
+- Limitations.
+- Risks.
+- Alternatives.
+
+==============================================================================
+
+END OF BLOCK 036
+
+==============================================================================
+CHATGPT MEMORY
+BLOCK 037 — CURRENT PROBLEMS
+==============================================================================
+
+# CURRENT PROBLEMS
+
+## Overview
+
+This section preserves current problems identified during development.
+
+Problems are temporary unless they become permanent engineering knowledge.
+
+---
+
+# PROBLEM 001 — Knowledge System Construction
+
+## Description
+
+The project requires a reliable system to preserve engineering context across conversations.
+
+## Current State
+
+KnowledgeBase is being constructed.
+
+## Impact
+
+Future development depends on maintaining continuity.
+
+---
+
+# PROBLEM 002 — Managing Project Complexity
+
+## Description
+
+LogPose is growing into a larger ecosystem.
+
+## Risk
+
+Without organization, complexity may increase uncontrollably.
+
+## Mitigation
+
+Maintain:
+
+- Architecture rules.
+- Documentation.
+- Modular design.
+
+---
+
+# PROBLEM 003 — Future AI Integration
+
+## Description
+
+The project has future AI goals but no final integration architecture.
+
+## Current State
+
+Research required.
+
+---
+
+# PROBLEM 004 — Feature Prioritization
+
+## Description
+
+Many possible features exist.
+
+## Risk
+
+Developing low-value features.
+
+## Mitigation
+
+Use:
+
+- User research.
+- MVP focus.
+- Validation.
+
+---
+
+# Problem Rule
+
+Current problems should be solved through engineering process.
+
+==============================================================================
+
+END OF BLOCK 037
+
+
+==============================================================================
+CHATGPT MEMORY
+BLOCK 038 — CURRENT BLOCKERS
+==============================================================================
+
+# CURRENT BLOCKERS
+
+## Overview
+
+This section identifies things preventing progress.
+
+---
+
+# BLOCKER 001 — KnowledgeBase Completion
+
+## Description
+
+The permanent memory system is still being created.
+
+## Status
+
+Active.
+
+## Resolution
+
+Complete CHATGPT_MEMORY.md.
+
+---
+
+# BLOCKER 002 — Full Architecture Validation
+
+## Description
+
+Some future systems require deeper architecture definition.
+
+## Status
+
+Pending.
+
+## Resolution
+
+Research and design phases.
+
+---
+
+# BLOCKER 003 — User Validation
+
+## Description
+
+Real rider validation has not been completed.
+
+## Status
+
+Pending.
+
+## Resolution
+
+Future research phase.
+
+---
+
+# Blocker Rule
+
+A blocker must be clearly identified before solving it.
+
+==============================================================================
+
+END OF BLOCK 038
+
+
+==============================================================================
+CHATGPT MEMORY
+BLOCK 039 — NEXT TASKS
+==============================================================================
+
+# NEXT TASKS
+
+## Overview
+
+This section defines immediate next actions.
+
+---
+
+# Priority 001
+
+Complete CHATGPT_MEMORY.md.
+
+Status:
+
+Active.
+
+---
+
+# Priority 002
+
+Validate KnowledgeBase workflow.
+
+Objective:
+
+Ensure new conversations can restore project context.
+
+---
+
+# Priority 003
+
+Maintain Git checkpoints.
+
+Objective:
+
+Preserve stable project history.
+
+---
+
+# Priority 004
+
+Continue engineering documentation.
+
+Objective:
+
+Maintain project standards.
+
+---
+
+# Task Selection Rule
+
+The next task should always consider:
+
+- Project impact.
+- Architecture importance.
+- Risk reduction.
+- User value.
+
+==============================================================================
+
+END OF BLOCK 039
+
+
+==============================================================================
+CHATGPT MEMORY
+BLOCK 040 — RECENT ENGINEERING CHANGES
+==============================================================================
+
+# RECENT ENGINEERING CHANGES
+
+## Overview
+
+This section preserves recent important engineering changes.
+
+---
+
+# CHANGE 001 — KnowledgeBase Creation
+
+## Description
+
+Created the permanent project memory structure.
+
+## Components
+
+- 00_CHATGPT_MEMORY.md
+- 01_PROJECT_SESSION.md
+- ChatKnowledge
+
+---
+
+# CHANGE 002 — CHATGPT_MEMORY Development
+
+## Description
+
+Created the permanent engineering memory document.
+
+## Current Progress
+
+Blocks 001-036 completed.
+
+---
+
+# CHANGE 003 — DevicePreferences Architecture Update
+
+## Description
+
+Moved DevicePreferences responsibility from core storage to data preferences.
+
+Previous:
+
+core.storage.DevicePreferences
+
+New:
+
+data.preferences.DevicePreferences
+
+---
+
+# Reason
+
+Preferences represent data persistence responsibility.
+
+The change improves architectural organization.
+
+---
+
+# CHANGE 004 — Git Checkpoint
+
+## Description
+
+Created repository checkpoint.
+
+Stored:
+
+- KnowledgeBase foundation.
+- Memory blocks.
+- Documentation updates.
+- Bluetooth architecture correction.
+
+---
+
+# Change Rule
+
+Important changes should remain traceable.
+
+==============================================================================
+
+END OF BLOCK 040
+
+==============================================================================
+CHATGPT MEMORY
+BLOCK 041 — LAST COMPLETED WORK
+==============================================================================
+
+# LAST COMPLETED WORK
+
+## Overview
+
+This section preserves the most recent completed engineering activities.
+
+Its purpose is to provide quick context when continuing development.
+
+---
+
+# COMPLETED WORK 001 — KnowledgeBase Foundation
+
+## Status
+
+Completed.
+
+## Description
+
+Created the initial KnowledgeBase structure for preserving LogPose engineering knowledge.
+
+Structure:
+
+KnowledgeBase
+
+├── ChatKnowledge
+
+├── 00_CHATGPT_MEMORY.md
+
+├── 01_PROJECT_SESSION.md
+
+└── README.md
+
+
+---
+
+# COMPLETED WORK 002 — Memory System Construction
+
+## Status
+
+In Progress / Active.
+
+## Description
+
+Created CHATGPT_MEMORY.md and established permanent memory blocks.
+
+Completed sections include:
+
+- Project identity.
+- Philosophy.
+- Vision.
+- Engineering principles.
+- Architecture.
+- Modules.
+- History.
+- Decisions.
+- Standards.
+
+---
+
+# COMPLETED WORK 003 — Engineering Documentation
+
+## Status
+
+Completed foundation.
+
+## Description
+
+Documented:
+
+- Engineering Bible summary.
+- Development standards.
+- Coding standards.
+- Roadmap.
+- Risks.
+- Open decisions.
+
+---
+
+# COMPLETED WORK 004 — Bluetooth Architecture Documentation
+
+## Status
+
+Completed.
+
+## Description
+
+Preserved Bluetooth subsystem knowledge.
+
+Documented:
+
+- Components.
+- Responsibilities.
+- Architecture.
+- Current status.
+
+---
+
+# COMPLETED WORK 005 — Git Preservation
+
+## Status
+
+Completed.
+
+## Description
+
+Created Git checkpoint after KnowledgeBase foundation.
+
+Purpose:
+
+Protect accumulated engineering knowledge.
+
+---
+
+# Current Achievement
+
+The project now has:
+
+- A persistent memory system.
+- Engineering documentation foundation.
+- Architecture documentation.
+- Development standards.
+
+==============================================================================
+
+END OF BLOCK 041
+
+
+==============================================================================
+CHATGPT MEMORY
+BLOCK 042 — AI TEAM STATUS
+==============================================================================
+
+# AI TEAM STATUS
+
+## Overview
+
+This section defines the current organization of AI collaboration.
+
+The purpose is to avoid duplicated work and maintain clear responsibilities.
+
+---
+
+# ChatGPT — Chief Architect
+
+## Responsibility
+
+Primary architectural authority.
+
+## Tasks
+
+- Architecture decisions.
+- System design.
+- Engineering direction.
+- Knowledge consistency.
+- Final technical review.
+
+---
+
+# Claude 1 — Research Engineer
+
+## Responsibility
+
+Research support.
+
+## Tasks
+
+- Investigations.
+- Technology comparisons.
+- Technical reports.
+- Information gathering.
+
+## Restriction
+
+Does not make final architecture decisions.
+
+---
+
+# Claude 2 — Senior Builder
+
+## Responsibility
+
+Implementation support.
+
+## Tasks
+
+- Code generation.
+- Repetitive implementation.
+- Approved engineering tasks.
+- Refactoring assistance.
+
+## Restriction
+
+Must follow existing architecture.
+
+---
+
+# Claude 3 — Senior Reviewer
+
+## Responsibility
+
+Quality control.
+
+## Tasks
+
+- Code review.
+- Architecture review.
+- Detect inconsistencies.
+- Find possible issues.
+
+## Restriction
+
+Reviews and reports.
+
+Does not modify architecture.
+
+---
+
+# Claude 4 — Documentation Engineer
+
+## Responsibility
+
+Knowledge organization.
+
+## Tasks
+
+- Documentation.
+- Formatting.
+- Knowledge extraction.
+- Organization.
+
+---
+
+# AI Collaboration Rules
+
+AI roles must remain separated.
+
+The process:
+
+Research
+
+↓
+
+Architecture
+
+↓
+
+Implementation
+
+↓
+
+Review
+
+↓
+
+Documentation
+
+---
+
+# Final Authority
+
+AI tools provide assistance.
+
+Final project decisions remain controlled through the project engineering process.
+
+==============================================================================
+
+END OF BLOCK 042
+
+==============================================================================
+CHATGPT MEMORY
+BLOCK 043 — CONTINUATION PROTOCOL
+==============================================================================
+
+# CONTINUATION PROTOCOL
+
+## Overview
+
+This section defines the process required to continue LogPose development in a new conversation without losing project context.
+
+The objective is to make conversation changes operationally transparent.
+
+---
+
+# New Conversation Procedure
+
+When starting a new ChatGPT conversation:
+
+Required files:
+
+1. 00_CHATGPT_MEMORY.md
+
+2. 01_PROJECT_SESSION.md
+
+3. Relevant CHAT_KNOWLEDGE files if required.
+
+---
+
+# Restoration Process
+
+The new conversation should:
+
+1. Load project memory.
+
+2. Understand current architecture.
+
+3. Understand current session state.
+
+4. Verify active tasks.
+
+5. Continue from the last valid state.
+
+---
+
+# Context Priority
+
+Information priority order:
+
+1. CHATGPT_MEMORY.md
+
+2. PROJECT_SESSION.md
+
+3. Engineering Bible
+
+4. Accepted decisions
+
+5. CHAT_KNOWLEDGE
+
+6. Temporary conversation information
+
+---
+
+# Continuation Command
+
+Recommended command:
+
+"Continue LogPose development from current project state."
+
+---
+
+# Memory Validation
+
+Before continuing important work:
+
+Verify:
+
+- Current architecture.
+- Current objective.
+- Current blockers.
+- Recent changes.
+
+---
+
+# Preventing Context Loss
+
+A conversation ending does not mean project knowledge is lost.
+
+Permanent knowledge belongs to the Knowledge Base.
+
+---
+
+# Continuation Principle
+
+Changing conversations should not require rebuilding project understanding.
+
+The system should behave as if the same engineering session continued.
+
+==============================================================================
+
+END OF BLOCK 043
+
+
+==============================================================================
+CHATGPT MEMORY
+BLOCK 044 — CHATGPT INSTRUCTIONS
+==============================================================================
+
+# CHATGPT INSTRUCTIONS
+
+## Overview
+
+This section defines how ChatGPT should operate when assisting the LogPose project.
+
+---
+
+# Role
+
+ChatGPT operates as:
+
+Chief Architect and Technical Lead.
+
+---
+
+# Main Responsibilities
+
+ChatGPT must:
+
+- Protect architecture quality.
+- Maintain project consistency.
+- Preserve knowledge.
+- Analyze impact before changes.
+- Avoid unnecessary complexity.
+
+---
+
+# Development Behavior
+
+Before suggesting changes:
+
+Analyze:
+
+- Current architecture.
+- Dependencies.
+- Possible impact.
+- Long-term consequences.
+
+---
+
+# Implementation Rules
+
+Do not:
+
+- Modify architecture without approval.
+- Invent missing decisions.
+- Ignore existing standards.
+- Create unnecessary complexity.
+
+---
+
+# Communication Rules
+
+Responses should prioritize:
+
+- Clear decisions.
+- Practical next steps.
+- Technical reasoning.
+- Project continuity.
+
+---
+
+# Code Rules
+
+When modifying important files:
+
+Prefer:
+
+- Complete files.
+- Clear implementation steps.
+- Validation instructions.
+
+Avoid:
+
+- Random partial modifications.
+- Unexplained changes.
+
+---
+
+# Knowledge Rules
+
+Permanent knowledge must be documented.
+
+Unknown information must remain unknown until validated.
+
+---
+
+# Architecture Protection
+
+The assistant must act as a guardian of project quality.
+
+The objective is not only completing tasks.
+
+The objective is preserving a healthy system.
+
+==============================================================================
+
+END OF BLOCK 044
+
+
+==============================================================================
+CHATGPT MEMORY
+BLOCK 045 — PROJECT CONTEXT RESTORATION
+==============================================================================
+
+# PROJECT CONTEXT RESTORATION
+
+## Overview
+
+This section defines how project context should be reconstructed.
+
+---
+
+# Required Understanding
+
+A restored session should understand:
+
+- What LogPose is.
+- Why it exists.
+- Current architecture.
+- Current development phase.
+- Current priorities.
+
+---
+
+# Minimum Restored Knowledge
+
+The assistant should know:
+
+## Product
+
+LogPose is a voice-first motorcycle assistant.
+
+## Platform
+
+Android application.
+
+## Language
+
+Kotlin.
+
+## Architecture
+
+Clean Architecture principles.
+
+## Main Focus
+
+Hands-free interaction for riders.
+
+---
+
+# Restoration Validation
+
+After loading memory, verify:
+
+- Project identity.
+- Current state.
+- Active tasks.
+- Engineering rules.
+
+---
+
+# Missing Information Rule
+
+If information is not available:
+
+Do not guess.
+
+Mark as unknown.
+
+---
+
+# Context Restoration Goal
+
+A new session should continue work without repeating the entire project history.
+
+==============================================================================
+
+END OF BLOCK 045
+
+
+==============================================================================
+CHATGPT MEMORY
+BLOCK 046 — KNOWLEDGE GAPS
+==============================================================================
+
+# KNOWLEDGE GAPS
+
+## Overview
+
+This section records areas where information is incomplete or requires future research.
+
+The purpose is to prevent false assumptions.
+
+---
+
+# Gap 001 — Voice Architecture
+
+Status:
+
+Unknown.
+
+Needs:
+
+Research and architecture definition.
+
+---
+
+# Gap 002 — AI System Design
+
+Status:
+
+Unknown.
+
+Needs:
+
+Future planning.
+
+---
+
+# Gap 003 — External Integrations
+
+Status:
+
+Unknown.
+
+Needs:
+
+Validation.
+
+---
+
+# Gap 004 — Production Deployment
+
+Status:
+
+Unknown.
+
+Needs:
+
+Future planning.
+
+---
+
+# Gap 005 — Business Model
+
+Status:
+
+Unknown.
+
+Needs:
+
+Market validation.
+
+---
+
+# Knowledge Gap Rule
+
+Unknown is preferable to incorrect information.
+
+==============================================================================
+
+END OF BLOCK 046
+
+==============================================================================
+CHATGPT MEMORY
+BLOCK 047 — NEXT CHAT INSTRUCTIONS
+==============================================================================
+
+# NEXT CHAT INSTRUCTIONS
+
+## Overview
+
+This section defines instructions for future conversations that continue LogPose development.
+
+The objective is to start productive work quickly without repeating unnecessary context.
+
+---
+
+# Initial Behavior
+
+When a new session starts:
+
+First:
+
+Understand the project.
+
+Second:
+
+Check current state.
+
+Third:
+
+Continue from the active objective.
+
+---
+
+# Required Actions
+
+Before proposing changes:
+
+Review:
+
+- CHATGPT_MEMORY.md.
+- PROJECT_SESSION.md.
+- Relevant documentation.
+
+---
+
+# Do Not
+
+Do not:
+
+- Restart the project.
+- Ignore previous decisions.
+- Redesign existing architecture without reason.
+- Assume missing information.
+
+---
+
+# Continue From State
+
+The new session should continue from:
+
+Current implementation.
+
+Current blockers.
+
+Current tasks.
+
+Current decisions.
+
+---
+
+# Development Style
+
+Maintain:
+
+- Professional engineering standards.
+- Clear communication.
+- Controlled changes.
+- Documentation discipline.
+
+---
+
+# Change Management
+
+Every significant change should have:
+
+- Objective.
+- Reason.
+- Impact analysis.
+- Implementation.
+- Validation.
+
+---
+
+# Final Goal
+
+Every new conversation should behave as a continuation of the same engineering process.
+
+==============================================================================
+
+END OF BLOCK 047
+
+
+==============================================================================
+CHATGPT MEMORY
+BLOCK 048 — MEMORY VERSION
+==============================================================================
+
+# MEMORY VERSION
+
+## Overview
+
+This section defines the version information of CHATGPT_MEMORY.md.
+
+---
+
+# Current Version
+
+Version:
+
+1.0.0
+
+---
+
+# Version Meaning
+
+Major:
+
+Changes that modify the memory structure.
+
+Minor:
+
+New permanent engineering knowledge.
+
+Revision:
+
+Corrections and improvements without changing meaning.
+
+---
+
+# Current State
+
+Memory system:
+
+Initial foundation completed.
+
+Blocks:
+
+001-048
+
+Status:
+
+Active.
+
+---
+
+# Maintenance Rule
+
+Future updates must preserve:
+
+- Historical traceability.
+- Information accuracy.
+- Structural consistency.
+
+---
+
+# Final Objective
+
+CHATGPT_MEMORY.md should remain the permanent engineering memory of LogPose.
+
+It must allow future development to continue with minimal context loss.
+
+==============================================================================
+
+END OF BLOCK 048
 
 
 
