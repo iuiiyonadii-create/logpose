@@ -7,10 +7,6 @@ import android.content.IntentFilter
 import com.uriel.logpose.core.compat.PermissionManager
 import com.uriel.logpose.data.preferences.DevicePreferences
 import com.uriel.logpose.domain.models.LogPoseDevice
-<<<<<<< HEAD
-=======
-import com.uriel.logpose.data.preferences.DevicePreferences
->>>>>>> 5191c07 (Fix THAMIS migration and restore clean build)
 
 class BluetoothRepository(
     context: Context
