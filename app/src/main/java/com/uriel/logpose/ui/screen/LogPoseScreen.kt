@@ -11,9 +11,9 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
-import com.uriel.logpose.bluetooth.BluetoothRepository
-import com.uriel.logpose.engine.LogPoseEngine
-import com.uriel.logpose.model.LogPoseDevice
+import com.uriel.logpose.features.bluetooth.BluetoothRepository
+import com.uriel.logpose.core.engine.LogPoseEngine
+import com.uriel.logpose.domain.models.LogPoseDevice
 
 @Composable
 fun LogPoseScreen(

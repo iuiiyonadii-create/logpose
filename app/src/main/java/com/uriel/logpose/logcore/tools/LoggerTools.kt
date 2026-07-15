@@ -1,7 +1,7 @@
 package com.uriel.logpose.logcore.tools
 
 import android.util.Log
-import com.uriel.logpose.compat.core.LogPoseLogger
+import com.uriel.logpose.core.compat.core.LogPoseLogger
 
 object LoggerTools {
 

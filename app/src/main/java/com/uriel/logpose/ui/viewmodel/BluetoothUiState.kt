@@ -1,6 +1,6 @@
 package com.uriel.logpose.ui.viewmodel
 
-import com.uriel.logpose.model.LogPoseDevice
+import com.uriel.logpose.domain.models.LogPoseDevice
 
 data class BluetoothUiState(
 

@@ -2,7 +2,7 @@ package com.uriel.logpose.ui.viewmodel
 
 import androidx.lifecycle.ViewModel
 import com.uriel.logpose.AppContainer
-import com.uriel.logpose.model.LogPoseDevice
+import com.uriel.logpose.domain.models.LogPoseDevice
 
 class BluetoothViewModel : ViewModel() {
 
