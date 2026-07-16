@@ -7,45 +7,31 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
-import com.uriel.logpose.features.bluetooth.BluetoothRepository
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.uriel.logpose.core.engine.LogPoseEngine
 import com.uriel.logpose.domain.models.LogPoseDevice
+import com.uriel.logpose.ui.viewmodel.BluetoothViewModel
+import com.uriel.logpose.ui.viewmodel.BluetoothViewModelFactory
 
 @Composable
 fun LogPoseScreen(
     modifier: Modifier = Modifier
 ) {
 
-    var bluetoothEnabled by remember {
-        mutableStateOf(false)
-    }
+    val viewModel: BluetoothViewModel =
+        viewModel(
+            factory = BluetoothViewModelFactory()
+        )
 
-    var devices by remember {
-        mutableStateOf<List<LogPoseDevice>>(emptyList())
-    }
-
-    var selectedDevice by remember {
-        mutableStateOf<LogPoseDevice?>(null)
-    }
-
-    val context = LocalContext.current
-
-    val bluetoothRepository = remember {
-        BluetoothRepository(context)
-    }
+    val uiState =
+        viewModel.uiState
 
     LaunchedEffect(Unit) {
-
-        bluetoothEnabled = bluetoothRepository.isBluetoothEnabled()
-
-        devices = bluetoothRepository.getPairedDevices()
-
-        selectedDevice = bluetoothRepository.getSelectedDevice()
-
+        viewModel.refresh()
     }
 
     Column(
@@ -59,28 +45,35 @@ fun LogPoseScreen(
             style = MaterialTheme.typography.headlineMedium
         )
 
-        Spacer(modifier = Modifier.height(20.dp))
+        Spacer(
+            modifier = Modifier.height(20.dp)
+        )
 
         Text(
             text = "Estado: ${LogPoseEngine.getState()}"
         )
 
         Text(
-            text = if (bluetoothEnabled)
-                "Bluetooth: 🟢 Encendido"
-            else
-                "Bluetooth: 🔴 Apagado"
+            text =
+                if (uiState.bluetoothEnabled)
+                    "Bluetooth: 🟢 Encendido"
+                else
+                    "Bluetooth: 🔴 Apagado"
         )
 
-        Spacer(modifier = Modifier.height(20.dp))
+        Spacer(
+            modifier = Modifier.height(20.dp)
+        )
 
         Button(
             onClick = {
 
                 if (LogPoseEngine.getState().name == "STOPPED") {
 
-                    selectedDevice?.let {
+                    uiState.selectedDevice?.let {
+
                         LogPoseEngine.onBluetoothConnected(it)
+
                     }
 
                 } else {
@@ -93,7 +86,7 @@ fun LogPoseScreen(
         ) {
 
             Text(
-                text = if (LogPoseEngine.getState().name == "STOPPED")
+                if (LogPoseEngine.getState().name == "STOPPED")
                     "Iniciar LogPose"
                 else
                     "Detener LogPose"
@@ -101,16 +94,16 @@ fun LogPoseScreen(
 
         }
 
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(
+            modifier = Modifier.height(16.dp)
+        )
 
         Button(
             onClick = {
 
-                bluetoothEnabled = bluetoothRepository.isBluetoothEnabled()
+                viewModel.refresh()
 
-                devices = bluetoothRepository.getPairedDevices()
-
-                selectedDevice = bluetoothRepository.getSelectedDevice()
+                viewModel.startDiscovery()
 
             }
         ) {
@@ -119,17 +112,15 @@ fun LogPoseScreen(
 
         }
 
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(
+            modifier = Modifier.height(16.dp)
+        )
 
         Button(
-            enabled = selectedDevice != null,
+            enabled = uiState.selectedDevice != null,
             onClick = {
 
-                selectedDevice?.let {
-
-                    bluetoothRepository.saveSelectedDevice(it.mac)
-
-                }
+                viewModel.saveSelectedDevice()
 
             }
         ) {
@@ -138,42 +129,62 @@ fun LogPoseScreen(
 
         }
 
-        Spacer(modifier = Modifier.height(24.dp))
+        Spacer(
+            modifier = Modifier.height(24.dp)
+        )
 
         LazyColumn {
 
-            items(devices) { device ->
+            items(uiState.devices) { device ->
 
-                val selected = selectedDevice?.mac == device.mac
+                DeviceRow(
+                    device = device,
+                    selected =
+                        uiState.selectedDevice?.mac == device.mac,
+                    onClick = {
 
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .clickable {
+                        viewModel.selectDevice(device)
 
-                            selectedDevice = device
-
-                        }
-                        .padding(vertical = 8.dp)
-                ) {
-
-                    Text(
-                        text = if (selected)
-                            "☑ ${device.name}"
-                        else
-                            "☐ ${device.name}"
-                    )
-
-                    Text(
-                        text = device.mac,
-                        style = MaterialTheme.typography.bodySmall
-                    )
-
-                }
+                    }
+                )
 
             }
 
         }
+
+    }
+
+}
+
+@Composable
+private fun DeviceRow(
+    device: LogPoseDevice,
+    selected: Boolean,
+    onClick: () -> Unit
+) {
+
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable(
+                onClick = onClick
+            )
+            .padding(
+                vertical = 8.dp
+            )
+    ) {
+
+        Text(
+            if (selected)
+                "☑ ${device.name}"
+            else
+                "☐ ${device.name}"
+        )
+
+        Text(
+            text = device.mac,
+            style = MaterialTheme.typography.bodySmall
+        )
 
     }
 

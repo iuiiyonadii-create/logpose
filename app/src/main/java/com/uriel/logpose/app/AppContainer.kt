@@ -2,6 +2,7 @@ package com.uriel.logpose
 
 import android.content.Context
 import com.uriel.logpose.features.bluetooth.BluetoothRepository
+import com.uriel.logpose.features.bluetooth.BluetoothSessionManager
 import com.uriel.logpose.logcore.providers.DefaultProviderRegistry
 import com.uriel.logpose.logcore.providers.ProviderModule
 import com.uriel.logpose.logcore.providers.ProviderRegistry
@@ -11,6 +12,9 @@ object AppContainer {
     private var initialized = false
 
     lateinit var bluetoothRepository: BluetoothRepository
+        private set
+
+    lateinit var bluetoothSessionManager: BluetoothSessionManager
         private set
 
     /**
@@ -36,6 +40,9 @@ object AppContainer {
 
         bluetoothRepository =
             BluetoothRepository(context.applicationContext)
+
+        bluetoothSessionManager =
+            BluetoothSessionManager(bluetoothRepository)
 
         providerModules.forEach { module ->
             module.registerInto(providerRegistry)

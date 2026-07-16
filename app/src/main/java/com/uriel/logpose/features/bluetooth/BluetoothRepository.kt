@@ -4,6 +4,7 @@ import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothDevice
 import android.content.Context
 import android.content.IntentFilter
+import android.util.Log
 import com.uriel.logpose.core.compat.PermissionManager
 import com.uriel.logpose.data.preferences.DevicePreferences
 import com.uriel.logpose.domain.models.LogPoseDevice
@@ -24,7 +25,15 @@ class BluetoothRepository(
 
     fun isBluetoothEnabled(): Boolean {
 
-        if (!PermissionManager.hasBluetoothPermission(appContext)) {
+        val permission =
+            PermissionManager.hasBluetoothPermission(appContext)
+
+        Log.d(
+            "LOGPOSE_PERMISSION",
+            "Bluetooth permission = $permission"
+        )
+
+        if (!permission) {
             return false
         }
 
@@ -34,7 +43,15 @@ class BluetoothRepository(
 
     fun getPairedDevices(): List<LogPoseDevice> {
 
-        if (!PermissionManager.hasBluetoothPermission(appContext)) {
+        val permission =
+            PermissionManager.hasBluetoothPermission(appContext)
+
+        Log.d(
+            "LOGPOSE_PERMISSION",
+            "PairedDevices permission = $permission"
+        )
+
+        if (!permission) {
             return emptyList()
         }
 
@@ -93,18 +110,12 @@ class BluetoothRepository(
 
     }
 
-    fun saveSelectedDevice(
-        mac: String
-    ) {
-
+    fun saveSelectedDevice(mac: String) {
         devicePreferences.saveSelectedDevice(mac)
-
     }
 
     fun getSelectedDeviceMac(): String? {
-
         return devicePreferences.getSelectedDevice()
-
     }
 
     fun getSelectedDevice(): LogPoseDevice? {
