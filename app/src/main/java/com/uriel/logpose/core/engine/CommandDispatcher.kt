@@ -1,10 +1,12 @@
 package com.uriel.logpose.core.engine
 
+import com.uriel.logpose.core.analytics.CommandAnalytics
 import com.uriel.logpose.core.compat.core.Command
 import com.uriel.logpose.core.compat.core.LogPoseLogger
 import com.uriel.logpose.core.context.CommandContext
 import com.uriel.logpose.core.context.CommandHistory
 import com.uriel.logpose.core.engine.registry.DefaultCommandRegistry
+import com.uriel.logpose.core.memory.CommandMemory
 
 object CommandDispatcher {
 
@@ -52,6 +54,8 @@ object CommandDispatcher {
                 success = executed
             )
         )
+
+        CommandMemory.remember(command)
 
         if (!executed) {
             LogPoseLogger.w(
