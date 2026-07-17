@@ -31,30 +31,30 @@ object CommandNormalizer {
         "un",
         "una",
         "unos",
-        "unas"
+        "unas",
+        "a"
     )
 
     fun normalize(text: String): String {
 
-        val normalized = Normalizer.normalize(
+        val cleaned = Normalizer.normalize(
             text,
             Normalizer.Form.NFD
         )
-            .replace(
-                "\\p{InCombiningDiacriticalMarks}+".toRegex(),
-                ""
-            )
+            .replace("\\p{InCombiningDiacriticalMarks}+".toRegex(), "")
             .lowercase()
             .replace("[^a-z0-9\\s]".toRegex(), " ")
             .replace("\\s+".toRegex(), " ")
             .trim()
 
-        return normalized
+        val normalized = cleaned
             .split(" ")
             .filter {
                 it.isNotBlank() &&
                         it !in stopWords
             }
             .joinToString(" ")
+
+        return CommandAliasRepository.resolve(normalized)
     }
 }
