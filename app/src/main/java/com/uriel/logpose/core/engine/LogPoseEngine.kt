@@ -2,9 +2,9 @@ package com.uriel.logpose.core.engine
 
 import com.uriel.logpose.core.compat.core.AppState
 import com.uriel.logpose.core.compat.core.LogPoseLogger
-import com.uriel.logpose.domain.models.LogPoseDevice
-import com.uriel.logpose.core.parser.CommandParser
 import com.uriel.logpose.core.parser.ParseResult
+import com.uriel.logpose.core.parser.pipeline.CommandPipeline
+import com.uriel.logpose.domain.models.LogPoseDevice
 
 object LogPoseEngine {
 
@@ -86,7 +86,7 @@ object LogPoseEngine {
 
         processing()
 
-        when (val result = CommandParser.parse(text)) {
+        when (val result = CommandPipeline.process(text)) {
 
             is ParseResult.Success -> {
                 CommandDispatcher.execute(result.command)
