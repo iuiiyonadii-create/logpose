@@ -2,6 +2,8 @@ package com.uriel.logpose.core.engine
 
 import com.uriel.logpose.core.compat.core.Command
 import com.uriel.logpose.core.compat.core.LogPoseLogger
+import com.uriel.logpose.core.context.CommandContext
+import com.uriel.logpose.core.context.CommandHistory
 import com.uriel.logpose.core.engine.registry.DefaultCommandRegistry
 
 object CommandDispatcher {
@@ -42,8 +44,19 @@ object CommandDispatcher {
 
         LogPoseLogger.i("Procesando: $command")
 
-        if (!registry.execute(command)) {
-            LogPoseLogger.w("No existe handler para ${command::class.simpleName}")
+        val executed = registry.execute(command)
+
+        CommandHistory.add(
+            CommandContext(
+                command = command,
+                success = executed
+            )
+        )
+
+        if (!executed) {
+            LogPoseLogger.w(
+                "No existe handler para ${command::class.simpleName}"
+            )
         }
     }
 }
