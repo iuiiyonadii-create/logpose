@@ -1,0 +1,37 @@
+{
+  "subi": "subir",
+  "subime": "subir",
+  "subir": "subir",
+  "aumenta": "subir",
+  "aumentar": "subir",
+  "incrementa": "subir",
+  "mas": "subir",
+  "más": "subir",
+
+  "baja": "bajar",
+  "bajame": "bajar",
+  "bajar": "bajar",
+  "disminui": "bajar",
+  "disminuir": "bajar",
+  "menos": "bajar",
+
+  "llama": "llamar",
+  "llamame": "llamar",
+  "llamar": "llamar",
+
+  "anda": "ir",
+  "andate": "ir",
+  "ir": "ir",
+  "ve": "ir",
+
+  "abre": "abrir",
+  "abrime": "abrir",
+  "abrir": "abrir",
+
+  "escucha": "escuchar",
+  "escuchame": "escuchar",
+
+  "para": "detener",
+  "detene": "detener",
+  "stop": "detener"
+}

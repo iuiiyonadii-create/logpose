@@ -1,0 +1,28 @@
+{
+  "play_music": [
+    "pone musica",
+    "poné música",
+    "abrir spotify",
+    "reproduci musica",
+    "reproducí música"
+  ],
+  "call": [
+    "llama",
+    "llamar"
+  ],
+  "navigate": [
+    "ir a",
+    "llevame a",
+    "llevame"
+  ],
+  "confirmation": [
+    "si",
+    "sí",
+    "ok",
+    "dale"
+  ],
+  "cancellation": [
+    "no",
+    "cancelar"
+  ]
+}
