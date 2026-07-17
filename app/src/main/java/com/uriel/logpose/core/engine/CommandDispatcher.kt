@@ -1,6 +1,5 @@
 package com.uriel.logpose.core.engine
 
-import com.uriel.logpose.core.analytics.CommandAnalytics
 import com.uriel.logpose.core.compat.core.Command
 import com.uriel.logpose.core.compat.core.LogPoseLogger
 import com.uriel.logpose.core.context.CommandContext

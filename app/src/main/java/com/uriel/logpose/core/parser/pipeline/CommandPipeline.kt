@@ -1,7 +1,9 @@
 package com.uriel.logpose.core.parser.pipeline
 
+import com.uriel.logpose.core.learning.LearningEngine
 import com.uriel.logpose.core.parser.CommandParser
 import com.uriel.logpose.core.parser.ParseResult
+import com.uriel.logpose.core.parser.confidence.ConfidenceEngine
 import com.uriel.logpose.core.parser.context.CommandContext
 import com.uriel.logpose.core.parser.context.CommandContextHolder
 import com.uriel.logpose.core.parser.intent.IntentResolver
@@ -9,29 +11,54 @@ import com.uriel.logpose.core.parser.normalization.CommandNormalizer
 
 object CommandPipeline {
 
-    private const val MIN_CONFIDENCE = 0.50f
+    private const val MIN_CONFIDENCE = 0.5f
 
     fun process(
         text: String
     ): ParseResult {
 
-        val normalized = CommandNormalizer.normalize(text)
+        val normalized =
+            CommandNormalizer.normalize(text)
 
         CommandContextHolder.update(
+
             CommandContext(
+
                 originalText = text,
+
                 normalizedText = normalized
             )
         )
 
-        val intent = IntentResolver.resolve(normalized)
+        val confidence =
+            ConfidenceEngine.evaluate(normalized)
 
-        if (intent.confidence < MIN_CONFIDENCE) {
+        if (confidence.confidence < MIN_CONFIDENCE) {
+
+            LearningEngine.registerFailure(text)
+
             return ParseResult.Unknown
         }
 
-        return CommandParser.parse(
-            intent.text
-        )
+        val intent =
+            IntentResolver.resolve(confidence.text)
+
+        val result =
+            CommandParser.parse(intent.text)
+
+        when (result) {
+
+            is ParseResult.Success ->
+                LearningEngine.registerSuccess(
+                    intent.text
+                )
+
+            ParseResult.Unknown ->
+                LearningEngine.registerFailure(
+                    intent.text
+                )
+        }
+
+        return result
     }
 }
