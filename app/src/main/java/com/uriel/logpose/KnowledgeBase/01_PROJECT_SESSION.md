@@ -233,3 +233,38 @@ Do not implement features without validated purpose.
 END OF PROJECT SESSION
 ==============================================================================
 
+# LogPose Architecture Decisions Update
+
+## Command Engine
+
+Decisión:
+Separar interpretación de comandos de ejecución.
+
+Arquitectura:
+
+VoiceManager
+↓
+LogPoseEngine
+↓
+CommandParser
+↓
+CommandDispatcher
+↓
+CommandRegistry
+↓
+Handlers
+
+
+Motivo:
+
+Permitir agregar nuevos comandos sin modificar el núcleo.
+
+---
+
+## Principios mantenidos
+
+- No duplicar módulos existentes.
+- Revisar arquitectura antes de crear archivos.
+- Separación por responsabilidad.
+- Core independiente de features.
+- IA futura debe integrarse encima del Command Engine, no dentro.
