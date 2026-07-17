@@ -3,6 +3,8 @@ package com.uriel.logpose.core.engine
 import com.uriel.logpose.core.compat.core.AppState
 import com.uriel.logpose.core.compat.core.LogPoseLogger
 import com.uriel.logpose.domain.models.LogPoseDevice
+import com.uriel.logpose.core.parser.CommandParser
+import com.uriel.logpose.core.parser.ParseResult
 
 object LogPoseEngine {
 
@@ -17,7 +19,6 @@ object LogPoseEngine {
         LogPoseLogger.i("Bluetooth conectado: ${device.name}")
 
         state = AppState.READY
-
     }
 
     fun onBluetoothDisconnected(device: LogPoseDevice) {
@@ -29,7 +30,6 @@ object LogPoseEngine {
         currentDevice = null
 
         state = AppState.STOPPED
-
     }
 
     fun startListening() {
@@ -39,7 +39,6 @@ object LogPoseEngine {
         state = AppState.LISTENING
 
         LogPoseLogger.i("Escuchando...")
-
     }
 
     fun stopListening() {
@@ -49,7 +48,6 @@ object LogPoseEngine {
         state = AppState.READY
 
         LogPoseLogger.i("Escucha detenida")
-
     }
 
     fun processing() {
@@ -57,7 +55,6 @@ object LogPoseEngine {
         state = AppState.PROCESSING
 
         LogPoseLogger.i("Procesando comando")
-
     }
 
     fun speaking() {
@@ -65,7 +62,6 @@ object LogPoseEngine {
         state = AppState.SPEAKING
 
         LogPoseLogger.i("Hablando")
-
     }
 
     fun ready() {
@@ -73,7 +69,6 @@ object LogPoseEngine {
         state = AppState.READY
 
         LogPoseLogger.i("Esperando comando")
-
     }
 
     fun stop() {
@@ -83,11 +78,29 @@ object LogPoseEngine {
         state = AppState.STOPPED
 
         LogPoseLogger.i("LogPose detenido")
+    }
 
+    fun processCommand(text: String) {
+
+        if (state != AppState.LISTENING) return
+
+        processing()
+
+        when (val result = CommandParser.parse(text)) {
+
+            is ParseResult.Success -> {
+                CommandDispatcher.execute(result.command)
+            }
+
+            ParseResult.Unknown -> {
+                LogPoseLogger.w("Comando no reconocido: $text")
+            }
+        }
+
+        ready()
     }
 
     fun getState(): AppState = state
 
     fun getCurrentDevice(): LogPoseDevice? = currentDevice
-
 }

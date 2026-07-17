@@ -2,6 +2,7 @@ package com.uriel.logpose.features.voice
 
 import com.uriel.logpose.core.compat.core.Command
 import com.uriel.logpose.core.engine.CommandDispatcher
+import com.uriel.logpose.core.engine.LogPoseEngine
 import com.uriel.logpose.core.compat.core.LogPoseLogger
 
 object VoiceManager {
@@ -19,7 +20,6 @@ object VoiceManager {
         CommandDispatcher.execute(
             Command.StartListening
         )
-
     }
 
     fun stop() {
@@ -33,9 +33,16 @@ object VoiceManager {
         CommandDispatcher.execute(
             Command.StopListening
         )
+    }
 
+    fun onTextReceived(text: String) {
+
+        if (!listening) return
+
+        LogPoseLogger.i("Texto recibido: $text")
+
+        LogPoseEngine.processCommand(text)
     }
 
     fun isListening(): Boolean = listening
-
 }
