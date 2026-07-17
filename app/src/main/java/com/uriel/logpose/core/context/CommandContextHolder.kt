@@ -1,4 +1,4 @@
-package com.uriel.logpose.core.parser.context
+package com.uriel.logpose.core.context
 
 object CommandContextHolder {
 
@@ -8,7 +8,8 @@ object CommandContextHolder {
         current = context
     }
 
-    fun current(): CommandContext? = current
+    fun current(): CommandContext? =
+        current
 
     fun clear() {
         current = null

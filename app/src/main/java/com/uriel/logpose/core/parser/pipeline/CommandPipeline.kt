@@ -4,8 +4,8 @@ import com.uriel.logpose.core.learning.LearningEngine
 import com.uriel.logpose.core.parser.CommandParser
 import com.uriel.logpose.core.parser.ParseResult
 import com.uriel.logpose.core.parser.confidence.ConfidenceEngine
-import com.uriel.logpose.core.parser.context.CommandContext
-import com.uriel.logpose.core.parser.context.CommandContextHolder
+import com.uriel.logpose.core.context.CommandContext
+import com.uriel.logpose.core.context.CommandContextHolder
 import com.uriel.logpose.core.parser.intent.IntentResolver
 import com.uriel.logpose.core.parser.normalization.CommandNormalizer
 
