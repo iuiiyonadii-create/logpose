@@ -1,9 +1,10 @@
 package com.uriel.logpose.features.voice
 
 import com.uriel.logpose.core.compat.core.Command
+import com.uriel.logpose.core.compat.core.LogPoseLogger
 import com.uriel.logpose.core.engine.CommandDispatcher
 import com.uriel.logpose.core.engine.LogPoseEngine
-import com.uriel.logpose.core.compat.core.LogPoseLogger
+import com.uriel.logpose.core.parser.normalization.CommandNormalizer
 
 object VoiceManager {
 
@@ -41,7 +42,11 @@ object VoiceManager {
 
         LogPoseLogger.i("Texto recibido: $text")
 
-        LogPoseEngine.processCommand(text)
+        val normalized = CommandNormalizer.normalize(text)
+
+        LogPoseLogger.i("Texto normalizado: $normalized")
+
+        LogPoseEngine.processCommand(normalized)
     }
 
     fun isListening(): Boolean = listening
