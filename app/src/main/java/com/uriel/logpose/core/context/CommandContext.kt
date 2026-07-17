@@ -1,9 +1,7 @@
-package com.uriel.logpose.core.context
-
-import com.uriel.logpose.core.compat.core.Command
+package com.uriel.logpose.core.parser.context
 
 data class CommandContext(
-    val command: Command,
-    val timestamp: Long = System.currentTimeMillis(),
-    val success: Boolean = true
+    val originalText: String,
+    val normalizedText: String,
+    val timestamp: Long = System.currentTimeMillis()
 )
