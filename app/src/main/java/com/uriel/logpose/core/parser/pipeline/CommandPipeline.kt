@@ -1,12 +1,15 @@
 package com.uriel.logpose.core.parser.pipeline
 
+import com.uriel.logpose.core.context.CommandContext
+import com.uriel.logpose.core.context.CommandContextHolder
 import com.uriel.logpose.core.learning.LearningEngine
 import com.uriel.logpose.core.parser.CommandParser
 import com.uriel.logpose.core.parser.ParseResult
 import com.uriel.logpose.core.parser.confidence.ConfidenceEngine
-import com.uriel.logpose.core.context.CommandContext
-import com.uriel.logpose.core.context.CommandContextHolder
 import com.uriel.logpose.core.parser.intent.IntentResolver
+import com.uriel.logpose.core.parser.multicommand.MultiCommandExecutor
+import com.uriel.logpose.core.parser.multicommand.MultiCommandParser
+import com.uriel.logpose.core.parser.multicommand.MultiCommandStatistics
 import com.uriel.logpose.core.parser.normalization.CommandNormalizer
 
 object CommandPipeline {
@@ -16,6 +19,22 @@ object CommandPipeline {
     fun process(
         text: String
     ): ParseResult {
+
+        if (MultiCommandParser.isMultiCommand(text)) {
+
+            val multiCommand =
+                MultiCommandParser.parse(text)
+
+            MultiCommandStatistics.register(
+                multiCommand
+            )
+
+            MultiCommandExecutor.execute(
+                multiCommand
+            )
+
+            return ParseResult.Unknown
+        }
 
         val normalized =
             CommandNormalizer.normalize(text)
