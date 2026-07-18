@@ -2,105 +2,212 @@ package com.uriel.logpose.core.engine
 
 import com.uriel.logpose.core.compat.core.AppState
 import com.uriel.logpose.core.compat.core.LogPoseLogger
-import com.uriel.logpose.core.parser.ParseResult
-import com.uriel.logpose.core.parser.pipeline.CommandPipeline
 import com.uriel.logpose.domain.models.LogPoseDevice
+
 
 object LogPoseEngine {
 
-    private var state = AppState.STOPPED
 
-    private var currentDevice: LogPoseDevice? = null
+    private var state =
+        AppState.STOPPED
 
-    fun onBluetoothConnected(device: LogPoseDevice) {
+
+
+    private var currentDevice: LogPoseDevice? =
+        null
+
+
+
+
+
+    fun onBluetoothConnected(
+        device: LogPoseDevice
+    ) {
+
 
         currentDevice = device
 
-        LogPoseLogger.i("Bluetooth conectado: ${device.name}")
 
-        state = AppState.READY
+        LogPoseLogger.i(
+            "Bluetooth conectado: ${device.name}"
+        )
+
+
+        state =
+            AppState.READY
+
     }
 
-    fun onBluetoothDisconnected(device: LogPoseDevice) {
 
-        if (currentDevice?.mac != device.mac) return
 
-        LogPoseLogger.i("Bluetooth desconectado: ${device.name}")
+
+
+    fun onBluetoothDisconnected(
+        device: LogPoseDevice
+    ) {
+
+
+        if (currentDevice?.mac != device.mac) {
+            return
+        }
+
+
+
+        LogPoseLogger.i(
+            "Bluetooth desconectado: ${device.name}"
+        )
+
+
 
         currentDevice = null
 
-        state = AppState.STOPPED
+
+
+        state =
+            AppState.STOPPED
+
     }
+
+
+
+
 
     fun startListening() {
 
-        if (state != AppState.READY) return
 
-        state = AppState.LISTENING
+        if (
+            state != AppState.READY
+        ) {
+            return
+        }
 
-        LogPoseLogger.i("Escuchando...")
+
+
+        state =
+            AppState.LISTENING
+
+
+
+        LogPoseLogger.i(
+            "Escuchando..."
+        )
+
     }
+
+
+
+
 
     fun stopListening() {
 
-        if (state != AppState.LISTENING) return
 
-        state = AppState.READY
+        if (
+            state != AppState.LISTENING
+        ) {
+            return
+        }
 
-        LogPoseLogger.i("Escucha detenida")
+
+
+        state =
+            AppState.READY
+
+
+
+        LogPoseLogger.i(
+            "Escucha detenida"
+        )
+
     }
+
+
+
+
 
     fun processing() {
 
-        state = AppState.PROCESSING
 
-        LogPoseLogger.i("Procesando comando")
+        state =
+            AppState.PROCESSING
+
+
+
+        LogPoseLogger.i(
+            "Procesando comando"
+        )
+
     }
+
+
+
+
 
     fun speaking() {
 
-        state = AppState.SPEAKING
 
-        LogPoseLogger.i("Hablando")
+        state =
+            AppState.SPEAKING
+
+
+
+        LogPoseLogger.i(
+            "Hablando"
+        )
+
     }
+
+
+
+
 
     fun ready() {
 
-        state = AppState.READY
 
-        LogPoseLogger.i("Esperando comando")
+        state =
+            AppState.READY
+
+
+
+        LogPoseLogger.i(
+            "Esperando comando"
+        )
+
     }
+
+
+
+
 
     fun stop() {
 
+
         currentDevice = null
 
-        state = AppState.STOPPED
 
-        LogPoseLogger.i("LogPose detenido")
+
+        state =
+            AppState.STOPPED
+
+
+
+        LogPoseLogger.i(
+            "LogPose detenido"
+        )
+
     }
 
-    fun processCommand(text: String) {
 
-        if (state != AppState.LISTENING) return
 
-        processing()
 
-        when (val result = CommandPipeline.process(text)) {
 
-            is ParseResult.Success -> {
-                CommandDispatcher.execute(result.command)
-            }
+    fun getState(): AppState =
+        state
 
-            ParseResult.Unknown -> {
-                LogPoseLogger.w("Comando no reconocido: $text")
-            }
-        }
 
-        ready()
-    }
 
-    fun getState(): AppState = state
 
-    fun getCurrentDevice(): LogPoseDevice? = currentDevice
+
+    fun getCurrentDevice(): LogPoseDevice? =
+        currentDevice
+
 }
