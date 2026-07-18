@@ -1,5 +1,6 @@
 package com.uriel.logpose.features.bluetooth
 
+import com.uriel.logpose.domain.models.LogPoseDevice
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -18,6 +19,10 @@ class BluetoothSessionManager(
         _state.asStateFlow()
 
     fun refresh() {
+        _state.value = buildState()
+    }
+
+    private fun buildState(): BluetoothState {
 
         val bluetoothEnabled =
             repository.isBluetoothEnabled()
@@ -28,46 +33,37 @@ class BluetoothSessionManager(
         val selected =
             repository.getSelectedDevice()
 
-        _state.value = BluetoothState(
+        return BluetoothState(
 
             bluetoothEnabled = bluetoothEnabled,
 
             discovering = false,
 
-            activeDevice = selected?.let {
-                FavoriteDevice(
-                    mac = it.mac,
-                    name = it.name,
-                    connected = true
-                )
-            },
+            activeDevice = selected?.let(::toFavoriteDevice),
 
             favorites = selected?.let {
-                listOf(
-                    FavoriteDevice(
-                        mac = it.mac,
-                        name = it.name,
-                        connected = true
-                    )
-                )
+                listOf(toFavoriteDevice(it))
             } ?: emptyList(),
 
             availableDevices =
                 devices.map {
-
                     FavoriteDevice(
                         mac = it.mac,
                         name = it.name,
-                        connected =
-                            selected?.mac == it.mac
+                        connected = selected?.mac == it.mac
                     )
-
                 },
 
             lastError = null
-
         )
-
     }
 
+    private fun toFavoriteDevice(
+        device: LogPoseDevice
+    ): FavoriteDevice =
+        FavoriteDevice(
+            mac = device.mac,
+            name = device.name,
+            connected = true
+        )
 }
