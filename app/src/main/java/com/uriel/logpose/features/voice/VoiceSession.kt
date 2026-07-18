@@ -6,11 +6,20 @@ import kotlinx.coroutines.flow.asStateFlow
 
 class VoiceSession {
 
-    private val _state = MutableStateFlow(VoiceState())
+    private val _state =
+        MutableStateFlow(
+            VoiceState.IDLE
+        )
 
-    val state: StateFlow<VoiceState> = _state.asStateFlow()
+    val state: StateFlow<VoiceState> =
+        _state.asStateFlow()
 
-    fun update(state: VoiceState) {
+    fun update(
+        state: VoiceState
+    ) {
         _state.value = state
     }
+
+    fun current(): VoiceState =
+        _state.value
 }
