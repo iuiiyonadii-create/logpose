@@ -8670,6 +8670,119 @@ This session confirmed:
 END OF BLOCK 049
 ==============================================================================
 
+BLOCK 050 — Beta Sprint Strategy
+Fecha
+
+2026-07-18
+
+Cambio de estrategia
+
+Se decidió detener temporalmente la auditoría profunda del proyecto.
+
+La prioridad pasa a ser:
+
+Construir una beta funcional lo antes posible.
+
+La optimización y el refactor profundo se realizarán después de obtener feedback de usuarios reales.
+
+Resultado de la auditoría
+
+Conclusiones:
+
+La arquitectura es sólida.
+No requiere reescritura.
+THAMIS mantiene su diseño.
+Clean Architecture aceptable.
+Modularización correcta.
+No existen bloqueantes para la beta.
+Nueva prioridad
+
+Todo desarrollo debe responder una única pregunta:
+
+¿Este cambio acerca la beta?
+
+Si la respuesta es NO:
+
+Mover al backlog.
+
+Nuevo flujo de trabajo
+
+Cada ticket seguirá el siguiente proceso:
+
+Archivo completo.
+Reemplazar.
+Compilar.
+Commit.
+Push.
+Continuar.
+
+No enviar fragmentos.
+
+Siempre archivos completos.
+
+Forma de trabajo
+
+Las respuestas deben ser extremadamente concisas.
+
+Evitar:
+
+teoría;
+explicaciones largas;
+ejemplos innecesarios.
+
+Responder únicamente con:
+
+nombre del archivo;
+código completo;
+commit;
+siguiente.
+Bluetooth
+
+Estado actual:
+
+BluetoothRepository estable.
+BluetoothSessionManager estable.
+No realizar más refactors salvo aparición de bugs.
+
+Bluetooth queda congelado hasta después de la beta.
+
+Roadmap Beta
+BluetoothReceiver
+THAMIS
+Notificaciones
+Música
+Llamadas
+GPS
+Beta interna
+Pruebas con repartidores
+Correcciones
+Beta pública
+Filosofía
+
+Se adopta un enfoque Startup.
+
+Primero:
+
+validar.
+
+Después:
+
+optimizar.
+Principio
+
+No realizar optimizaciones prematuras.
+
+No realizar refactors sin beneficio inmediato.
+
+Toda modificación debe aportar directamente a:
+
+estabilidad;
+funcionalidad;
+lanzamiento de la beta.
+Objetivo
+
+Tener una beta usable en aproximadamente 1–2 días para comenzar pruebas reales con repartidores.
+
 Arquitectura:
 
 VoiceManager

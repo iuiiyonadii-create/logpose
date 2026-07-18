@@ -4,9 +4,9 @@ Version
 
 <<<<<<< HEAD
 v0.6.0
-=======
+
 v0.7.0
->>>>>>> 5191c07 (Fix THAMIS migration and restore clean build)
+
 
 ------------------------------------------------------------------------------
 
@@ -18,10 +18,10 @@ Architecture
 
 <<<<<<< HEAD
 Frozen
-=======
+
 Frozen (governance: engineering/ is the sole authoritative source, effective
 v0.6.1 — see engineering/90_Legacy/README.md)
->>>>>>> 5191c07 (Fix THAMIS migration and restore clean build)
+
 
 ------------------------------------------------------------------------------
 
@@ -34,7 +34,7 @@ Completed
 
 ✔ Git Integration
 
-=======
+
 ✔ LogCore Tools (implementation complete; documentation debt tracked)
 
 ✔ LogProbe (implementation complete; documentation debt tracked)
@@ -45,7 +45,7 @@ Completed
 
 ✔ LogCore Providers (implementation complete — see below)
 
->>>>>>> 5191c07 (Fix THAMIS migration and restore clean build)
+
 ------------------------------------------------------------------------------
 
 Current Module
@@ -56,9 +56,9 @@ LogCore Providers
 Status
 
 In Development
-=======
+
 None — awaiting selection of next Pending Module.
->>>>>>> 5191c07 (Fix THAMIS migration and restore clean build)
+
 
 ------------------------------------------------------------------------------
 
@@ -88,11 +88,11 @@ Compile.
 Freeze.
 
 Continue with the next module.
-=======
+
 Pick the next module from Pending Modules and repeat the Phase 1-6
 lifecycle (Analysis -> Design -> Implementation -> Review -> Documentation
 -> Delivery).
->>>>>>> 5191c07 (Fix THAMIS migration and restore clean build)
+
 
 ------------------------------------------------------------------------------
 
@@ -102,7 +102,7 @@ Frozen Modules
 LogProbe
 
 LogCore Tools
-=======
+
 LogProbe (implementation)
 
 LogCore Tools (implementation)
@@ -111,7 +111,7 @@ Note: neither is formally Frozen per MASTER_PROMPT's Freeze Criteria yet —
 see engineering/90_Legacy/ARCHITECTURE_DEBT.md, item 3. Implementation is
 complete and untouched; only the required ARCHITECTURE.md/CHANGELOG.md/
 FREEZE.md documents are missing. Tracked as debt, not blocking.
->>>>>>> 5191c07 (Fix THAMIS migration and restore clean build)
+
 
 ------------------------------------------------------------------------------
 
@@ -121,7 +121,7 @@ Next Milestone
 Providers Complete
 =======
 Select and begin the next Pending Module.
->>>>>>> 5191c07 (Fix THAMIS migration and restore clean build)
+
 
 ------------------------------------------------------------------------------
 
@@ -135,13 +135,12 @@ Overall
 LogCore
 
 35%
-=======
+
 32%
 
 LogCore
 
 70%
->>>>>>> 5191c07 (Fix THAMIS migration and restore clean build)
 
 LogProbe
 
@@ -237,7 +236,7 @@ module.
 
 ------------------------------------------------------------------------------
 END OF DOCUMENT
->>>>>>> 5191c07 (Fix THAMIS migration and restore clean build)
+
 
 # Current Project State Update
 
