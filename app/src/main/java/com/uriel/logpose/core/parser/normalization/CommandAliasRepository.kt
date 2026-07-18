@@ -8,11 +8,13 @@ object CommandAliasRepository {
         "escucha" to "escuchar",
         "escuchar" to "escuchar",
         "escuchame" to "escuchar",
+        "escúchame" to "escuchar",
         "oir" to "escuchar",
         "oye" to "escuchar",
 
         // Detener
         "detene" to "detener",
+        "detené" to "detener",
         "detener" to "detener",
         "para" to "detener",
         "parar" to "detener",
@@ -22,29 +24,39 @@ object CommandAliasRepository {
         "llama" to "llamar",
         "llamar" to "llamar",
         "llamame" to "llamar",
+        "llamamele" to "llamar",
+        "llamalo" to "llamar",
 
         // Navegar
         "anda" to "ir",
         "andar" to "ir",
-        "ir" to "ir",
         "ve" to "ir",
         "vamos" to "ir",
         "dirigite" to "ir",
-
-        // Música
-        "musica" to "musica",
-        "spotify" to "spotify",
+        "dirigitea" to "ir",
+        "dirigirse" to "ir",
+        "ir" to "ir",
 
         // Abrir
         "abre" to "abrir",
         "abrime" to "abrir",
-        "abrir" to "abrir"
+        "abrir" to "abrir",
+
+        // Música
+        "musica" to "musica",
+        "música" to "musica",
+        "spotify" to "spotify",
+
+        // Conectores frecuentes
+        "al" to "a",
+        "del" to "de"
     )
 
     fun resolve(text: String): String {
 
         return text
-            .split(" ")
+            .split(Regex("\\s+"))
+            .filter(String::isNotBlank)
             .joinToString(" ") { word ->
                 aliases[word] ?: word
             }
