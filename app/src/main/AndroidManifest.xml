@@ -1,74 +1,57 @@
 <?xml version="1.0" encoding="utf-8"?>
+
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <!-- Speech Recognition -->
-    <uses-permission android:name="android.permission.RECORD_AUDIO" />
 
-    <!-- Android 11 e inferiores -->
-    <uses-permission android:name="android.permission.BLUETOOTH" />
-    <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" />
-    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
-
-    <!-- Android 12+ -->
     <uses-permission android:name="android.permission.BLUETOOTH_CONNECT" />
+
     <uses-permission android:name="android.permission.BLUETOOTH_SCAN" />
 
-    <queries>
-        <intent>
-            <action android:name="android.speech.RecognitionService" />
-        </intent>
-    </queries>
+    <uses-permission android:name="android.permission.RECORD_AUDIO" />
+
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+
+
 
     <application
+
         android:allowBackup="true"
+
+        android:label="LogPose"
+
         android:icon="@mipmap/ic_launcher"
-        android:label="@string/app_name"
-        android:roundIcon="@mipmap/ic_launcher_round"
+
         android:supportsRtl="true"
+
         android:theme="@style/Theme.LogPose">
 
+
+
         <activity
-            android:name=".MainActivity"
+
+            android:name=".core.app.MainActivity"
+
             android:exported="true">
 
+
+
             <intent-filter>
+
                 <action android:name="android.intent.action.MAIN" />
+
                 <category android:name="android.intent.category.LAUNCHER" />
+
             </intent-filter>
+
+
 
         </activity>
 
-        <activity
-            android:name=".logprobe.ui.ProbeActivity"
-            android:exported="false"
-            android:label="LogProbe" />
 
-        <service
-            android:name=".logprobe.accessibility.AccessibilityProbeService"
-            android:permission="android.permission.BIND_ACCESSIBILITY_SERVICE"
-            android:exported="false">
-
-            <intent-filter>
-                <action android:name="android.accessibilityservice.AccessibilityService" />
-            </intent-filter>
-
-            <meta-data
-                android:name="android.accessibilityservice"
-                android:resource="@xml/logprobe_accessibility_config" />
-
-        </service>
-
-        <service
-            android:name=".logprobe.notification.NotificationProbeService"
-            android:permission="android.permission.BIND_NOTIFICATION_LISTENER_SERVICE"
-            android:exported="false">
-
-            <intent-filter>
-                <action android:name="android.service.notification.NotificationListenerService" />
-            </intent-filter>
-
-        </service>
 
     </application>
+
 
 </manifest>

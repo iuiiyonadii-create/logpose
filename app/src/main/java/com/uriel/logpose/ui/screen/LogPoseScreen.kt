@@ -17,6 +17,7 @@ import com.uriel.logpose.domain.models.LogPoseDevice
 import com.uriel.logpose.ui.viewmodel.BluetoothViewModel
 import com.uriel.logpose.ui.viewmodel.BluetoothViewModelFactory
 
+
 @Composable
 fun LogPoseScreen(
     modifier: Modifier = Modifier
@@ -27,12 +28,13 @@ fun LogPoseScreen(
             factory = BluetoothViewModelFactory()
         )
 
-    val uiState =
-        viewModel.uiState
+    val uiState = viewModel.uiState
+
 
     LaunchedEffect(Unit) {
         viewModel.refresh()
     }
+
 
     Column(
         modifier = modifier
@@ -40,18 +42,22 @@ fun LogPoseScreen(
             .padding(24.dp)
     ) {
 
+
         Text(
             text = "LogPose",
             style = MaterialTheme.typography.headlineMedium
         )
 
+
         Spacer(
             modifier = Modifier.height(20.dp)
         )
 
+
         Text(
             text = "Estado: ${LogPoseEngine.getState()}"
         )
+
 
         Text(
             text =
@@ -61,18 +67,24 @@ fun LogPoseScreen(
                     "Bluetooth: 🔴 Apagado"
         )
 
+
         Spacer(
             modifier = Modifier.height(20.dp)
         )
+
 
         Button(
             onClick = {
 
                 if (LogPoseEngine.getState().name == "STOPPED") {
 
-                    uiState.selectedDevice?.let {
+                    val device = uiState.selectedDevice
 
-                        LogPoseEngine.onBluetoothConnected(it)
+                    if (device != null) {
+
+                        LogPoseEngine.onBluetoothConnected(
+                            device
+                        )
 
                     }
 
@@ -85,18 +97,22 @@ fun LogPoseScreen(
             }
         ) {
 
+
             Text(
-                if (LogPoseEngine.getState().name == "STOPPED")
-                    "Iniciar LogPose"
-                else
-                    "Detener LogPose"
+                text =
+                    if (LogPoseEngine.getState().name == "STOPPED")
+                        "Iniciar LogPose"
+                    else
+                        "Detener LogPose"
             )
 
         }
 
+
         Spacer(
             modifier = Modifier.height(16.dp)
         )
+
 
         Button(
             onClick = {
@@ -108,13 +124,17 @@ fun LogPoseScreen(
             }
         ) {
 
-            Text("Buscar dispositivos")
+            Text(
+                text = "Buscar dispositivos"
+            )
 
         }
+
 
         Spacer(
             modifier = Modifier.height(16.dp)
         )
+
 
         Button(
             enabled = uiState.selectedDevice != null,
@@ -125,17 +145,25 @@ fun LogPoseScreen(
             }
         ) {
 
-            Text("Guardar dispositivo")
+            Text(
+                text = "Guardar dispositivo"
+            )
 
         }
+
 
         Spacer(
             modifier = Modifier.height(24.dp)
         )
 
+
         LazyColumn {
 
-            items(uiState.devices) { device ->
+
+            items(
+                items = uiState.devices
+            ) { device ->
+
 
                 DeviceRow(
                     device = device,
@@ -143,18 +171,24 @@ fun LogPoseScreen(
                         uiState.selectedDevice?.mac == device.mac,
                     onClick = {
 
-                        viewModel.selectDevice(device)
+                        viewModel.selectDevice(
+                            device
+                        )
 
                     }
                 )
+
 
             }
 
         }
 
+
     }
 
 }
+
+
 
 @Composable
 private fun DeviceRow(
@@ -162,6 +196,7 @@ private fun DeviceRow(
     selected: Boolean,
     onClick: () -> Unit
 ) {
+
 
     Column(
         modifier = Modifier
@@ -174,18 +209,23 @@ private fun DeviceRow(
             )
     ) {
 
+
         Text(
-            if (selected)
-                "☑ ${device.name}"
-            else
-                "☐ ${device.name}"
+            text =
+                if (selected)
+                    "☑ ${device.name}"
+                else
+                    "☐ ${device.name}"
         )
+
 
         Text(
             text = device.mac,
             style = MaterialTheme.typography.bodySmall
         )
 
+
     }
+
 
 }

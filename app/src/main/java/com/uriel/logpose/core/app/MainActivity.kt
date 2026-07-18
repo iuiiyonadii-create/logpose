@@ -1,5 +1,6 @@
 package com.uriel.logpose.core.app
 
+
 import android.Manifest
 import android.os.Build
 import android.os.Bundle
@@ -21,10 +22,9 @@ class MainActivity : ComponentActivity() {
     private val permissionLauncher =
         registerForActivityResult(
             ActivityResultContracts.RequestMultiplePermissions()
-        ) { }
+        ) {
 
-
-
+        }
 
 
     override fun onCreate(
@@ -36,12 +36,13 @@ class MainActivity : ComponentActivity() {
         )
 
 
+        /*
+         * Inicializar dependencias globales
+         * antes de crear Compose.
+         */
         AppContainer.initialize(
             applicationContext
         )
-
-
-        requestPermissions()
 
 
         enableEdgeToEdge()
@@ -56,7 +57,8 @@ class MainActivity : ComponentActivity() {
 
                 Scaffold(
 
-                    modifier = Modifier.fillMaxSize()
+                    modifier =
+                        Modifier.fillMaxSize()
 
                 ) { innerPadding ->
 
@@ -79,6 +81,8 @@ class MainActivity : ComponentActivity() {
 
         }
 
+
+        requestPermissions()
 
     }
 

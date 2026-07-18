@@ -4,141 +4,102 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.uriel.logpose.core.app.AppContainer
 import com.uriel.logpose.domain.models.LogPoseDevice
+import kotlinx.coroutines.launch
+
 
 class BluetoothViewModel : ViewModel() {
 
-    private val repository = AppContainer.bluetoothRepository
 
-    var uiState by mutableStateOf(BluetoothUiState())
+    private val repository =
+        AppContainer.bluetoothRepository
+
+
+    var uiState by mutableStateOf(
+        BluetoothUiState()
+    )
         private set
 
+
     init {
+
         refresh()
+
     }
+
 
     fun refresh() {
 
-        uiState = uiState.copy(
-            bluetoothEnabled = repository.isBluetoothEnabled(),
-            devices = repository.getPairedDevices(),
-            selectedDevice = repository.getSelectedDevice(),
-            discovering = false,
-            loading = false,
-            error = null
-        )
+        viewModelScope.launch {
 
-    }
 
-    fun startDiscovery() {
+            uiState = uiState.copy(
+                loading = true
+            )
 
-        val devices =
-            repository.getPairedDevices().toMutableList()
 
-        uiState = uiState.copy(
-            discovering = true,
-            devices = devices
-        )
+            try {
 
-        repository.startDiscovery(
 
-            onDeviceFound = { device ->
+                val devices =
+                    repository.getPairedDevices()
 
-                if (devices.none { it.mac == device.mac }) {
 
-                    devices.add(device)
-
-                    uiState = uiState.copy(
-                        devices = devices.sortedBy { it.name }
+                uiState =
+                    uiState.copy(
+                        devices = devices,
+                        bluetoothEnabled = true,
+                        loading = false
                     )
 
-                }
 
-            },
+            } catch (e: Exception) {
 
-            onFinished = {
 
-                uiState = uiState.copy(
-                    discovering = false
-                )
-
-            },
-
-            onDeviceConnected = { connected ->
-
-                val updated = devices.map {
-
-                    if (it.mac == connected.mac)
-                        it.copy(connected = true)
-                    else
-                        it.copy(connected = false)
-
-                }
-
-                uiState = uiState.copy(
-                    devices = updated,
-                    selectedDevice = updated.find {
-                        it.mac == connected.mac
-                    }
-                )
-
-            },
-
-            onDeviceDisconnected = { disconnected ->
-
-                val updated = devices.map {
-
-                    if (it.mac == disconnected.mac)
-                        it.copy(connected = false)
-                    else
-                        it
-
-                }
-
-                uiState = uiState.copy(
-                    devices = updated
-                )
+                uiState =
+                    uiState.copy(
+                        loading = false,
+                        error = e.message
+                    )
 
             }
 
-        )
-
-    }
-
-    fun stopDiscovery() {
-
-        repository.stopDiscovery()
-
-        uiState = uiState.copy(
-            discovering = false
-        )
-
-    }
-
-    fun selectDevice(device: LogPoseDevice) {
-
-        uiState = uiState.copy(
-            selectedDevice = device
-        )
-
-    }
-
-    fun saveSelectedDevice() {
-
-        uiState.selectedDevice?.let {
-
-            repository.saveSelectedDevice(it.mac)
 
         }
 
     }
 
-    override fun onCleared() {
 
-        repository.stopDiscovery()
+    fun startDiscovery() {
 
-        super.onCleared()
+        refresh()
+
+    }
+
+
+    fun selectDevice(
+        device: LogPoseDevice
+    ) {
+
+        uiState =
+            uiState.copy(
+                selectedDevice = device
+            )
+
+    }
+
+
+    fun saveSelectedDevice() {
+
+        uiState.selectedDevice?.let { device ->
+
+            repository.saveSelectedDevice(
+                device.mac
+            )
+
+        }
 
     }
 
