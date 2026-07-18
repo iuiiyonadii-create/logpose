@@ -20,7 +20,9 @@ object CommandParser {
         return when {
 
 
-            value == "escuchar" ->
+            value == "escuchar" ||
+
+                    value == "iniciar logpose" ->
 
                 ParseResult.Success(
                     Command.StartListening
@@ -28,7 +30,11 @@ object CommandParser {
 
 
 
-            value == "detener" ->
+            value == "detener" ||
+
+                    value == "parar" ||
+
+                    value == "detener logpose" ->
 
                 ParseResult.Success(
                     Command.StopListening
@@ -54,7 +60,9 @@ object CommandParser {
 
 
 
-            value.startsWith("abrir musica ") ->
+            value.startsWith("abrir musica ") ||
+
+                    value.startsWith("abrir música ") ->
 
                 parseMusic(
                     value
@@ -186,9 +194,8 @@ object CommandParser {
 
         val app =
             value
-                .removePrefix(
-                    "abrir musica"
-                )
+                .removePrefix("abrir musica")
+                .removePrefix("abrir música")
                 .trim()
 
 

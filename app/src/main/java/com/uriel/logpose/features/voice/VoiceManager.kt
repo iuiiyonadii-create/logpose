@@ -1,18 +1,15 @@
 package com.uriel.logpose.features.voice
 
 import com.uriel.logpose.core.commands.CommandProcessor
-import com.uriel.logpose.core.engine.CommandDispatcher
 import com.uriel.logpose.core.compat.core.Command
 import com.uriel.logpose.core.compat.core.LogPoseLogger
+import com.uriel.logpose.core.engine.CommandDispatcher
 
 
 object VoiceManager {
 
 
-    private var listening = false
-
-
-    private var voiceRepository: VoiceRepository? = null
+    private lateinit var voiceRepository: VoiceRepository
 
 
 
@@ -36,26 +33,18 @@ object VoiceManager {
     fun start() {
 
 
-        if (listening) return
-
-
-
-        if (voiceRepository == null) {
-
-            LogPoseLogger.w(
-                "VoiceRepository no inicializado"
-            )
+        if (
+            voiceRepository.current()
+            == VoiceState.LISTENING
+        ) {
 
             return
+
         }
 
 
 
-        listening = true
-
-
-
-        voiceRepository?.startListening()
+        voiceRepository.startListening()
 
 
 
@@ -78,15 +67,18 @@ object VoiceManager {
     fun stop() {
 
 
-        if (!listening) return
+        if (
+            voiceRepository.current()
+            != VoiceState.LISTENING
+        ) {
+
+            return
+
+        }
 
 
 
-        listening = false
-
-
-
-        voiceRepository?.stopListening()
+        voiceRepository.stopListening()
 
 
 
@@ -111,13 +103,30 @@ object VoiceManager {
     ) {
 
 
-        if (!listening) return
+        if (
+            voiceRepository.current()
+            != VoiceState.LISTENING
+        ) {
+
+            return
+
+        }
+
+
 
 
 
         LogPoseLogger.i(
             "Texto recibido: $text"
         )
+
+
+
+
+
+        voiceRepository.processing()
+
+
 
 
 
@@ -128,9 +137,27 @@ object VoiceManager {
 
 
 
+
+
         CommandDispatcher.execute(
             command
         )
+
+
+
+
+
+        if (
+            command != Command.Unknown
+        ) {
+
+            voiceRepository.startListening()
+
+        } else {
+
+            voiceRepository.error()
+
+        }
 
     }
 
@@ -138,8 +165,15 @@ object VoiceManager {
 
 
 
-    fun isListening(): Boolean =
+    fun isListening(): Boolean {
 
-        listening
+        return (
+                voiceRepository.current()
+                        == VoiceState.LISTENING
+                )
+
+    }
+
+
 
 }
