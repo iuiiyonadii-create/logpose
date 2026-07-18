@@ -2,46 +2,45 @@ package com.uriel.logpose.core.parser.multicommand
 
 object CommandSeparator {
 
-    private val separators = SeparatorType.entries
+    private val separators =
+        SeparatorType.entries
+            .sortedByDescending { it.value.length }
 
     fun split(
-
         text: String
-
     ): List<String> {
 
         var result = text
 
-        separators.forEach {
+        separators.forEach { separator ->
+
+            val regex = Regex(
+                Regex.escape(separator.value),
+                RegexOption.IGNORE_CASE
+            )
 
             result = result.replace(
-                it.value,
+                regex,
                 "|"
             )
         }
 
         return result
             .split("|")
-            .map {
-                it.trim()
-            }
-            .filter {
-                it.isNotBlank()
-            }
+            .map(String::trim)
+            .filter(String::isNotBlank)
     }
 
     fun containsMultipleCommands(
-
         text: String
-
     ): Boolean {
 
-        return separators.any {
+        return separators.any { separator ->
 
-            text.contains(
-                it.value,
-                ignoreCase = true
-            )
+            Regex(
+                Regex.escape(separator.value),
+                RegexOption.IGNORE_CASE
+            ).containsMatchIn(text)
         }
     }
 }
