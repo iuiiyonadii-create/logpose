@@ -12,7 +12,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import com.uriel.logpose.AppContainer
+import com.uriel.logpose.core.app.AppContainer
 
 /**
  * Skeleton de la pantalla de Ajustes (Sprint 06, Settings Core Foundation).
