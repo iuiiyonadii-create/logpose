@@ -23,12 +23,6 @@ class BluetoothViewModel : ViewModel() {
         private set
 
 
-    init {
-
-        refresh()
-
-    }
-
 
     fun refresh() {
 
@@ -36,7 +30,8 @@ class BluetoothViewModel : ViewModel() {
 
 
             uiState = uiState.copy(
-                loading = true
+                loading = true,
+                error = null
             )
 
 
@@ -47,29 +42,50 @@ class BluetoothViewModel : ViewModel() {
                     repository.getPairedDevices()
 
 
-                uiState =
-                    uiState.copy(
-                        devices = devices,
-                        bluetoothEnabled = true,
-                        loading = false
-                    )
+
+                val savedMac =
+                    repository.getSelectedDeviceMac()
+
+
+
+                val selectedDevice =
+                    devices.find {
+                        it.mac == savedMac
+                    }
+
+
+
+                uiState = uiState.copy(
+
+                    bluetoothEnabled =
+                        repository.isBluetoothEnabled(),
+
+                    devices = devices,
+
+                    selectedDevice = selectedDevice,
+
+                    loading = false
+
+                )
 
 
             } catch (e: Exception) {
 
 
-                uiState =
-                    uiState.copy(
-                        loading = false,
-                        error = e.message
-                    )
+                uiState = uiState.copy(
+
+                    loading = false,
+
+                    error = e.message
+
+                )
 
             }
-
 
         }
 
     }
+
 
 
     fun startDiscovery() {
@@ -79,9 +95,11 @@ class BluetoothViewModel : ViewModel() {
     }
 
 
+
     fun selectDevice(
         device: LogPoseDevice
     ) {
+
 
         uiState =
             uiState.copy(
@@ -91,16 +109,21 @@ class BluetoothViewModel : ViewModel() {
     }
 
 
+
     fun saveSelectedDevice() {
 
+
         uiState.selectedDevice?.let { device ->
+
 
             repository.saveSelectedDevice(
                 device.mac
             )
 
+
         }
 
     }
+
 
 }
