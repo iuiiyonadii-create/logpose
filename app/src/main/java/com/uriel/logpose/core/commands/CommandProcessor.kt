@@ -2,63 +2,56 @@ package com.uriel.logpose.core.commands
 
 import com.uriel.logpose.core.compat.core.Command
 import com.uriel.logpose.core.compat.core.LogPoseLogger
+import com.uriel.logpose.core.parser.ParseResult
+import com.uriel.logpose.core.parser.pipeline.CommandPipeline
+
 
 object CommandProcessor {
 
-    fun process(text: String): Command {
 
-        val command = text
-            .trim()
-            .lowercase()
+    fun process(
+        text: String
+    ): Command {
 
-        LogPoseLogger.i("Procesando: $command")
 
-        return when {
+        LogPoseLogger.i(
+            "Procesando: $text"
+        )
 
-            command == "escuchar" ->
-                Command.StartListening
 
-            command == "detener" ->
-                Command.StopListening
 
-            command.startsWith("spotify") ->
-                Command.PlayMusic("Spotify")
+        return when (
+            val result =
+                CommandPipeline.process(text)
+        ) {
 
-            command.startsWith("música") ->
-                Command.PlayMusic("Spotify")
 
-            command.startsWith("musica") ->
-                Command.PlayMusic("Spotify")
 
-            command.startsWith("llamar") -> {
+            is ParseResult.Success -> {
 
-                val contact = command
-                    .removePrefix("llamar")
-                    .trim()
 
-                if (contact.isBlank()) {
-                    Command.Unknown
-                } else {
-                    Command.Call(contact)
-                }
+                LogPoseLogger.i(
+                    "Comando detectado: ${result.command}"
+                )
+
+
+                result.command
 
             }
 
-            command.startsWith("ir a") -> {
 
-                val destination = command
-                    .removePrefix("ir a")
-                    .trim()
 
-                if (destination.isBlank()) {
-                    Command.Unknown
-                } else {
-                    Command.Navigate(destination)
-                }
+            ParseResult.Unknown -> {
+
+
+                LogPoseLogger.w(
+                    "Comando no reconocido: $text"
+                )
+
+
+                Command.Unknown
 
             }
-
-            else -> Command.Unknown
 
         }
 
