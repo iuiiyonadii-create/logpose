@@ -1,13 +1,17 @@
 package com.uriel.logpose.features.voice
 
+import com.uriel.logpose.core.commands.CommandProcessor
 import com.uriel.logpose.core.compat.core.Command
 import com.uriel.logpose.core.compat.core.LogPoseLogger
 import com.uriel.logpose.core.engine.CommandDispatcher
-import com.uriel.logpose.core.engine.LogPoseEngine
+
 
 object VoiceManager {
 
+
     private var listening = false
+
+
 
     fun start() {
 
@@ -15,12 +19,16 @@ object VoiceManager {
 
         listening = true
 
-        LogPoseLogger.i("VoiceManager iniciado")
+        LogPoseLogger.i(
+            "VoiceManager iniciado"
+        )
 
         CommandDispatcher.execute(
             Command.StartListening
         )
     }
+
+
 
     fun stop() {
 
@@ -28,21 +36,43 @@ object VoiceManager {
 
         listening = false
 
-        LogPoseLogger.i("VoiceManager detenido")
+        LogPoseLogger.i(
+            "VoiceManager detenido"
+        )
 
         CommandDispatcher.execute(
             Command.StopListening
         )
     }
 
-    fun onTextReceived(text: String) {
+
+
+    fun onTextReceived(
+        text: String
+    ) {
 
         if (!listening) return
 
-        LogPoseLogger.i("Texto recibido: $text")
 
-        LogPoseEngine.processCommand(text)
+        LogPoseLogger.i(
+            "Texto recibido: $text"
+        )
+
+
+        val command =
+            CommandProcessor.process(text)
+
+
+
+        CommandDispatcher.execute(
+            command
+        )
+
     }
 
-    fun isListening(): Boolean = listening
+
+
+    fun isListening(): Boolean =
+        listening
+
 }
