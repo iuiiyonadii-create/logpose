@@ -2,6 +2,7 @@ package com.uriel.logpose.ui.viewmodel
 
 import com.uriel.logpose.domain.models.LogPoseDevice
 
+
 data class BluetoothUiState(
 
     val bluetoothEnabled: Boolean = false,
@@ -10,7 +11,11 @@ data class BluetoothUiState(
 
     val devices: List<LogPoseDevice> = emptyList(),
 
+    val discoveredDevices: List<LogPoseDevice> = emptyList(),
+
     val selectedDevice: LogPoseDevice? = null,
+
+    val savedDevice: LogPoseDevice? = null,
 
     val serviceRunning: Boolean = false,
 

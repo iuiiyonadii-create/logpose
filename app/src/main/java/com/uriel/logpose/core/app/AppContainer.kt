@@ -1,5 +1,6 @@
 package com.uriel.logpose.core.app
 
+
 import android.content.Context
 import com.uriel.logpose.data.preferences.SettingsPreferences
 import com.uriel.logpose.features.bluetooth.BluetoothRepository
@@ -12,26 +13,44 @@ import com.uriel.logpose.logcore.providers.ProviderModule
 import com.uriel.logpose.logcore.providers.ProviderRegistry
 
 
+
 object AppContainer {
 
 
+
     private var initialized = false
+
+
+
 
 
     lateinit var bluetoothRepository: BluetoothRepository
         private set
 
 
+
+
+
     lateinit var bluetoothSessionManager: BluetoothSessionManager
         private set
+
+
+
 
 
     lateinit var settingsManager: SettingsManager
         private set
 
 
+
+
+
     lateinit var voiceRepository: VoiceRepository
         private set
+
+
+
+
 
 
 
@@ -40,8 +59,16 @@ object AppContainer {
 
 
 
+
+
+
+
     private val providerModules: List<ProviderModule> =
         emptyList()
+
+
+
+
 
 
 
@@ -50,12 +77,19 @@ object AppContainer {
     ) {
 
 
+
         if (initialized) return
+
+
+
 
 
 
         val appContext =
             context.applicationContext
+
+
+
 
 
 
@@ -66,10 +100,18 @@ object AppContainer {
 
 
 
+
+
+
+
         bluetoothSessionManager =
             BluetoothSessionManager(
                 bluetoothRepository
             )
+
+
+
+
 
 
 
@@ -82,7 +124,15 @@ object AppContainer {
 
 
 
+
+
+
+
         settingsManager.start()
+
+
+
+
 
 
 
@@ -93,8 +143,16 @@ object AppContainer {
 
 
 
+
+
+
+
         voiceRepository =
             VoiceRepository()
+
+
+
+
 
 
 
@@ -104,22 +162,40 @@ object AppContainer {
 
 
 
+
+
+
+
         voiceRepository.initialize()
+
+
+
+
 
 
 
         providerModules.forEach { module ->
 
+
             module.registerInto(
                 providerRegistry
             )
+
 
         }
 
 
 
+
+
+
+
         initialized = true
 
+
+
     }
+
+
 
 }

@@ -4,6 +4,7 @@ package com.uriel.logpose.core.app
 import android.Manifest
 import android.os.Build
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -16,36 +17,62 @@ import com.uriel.logpose.ui.screen.LogPoseScreen
 import com.uriel.logpose.ui.theme.LogPoseTheme
 
 
+
 class MainActivity : ComponentActivity() {
+
 
 
     private val permissionLauncher =
         registerForActivityResult(
             ActivityResultContracts.RequestMultiplePermissions()
-        ) {
+        ) { result ->
+
+
+            result.forEach { permission, granted ->
+
+
+                Log.d(
+                    "LOGPOSE_PERMISSION",
+                    "$permission = $granted"
+                )
+
+
+            }
+
 
         }
+
+
+
+
+
 
 
     override fun onCreate(
         savedInstanceState: Bundle?
     ) {
 
+
         super.onCreate(
             savedInstanceState
         )
 
 
-        /*
-         * Inicializar dependencias globales
-         * antes de crear Compose.
-         */
+
+
+
         AppContainer.initialize(
             applicationContext
         )
 
 
+
+
+
         enableEdgeToEdge()
+
+
+
 
 
 
@@ -63,6 +90,7 @@ class MainActivity : ComponentActivity() {
                 ) { innerPadding ->
 
 
+
                     LogPoseScreen(
 
                         modifier =
@@ -71,6 +99,7 @@ class MainActivity : ComponentActivity() {
                             )
 
                     )
+
 
 
                 }
@@ -82,9 +111,18 @@ class MainActivity : ComponentActivity() {
         }
 
 
+
+
+
         requestPermissions()
 
+
+
     }
+
+
+
+
 
 
 
@@ -93,10 +131,14 @@ class MainActivity : ComponentActivity() {
     private fun requestPermissions() {
 
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+
+        val permissions =
+
+            if (
+                Build.VERSION.SDK_INT >= Build.VERSION_CODES.S
+            ) {
 
 
-            permissionLauncher.launch(
 
                 arrayOf(
 
@@ -108,13 +150,11 @@ class MainActivity : ComponentActivity() {
 
                 )
 
-            )
 
 
-        } else {
+            } else {
 
 
-            permissionLauncher.launch(
 
                 arrayOf(
 
@@ -124,13 +164,20 @@ class MainActivity : ComponentActivity() {
 
                 )
 
-            )
+
+            }
 
 
-        }
+
+
+
+        permissionLauncher.launch(
+            permissions
+        )
 
 
     }
+
 
 
 }

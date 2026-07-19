@@ -1,15 +1,29 @@
 package com.uriel.logpose.core.engine
 
+
 import com.uriel.logpose.core.compat.core.AppState
 import com.uriel.logpose.core.compat.core.LogPoseLogger
 import com.uriel.logpose.domain.models.LogPoseDevice
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+
 
 
 object LogPoseEngine {
 
 
-    private var state =
-        AppState.STOPPED
+
+    private val _state =
+        MutableStateFlow(
+            AppState.STOPPED
+        )
+
+
+
+    val state: StateFlow<AppState> =
+        _state
+
+
 
 
 
@@ -20,12 +34,19 @@ object LogPoseEngine {
 
 
 
+
+
+
+
     fun onBluetoothConnected(
         device: LogPoseDevice
     ) {
 
 
-        currentDevice = device
+
+        currentDevice =
+            device
+
 
 
         LogPoseLogger.i(
@@ -33,10 +54,17 @@ object LogPoseEngine {
         )
 
 
-        state =
+
+        _state.value =
             AppState.READY
 
+
+
     }
+
+
+
+
 
 
 
@@ -47,15 +75,10 @@ object LogPoseEngine {
     ) {
 
 
-        if (currentDevice?.mac != device.mac) {
+
+        if(currentDevice?.mac != device.mac){
             return
         }
-
-
-
-        LogPoseLogger.i(
-            "Bluetooth desconectado: ${device.name}"
-        )
 
 
 
@@ -63,8 +86,16 @@ object LogPoseEngine {
 
 
 
-        state =
+        _state.value =
             AppState.STOPPED
+
+
+
+        LogPoseLogger.i(
+            "Bluetooth desconectado"
+        )
+
+
 
     }
 
@@ -72,19 +103,27 @@ object LogPoseEngine {
 
 
 
-    fun startListening() {
 
 
-        if (
-            state != AppState.READY
-        ) {
+
+
+    fun startListening(){
+
+
+
+        if(
+            _state.value != AppState.READY
+        ){
             return
         }
 
 
 
-        state =
+
+
+        _state.value =
             AppState.LISTENING
+
 
 
 
@@ -92,31 +131,36 @@ object LogPoseEngine {
             "Escuchando..."
         )
 
+
+
     }
 
 
 
 
 
-    fun stopListening() {
 
 
-        if (
-            state != AppState.LISTENING
-        ) {
+
+
+    fun stopListening(){
+
+
+
+        if(
+            _state.value != AppState.LISTENING
+        ){
             return
         }
 
 
 
-        state =
+
+
+        _state.value =
             AppState.READY
 
 
-
-        LogPoseLogger.i(
-            "Escucha detenida"
-        )
 
     }
 
@@ -124,68 +168,77 @@ object LogPoseEngine {
 
 
 
-    fun processing() {
 
 
-        state =
+
+
+    fun processing(){
+
+
+
+        _state.value =
             AppState.PROCESSING
 
 
 
-        LogPoseLogger.i(
-            "Procesando comando"
-        )
-
     }
 
 
 
 
 
-    fun speaking() {
 
 
-        state =
+
+
+    fun speaking(){
+
+
+
+        _state.value =
             AppState.SPEAKING
 
 
 
-        LogPoseLogger.i(
-            "Hablando"
-        )
-
     }
 
 
 
 
 
-    fun ready() {
 
 
-        state =
+
+
+    fun ready(){
+
+
+
+        _state.value =
             AppState.READY
 
 
 
-        LogPoseLogger.i(
-            "Esperando comando"
-        )
-
     }
 
 
 
 
 
-    fun stop() {
-
-
-        currentDevice = null
 
 
 
-        state =
+
+    fun stop(){
+
+
+
+        currentDevice =
+            null
+
+
+
+        _state.value =
             AppState.STOPPED
 
 
@@ -194,20 +247,38 @@ object LogPoseEngine {
             "LogPose detenido"
         )
 
+
+
     }
 
 
 
 
 
-    fun getState(): AppState =
-        state
+
+
+
+
+    fun getState(): AppState {
+
+        return _state.value
+
+    }
 
 
 
 
 
-    fun getCurrentDevice(): LogPoseDevice? =
-        currentDevice
+
+
+
+
+    fun getCurrentDevice(): LogPoseDevice? {
+
+        return currentDevice
+
+    }
+
+
 
 }

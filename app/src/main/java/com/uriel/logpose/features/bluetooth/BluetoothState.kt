@@ -1,17 +1,29 @@
 package com.uriel.logpose.features.bluetooth
 
+
+import com.uriel.logpose.domain.models.LogPoseDevice
+
+
+
 data class BluetoothState(
+
 
     val bluetoothEnabled: Boolean = false,
 
+
     val discovering: Boolean = false,
 
-    val activeDevice: FavoriteDevice? = null,
 
-    val favorites: List<FavoriteDevice> = emptyList(),
+    val devices: List<LogPoseDevice> = emptyList(),
 
-    val availableDevices: List<FavoriteDevice> = emptyList(),
 
-    val lastError: String? = null
+    val selectedDevice: LogPoseDevice? = null,
+
+
+    val connected: Boolean = false,
+
+
+    val error: String? = null
+
 
 )

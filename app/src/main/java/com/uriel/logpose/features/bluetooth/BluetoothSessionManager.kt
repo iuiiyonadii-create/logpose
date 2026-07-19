@@ -1,69 +1,201 @@
 package com.uriel.logpose.features.bluetooth
 
+
+import android.Manifest
+import androidx.annotation.RequiresPermission
 import com.uriel.logpose.domain.models.LogPoseDevice
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
+
+
 
 class BluetoothSessionManager(
-
     private val repository: BluetoothRepository
-
 ) {
 
-    private val _state = MutableStateFlow(
-        BluetoothState()
+
+
+    private var bluetoothEnabled =
+        false
+
+
+
+
+
+
+
+    @RequiresPermission(
+        Manifest.permission.BLUETOOTH_CONNECT
     )
-
-    val state: StateFlow<BluetoothState> =
-        _state.asStateFlow()
-
     fun refresh() {
-        _state.value = buildState()
+
+
+        bluetoothEnabled =
+            repository.isBluetoothEnabled()
+
+
     }
 
-    private fun buildState(): BluetoothState {
 
-        val bluetoothEnabled =
-            repository.isBluetoothEnabled()
+
+
+
+
+
+
+
+    @RequiresPermission(
+        Manifest.permission.BLUETOOTH_CONNECT
+    )
+    fun buildState(): BluetoothState {
+
 
         val devices =
             repository.getPairedDevices()
 
-        val selected =
-            repository.getSelectedDevice()
+
+
+
 
         return BluetoothState(
 
-            bluetoothEnabled = bluetoothEnabled,
 
-            discovering = false,
+            bluetoothEnabled =
+                bluetoothEnabled,
 
-            activeDevice = selected?.let(::toFavoriteDevice),
 
-            favorites = selected?.let {
-                listOf(toFavoriteDevice(it))
-            } ?: emptyList(),
 
-            availableDevices =
-                devices.map {
-                    FavoriteDevice(
-                        mac = it.mac,
-                        name = it.name,
-                        connected = selected?.mac == it.mac
-                    )
-                },
+            discovering =
+                false,
 
-            lastError = null
+
+
+            devices =
+                devices,
+
+
+
+            selectedDevice =
+                null,
+
+
+
+            connected =
+                repository.isConnected(),
+
+
+
+            error =
+                null
+
+
         )
+
+
     }
 
-    private fun toFavoriteDevice(
-        device: LogPoseDevice
-    ): FavoriteDevice =
-        FavoriteDevice(
-            mac = device.mac,
-            name = device.name,
-            connected = true
+
+
+
+
+
+
+
+
+    @RequiresPermission(
+        Manifest.permission.BLUETOOTH_SCAN
+    )
+    fun startDiscovery(
+
+        onFound: (LogPoseDevice) -> Unit,
+
+        onFinished: () -> Unit
+
+    ) {
+
+
+        repository.startDiscovery(
+
+
+            onDeviceFound = { device ->
+
+
+                onFound(
+                    device
+                )
+
+
+            },
+
+
+
+            onFinished = {
+
+
+                onFinished()
+
+
+            }
+
+
         )
+
+
+    }
+
+
+
+
+
+
+
+
+
+    @RequiresPermission(
+        Manifest.permission.BLUETOOTH_CONNECT
+    )
+    suspend fun connect(
+        device: LogPoseDevice
+    ): Boolean {
+
+
+        return repository.connectDevice(
+            device
+        )
+
+
+    }
+
+
+
+
+
+
+
+
+
+    fun disconnect() {
+
+
+        repository.disconnectDevice()
+
+
+    }
+
+
+
+
+
+
+
+
+
+    fun isConnected(): Boolean {
+
+
+        return repository.isConnected()
+
+
+    }
+
+
+
 }
