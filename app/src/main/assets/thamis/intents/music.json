@@ -1,0 +1,5 @@
+{
+  "intent": "PLAY_MUSIC",
+  "triggers": ["pone", "poneme", "reproducir", "mandale"],
+  "priority": 1.0
+}

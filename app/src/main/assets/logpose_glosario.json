@@ -1,0 +1,33 @@
+{
+  "verbos": {
+    "abrir": ["abrí", "abri", "abrir", "poner app", "pone app", "entrar a"],
+    "reproducir": ["reproducí", "repro", "mandale play", "dale play", "play", "pone", "poné", "tira", "tirá", "ponete algo de", "ponete", "pasame", "pasa"],
+    "bucle": ["bucle", "loop", "repetir", "de nuevo", "otra vez"],
+    "pausar": ["parar", "pausa", "pausar", "detener", "para"],
+    "volumen_subir": ["subí el volumen", "subir volumen", "más fuerte", "mas fuerte", "mas alto"],
+    "volumen_bajar": ["baja el volumen", "bajá volumen", "más bajo", "mas bajito"],
+    "mute": ["mute", "silencio", "callate", "sin sonido"]
+  },
+  "apps": {
+    "netflix": ["netflix", "netflis", "netfli", "netfliz"],
+    "youtube": ["youtube", "you tube", "yutu", "yutub"],
+    "whatsapp": ["wasa", "whatsapp", "guasa"],
+    "instagram": ["insta", "ig", "instagram"],
+    "discord": ["discor", "discord"],
+    "spotify": ["spoti", "spotify"]
+  },
+  "control": {
+    "logpose_alias": ["ojo", "loco", "reloj", "telo", "debate look", "logpose", "log pose"],
+    "activar": ["activate", "activar", "despertate", "prendete", "escuchame"],
+    "desactivar": ["desactivate", "desactivar", "dormite", "apagate", "quedate quieto"]
+  },
+  "muletillas_a_ignorar": ["che", "boludo", "boluda", "posta", "dale", "eh", "este", "viste", "por favor", "porfa", "gracias", "loco", "loca", "flaco", "flaca"],
+  "titulos_netflix": {
+    "The Mentalist": ["mental lista", "el mentalista", "mentalist"],
+    "Blacklist": ["la clic", "blacklist", "black list"]
+  },
+  "artistas": {
+    "Ysy A": ["isya", "y si a", "y cia", "isia"],
+    "Bizarrap": ["viza", "visrap", "vicerap"]
+  }
+}

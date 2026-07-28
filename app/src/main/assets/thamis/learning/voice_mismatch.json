@@ -1,0 +1,28 @@
+{
+  "mismatches": {
+    "duque": {
+      "correct": "duki",
+      "count": 14,
+      "confidence": 0.92,
+      "type": "PHONETIC_ERROR"
+    },
+    "doce": {
+      "correct": "duki",
+      "count": 4,
+      "confidence": 0.85,
+      "type": "PHONETIC_ERROR"
+    },
+    "rock": {
+      "correct": "rockstar",
+      "count": 8,
+      "confidence": 0.82,
+      "type": "ENTITY_ERROR"
+    },
+    "vos": {
+      "correct": "wos",
+      "count": 5,
+      "confidence": 0.95,
+      "type": "PHONETIC_ERROR"
+    }
+  }
+}

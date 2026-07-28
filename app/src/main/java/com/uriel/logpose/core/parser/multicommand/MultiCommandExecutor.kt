@@ -1,5 +1,7 @@
 package com.uriel.logpose.core.parser.multicommand
 
+import com.uriel.logpose.core.engine.CommandDispatcher
+import com.uriel.logpose.core.parser.ParseResult
 import com.uriel.logpose.core.parser.pipeline.CommandPipeline
 
 object MultiCommandExecutor {
@@ -10,7 +12,20 @@ object MultiCommandExecutor {
 
         result.command.commands.forEach {
 
-            CommandPipeline.process(it)
+            val parseResult =
+                CommandPipeline.process(it)
+
+
+
+            if (parseResult is ParseResult.Success) {
+
+
+                CommandDispatcher.execute(
+                    parseResult.command
+                )
+
+
+            }
         }
     }
 

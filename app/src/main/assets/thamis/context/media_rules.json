@@ -1,0 +1,5 @@
+{
+  "rules": [
+    { "state": "MUSIC_PLAYING", "intent_boost": { "NEXT_TRACK": 0.3 } }
+  ]
+}

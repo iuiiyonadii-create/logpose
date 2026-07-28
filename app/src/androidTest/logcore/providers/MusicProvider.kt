@@ -14,4 +14,12 @@ interface MusicProvider {
 
     fun isPlaying(): Boolean
 
+    fun repeat()
+
+    fun setVolume(level: Int)
+
+    fun mute()
+
+    fun silence()
+
 }

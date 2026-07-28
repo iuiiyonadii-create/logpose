@@ -13,6 +13,7 @@ enum class NotificationCategory {
     SOCIAL,
     NAVIGATION,
     MEDIA,
+    DELIVERY,
     ALARM,
     SYSTEM,
     OTHER;
@@ -47,6 +48,10 @@ enum class NotificationCategory {
 
         private val NAVIGATION_PACKAGE_HINTS = listOf("maps", "waze", "navigation")
 
+        private val DELIVERY_PACKAGE_HINTS = listOf(
+            "peya", "pedidoya", "rappi", "ubereats", "glovo", "grubhub", "doordash"
+        )
+
         /**
          * Clasifica una notificacion combinando la categoria declarada por
          * el sistema (mas confiable cuando esta presente) con heuristica de
@@ -60,6 +65,7 @@ enum class NotificationCategory {
             val normalizedPackage = packageName.lowercase()
 
             return when {
+                DELIVERY_PACKAGE_HINTS.any { normalizedPackage.contains(it) } -> DELIVERY
                 SOCIAL_PACKAGE_HINTS.any { normalizedPackage.contains(it) } -> {
                     // WhatsApp/Telegram/Signal son mensajeria directa, no "social feed".
                     if (normalizedPackage.contains("whatsapp") ||

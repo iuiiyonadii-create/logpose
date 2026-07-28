@@ -1,0 +1,5 @@
+{
+  "intent": "CALL_CONTACT",
+  "triggers": ["llama a", "llamame a", "comunicame con"],
+  "priority": 1.0
+}

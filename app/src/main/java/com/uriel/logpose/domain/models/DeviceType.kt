@@ -5,5 +5,6 @@ enum class DeviceType {
     CAR,
     HEADPHONES,
     SPEAKER,
+    PC,
     UNKNOWN
 }

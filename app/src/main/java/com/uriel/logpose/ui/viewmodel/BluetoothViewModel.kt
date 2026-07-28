@@ -1,581 +1,233 @@
 package com.uriel.logpose.ui.viewmodel
 
-
+import android.content.Intent
+import android.os.Build
 import android.util.Log
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.uriel.logpose.core.app.AppContainer
-import com.uriel.logpose.core.engine.LogPoseEngine
+import com.uriel.logpose.core.services.LogPoseCallService
+import com.uriel.logpose.domain.repositories.BluetoothRepository
 import com.uriel.logpose.domain.models.LogPoseDevice
+import com.uriel.logpose.features.voice.VoiceManager
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import android.bluetooth.BluetoothDevice
+import android.content.BroadcastReceiver
+import android.content.Context
+import android.content.IntentFilter
+import android.os.BatteryManager
 
+class BluetoothViewModel(
+    private val repository: BluetoothRepository
+) : ViewModel() {
 
+    private val _state = MutableStateFlow(BluetoothUiState())
+    val state = _state.asStateFlow()
 
-class BluetoothViewModel : ViewModel() {
+    private var registeredContext: Context? = null
 
+    private val batteryReceiver = object : BroadcastReceiver() {
+        override fun onReceive(context: Context?, intent: Intent?) {
+            when (intent?.action) {
+                "android.bluetooth.device.action.BATTERY_LEVEL_CHANGED" -> {
+                    val level = intent.getIntExtra("android.bluetooth.device.extra.BATTERY_LEVEL", -1)
+                    if (level != -1) {
+                        _state.update { it.copy(deviceBattery = level) }
+                    }
+                }
+                Intent.ACTION_BATTERY_CHANGED -> {
+                    val level = intent.getIntExtra(BatteryManager.EXTRA_LEVEL, -1)
+                    val scale = intent.getIntExtra(BatteryManager.EXTRA_SCALE, -1)
+                    val batteryPct = (level * 100 / scale.toFloat()).toInt()
+                    _state.update { it.copy(phoneBattery = batteryPct) }
+                }
+            }
+        }
+    }
 
+    fun registerBatteryReceiver(context: Context) {
+        if (registeredContext == null) {
+            val filter = IntentFilter().apply {
+                addAction("android.bluetooth.device.action.BATTERY_LEVEL_CHANGED")
+                addAction(Intent.ACTION_BATTERY_CHANGED)
+            }
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                context.applicationContext.registerReceiver(batteryReceiver, filter, Context.RECEIVER_EXPORTED)
+            } else {
+                context.applicationContext.registerReceiver(batteryReceiver, filter)
+            }
+            registeredContext = context.applicationContext
+            
+            val bm = context.getSystemService(Context.BATTERY_SERVICE) as BatteryManager
+            val level = bm.getIntProperty(BatteryManager.BATTERY_PROPERTY_CAPACITY)
+            _state.update { it.copy(phoneBattery = level) }
+        }
+    }
 
-    private val repository =
-        AppContainer.bluetoothRepository
+    fun unregisterBatteryReceiver() {
+        registeredContext?.let {
+            try {
+                it.unregisterReceiver(batteryReceiver)
+            } catch (e: Exception) {}
+            registeredContext = null
+        }
+    }
 
+    override fun onCleared() {
+        super.onCleared()
+        unregisterBatteryReceiver()
+    }
 
+    init {
+        repository.registerBluetoothState()
+        observeBluetoothState()
+        observeEngineState()
+        observeDiscoveredDevices()
+        refresh()
+    }
 
+    private fun observeDiscoveredDevices() {
+        viewModelScope.launch {
+            repository.discoveredDevices.collectLatest { devices ->
+                _state.update { it.copy(discoveredDevices = devices) }
+            }
+        }
+    }
 
+    private fun observeEngineState() {
+        viewModelScope.launch {
+            // SINCRO CLAUDE: Observamos el estado global del servicio.
+            // Si el servicio no está corriendo físicamente, forzamos false.
+            LogPoseCallService.isServiceRunning.collectLatest { running ->
+                _state.update { it.copy(serviceRunning = running) }
+            }
+        }
 
+        viewModelScope.launch {
+            val core = com.uriel.logpose.thamis.thamis_final.ThamisCore.getInstance(com.uriel.logpose.core.app.LogPoseApplication.instance)
+            core.state.collectLatest { engineState ->
+                // SINCRO CLAUDE: Si el motor de Thamis está detenido, el botón DEBE estar en verde (Iniciar)
+                if (engineState == com.uriel.logpose.core.compat.core.AppState.STOPPED) {
+                    _state.update { it.copy(serviceRunning = false) }
+                }
+            }
+        }
+    }
 
-    var uiState by mutableStateOf(
-        BluetoothUiState()
-    )
-        private set
-
-
-
-
-
-
-    var connected by mutableStateOf(false)
-        private set
-
-
-
-
-
-
+    private fun observeBluetoothState() {
+        viewModelScope.launch {
+            repository.isEnabled.collectLatest { enabled ->
+                _state.update { it.copy(bluetoothEnabled = enabled) }
+            }
+        }
+    }
 
     fun refresh(){
-
-
         viewModelScope.launch {
+            if (!repository.hasPermission()) {
+                Log.w("LOGPOSE_BT", "BluetoothViewModel: Postponing refresh due to lack of permissions")
+                _state.update { it.copy(loading = false) }
+                return@launch
+            }
 
+            val isEnabled = repository.isBluetoothEnabled()
+            val pairedDevices = repository.getPairedDevices()
+            val savedDevice = repository.getSavedDevice()
+            
+            val activeDevice = pairedDevices.find { it.connected } ?: savedDevice
+            val batteryLevel = activeDevice?.let { repository.getDeviceBatteryLevel(it.mac) }
 
-
-            try {
-
-
-
-                val enabled =
-                    repository.isBluetoothEnabled()
-
-
-
-
-
-                val devices =
-                    repository.getPairedDevices()
-
-
-
-
-
-                val saved =
-                    repository.getSavedDevice()
-
-
-
-
-
-
-                uiState =
-                    uiState.copy(
-
-
-                        bluetoothEnabled =
-                            enabled,
-
-
-
-                        devices =
-                            devices,
-
-
-
-                        savedDevice =
-                            saved,
-
-
-
-                        selectedDevice =
-                            saved,
-
-
-
-                        loading =
-                            false
-
-
-
-                    )
-
-
-
-
-
-                Log.d(
-                    "LOGPOSE_UI",
-                    "SAVED DEVICE = ${saved?.name}"
+            _state.update {
+                it.copy(
+                    bluetoothEnabled = isEnabled,
+                    devices = pairedDevices,
+                    savedDevice = savedDevice,
+                    selectedDevice = activeDevice,
+                    deviceBattery = batteryLevel ?: it.deviceBattery,
+                    loading = false
                 )
-
-
-
-
             }
-            catch(
-                exception: Exception
-            ){
-
-
-
-                uiState =
-                    uiState.copy(
-
-                        error =
-                            exception.message,
-
-
-                        loading =
-                            false
-
-                    )
-
-
-
-            }
-
-
-
         }
-
-
-
     }
 
+    fun selectDevice(device: LogPoseDevice){
+        _state.update { it.copy(selectedDevice = device, error = null) }
+    }
 
-
-
-
-
-
-
+    fun saveDevice(){
+        val device = _state.value.selectedDevice ?: return
+        repository.saveSelectedDevice(device.mac)
+        _state.update { it.copy(savedDevice = device, selectedDevice = device, error = null) }
+    }
 
     fun startDiscovery(){
-
-
-
-        if(uiState.discovering){
-
-
-
-            Log.d(
-                "LOGPOSE_BT",
-                "DISCOVERY ALREADY RUNNING"
-            )
-
-
-
+        if (!_state.value.bluetoothEnabled) {
+            _state.update { it.copy(error = "El Bluetooth está apagado.") }
             return
-
-
         }
 
-
-
-
-
-
-
-
-        uiState =
-            uiState.copy(
-
-                discovering = true,
-
-                discoveredDevices = emptyList()
-
-            )
-
-
-
-
-
-
-
-
+        _state.update { it.copy(discovering = true, error = null) }
         repository.startDiscovery(
-
-
-
-            onDeviceFound = { device ->
-
-
-
-
-
-                if(
-                    uiState.discoveredDevices.none {
-
-                        it.mac == device.mac
-
-                    }
-                ){
-
-
-
-                    uiState =
-                        uiState.copy(
-
-                            discoveredDevices =
-                                uiState.discoveredDevices + device
-
-                        )
-
-
-
-                }
-
-
-
-            },
-
-
-
-
-
-            onFinished = {
-
-
-
-                uiState =
-                    uiState.copy(
-
-                        discovering = false
-
-                    )
-
-
-
-                Log.d(
-                    "LOGPOSE_UI",
-                    "DISCOVERY FINISHED"
-                )
-
-
-
-            }
-
-
-
+            onDeviceFound = { }, // Se maneja vía StateFlow
+            onFinished = { _state.update { it.copy(discovering = false) } }
         )
-
-
-
     }
 
-
-
-
-
-
-
-
-
-    fun selectDevice(
-        device: LogPoseDevice
-    ){
-
-
-
-        uiState =
-            uiState.copy(
-
-                selectedDevice =
-                    device
-
-            )
-
-
-
-        Log.d(
-            "LOGPOSE_UI",
-            "SELECT ${device.name}"
-        )
-
-
-
+    fun connect(){
+        val device = _state.value.selectedDevice ?: return
+        connectDevice(device)
     }
 
-
-
-
-
-
-
-
-
-    fun saveSelectedDevice(){
-
-
-
-        val device =
-            uiState.selectedDevice
-                ?: return
-
-
-
-
-
-
-        repository.saveSelectedDevice(
-            device.mac
-        )
-
-
-
-
-
-
-        uiState =
-            uiState.copy(
-
-                savedDevice =
-                    device
-
-            )
-
-
-
-
-
-
-        Log.d(
-            "LOGPOSE_UI",
-            "SAVED ${device.name}"
-        )
-
-
-
-    }
-
-
-
-
-
-
-
-
-
-    fun connectSelectedDevice(){
-
-
-
-        val device =
-            uiState.selectedDevice
-                ?: return
-
-
-
-
-
-
-        viewModelScope.launch {
-
-
-
-            val result =
-                repository.connectDevice(
-                    device
-                )
-
-
-
-
-
-
-            connected =
-                result
-
-
-
-
-
-            Log.d(
-                "LOGPOSE_UI",
-                if(result)
-
-                    "DEVICE CONNECTED ${device.name}"
-
-                else
-
-                    "DEVICE NOT CONNECTED ${device.name}"
-            )
-
-
-
+    fun startLogPose(context: android.content.Context){
+        val device = _state.value.savedDevice ?: _state.value.selectedDevice
+        if(device == null){
+            _state.update { it.copy(error = "No hay dispositivo seleccionado.") }
+            return
         }
-
-
-
+        connectDevice(device, context)
     }
 
-
-
-
-
-
-
-
-
-    fun startLogPose(){
-
-
-
-        val device =
-            uiState.selectedDevice
-                ?: return
-
-
-
-
-
-
+    private fun connectDevice(device: LogPoseDevice, context: android.content.Context? = null){
         viewModelScope.launch {
-
-
-
-            val result =
-                repository.connectDevice(
-                    device
-                )
-
-
-
-
-
-
+            val result = repository.connectDevice(device)
             if(result){
-
-
-
-                LogPoseEngine.onBluetoothConnected(
-                    device
-                )
-
-
-
-                LogPoseEngine.startListening()
-
-
-
-
-                connected =
-                    true
-
-
-
-
-
-                Log.d(
-                    "LOGPOSE_UI",
-                    "LOGPOSE STARTED ${device.name}"
-                )
-
-
-
+                _state.update { it.copy(serviceRunning = true, selectedDevice = device, savedDevice = device, error = null) }
+                
+                if (context != null) {
+                    com.uriel.logpose.thamis.thamis_final.ThamisCore.getInstance(context).onBluetoothConnected(device)
+                    val intent = Intent(context, LogPoseCallService::class.java).apply {
+                        action = LogPoseCallService.ACTION_START_TRIP
+                    }
+                    context.startForegroundService(intent)
+                }
+                VoiceManager.start()
+            } else {
+                _state.update { it.copy(serviceRunning = false, error = "Bluetooth no conectado.") }
             }
-            else {
-
-
-
-                Log.d(
-                    "LOGPOSE_UI",
-                    "LOGPOSE CONNECTION FAILED"
-                )
-
-
-
-            }
-
-
-
         }
-
-
-
     }
 
-
-
-
-
-
-
-
-
-    fun stopLogPose(){
-
-
-
-        LogPoseEngine.stop()
-
-
-
-        connected =
-            false
-
-
-
-
-
-        Log.d(
-            "LOGPOSE_UI",
-            "LOGPOSE STOPPED"
-        )
-
-
-
+    fun startLogPoseDebug(context: android.content.Context) {
+        _state.update { it.copy(serviceRunning = true, error = "Modo pruebas.") }
+        com.uriel.logpose.thamis.thamis_final.ThamisCore.getInstance(context).ready()
+        val intent = Intent(context, LogPoseCallService::class.java).apply {
+            action = LogPoseCallService.ACTION_START_TRIP
+        }
+        context.startForegroundService(intent)
+        VoiceManager.start()
     }
 
-
-
-
-
-
-
-
-
-    fun disconnect(){
-
-
-
+    fun stopLogPose(context: android.content.Context){
         repository.disconnectDevice()
-
-
-
-        LogPoseEngine.stop()
-
-
-
-        connected =
-            false
-
-
-
-
-
-
-        uiState =
-            uiState.copy(
-
-                selectedDevice = null
-
-            )
-
-
-
+        val intent = Intent(context, LogPoseCallService::class.java).apply {
+            action = LogPoseCallService.ACTION_END_TRIP
+        }
+        context.startForegroundService(intent) // Usamos startForegroundService para endTrip también por consistencia
+        com.uriel.logpose.thamis.thamis_final.ThamisCore.getInstance(context).shutdown()
+        _state.update { it.copy(serviceRunning = false) }
     }
-
-
-
 }

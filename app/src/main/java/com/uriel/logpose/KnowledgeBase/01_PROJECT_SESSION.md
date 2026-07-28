@@ -1,270 +1,81 @@
 ==============================================================================
 LOGPOSE PROJECT SESSION
-VERSION 1.0.0
+VERSION 1.2.0
+DATE: 2026-07-18
 ==============================================================================
 
 # CURRENT PROJECT SESSION
 
 ## Session Purpose
-
 This document represents the current working state of LogPose.
-
-It exists to allow a new conversation to continue development from the exact point where the previous session ended.
-
-Unlike CHATGPT_MEMORY.md, this file contains temporary and active project information.
+It allows a new conversation to continue development from the exact point where the previous session ended.
 
 ---
 
 # CURRENT OBJECTIVE
-
-Complete the engineering foundation required before accelerating LogPose feature development.
-
-Current priority:
-
-Establish a reliable project memory system and maintain a clean engineering workflow.
+Deliver a functional Beta MVP for delivery riders following the "Beta Sprint" strategy.
+Foco: Compatibilidad Bluetooth Universal y Estabilización de Comandos.
 
 ---
 
 # CURRENT PHASE
-
-Phase:
-
-Engineering Foundation
-
-Status:
-
-Active
+Phase: Beta Sprint (Implementation)
+Status: Active
 
 ---
 
 # COMPLETED RECENTLY
 
-## KnowledgeBase System
+## Bluetooth Universal Compatibility (LOGPOSE-BT-004)
+- Updated `DeviceClassifier` to recognize Ejeas V6/V4 and other common intercoms.
+- Removed filtering that ignored devices with "APP" in their name.
+- Fixed a bug in `BluetoothViewModel` where devices with unresolved names ("Desconocido") weren't updating when the name was found.
+- Ensured `ACTION_NAME_CHANGED` is correctly handled in `BluetoothReceiver`.
 
-Completed:
+## Voice Loop and Music Integration (LOGPOSE-VOICE-001/003)
+- Activated `VoiceManager`.
+- Implemented `MusicManager` with Spotify/YouTube support.
 
-- KnowledgeBase structure created.
-- CHATGPT_MEMORY.md created.
-- Permanent project memory established.
-- Memory restoration workflow tested.
-
----
-
-## CHATGPT_MEMORY
-
-Status:
-
-Version 1.0.0
-
-Completed:
-
-- Blocks 001-048.
-
-Purpose:
-
-Preserve permanent LogPose engineering knowledge.
-
----
-
-## Git
-
-Status:
-
-Active.
-
-Completed:
-
-- Repository connected to GitHub.
-- Memory foundation committed.
-- Project state preserved.
+## Voice Loop and Command Stability (LOGPOSE-VOICE-007/011)
+- Fixed recursive call in `SpeechRecognitionListener` that caused `StackOverflowError`.
+- Improved `VoiceManager` to automatically restart listening after results or specific errors (No Match/Timeout).
+- Enhanced `CommandParser` to recognize variations of "YouTube" and "Spotify".
+- Implemented wake-word activation: Changed from "cable log" to just **"log"** for faster interaction.
+- Added clearer logging to see exactly what the microphone captures.
+- Forced `LogPoseEngine` to READY state when starting voice to bypass Bluetooth sync delays.
 
 ---
 
 # CURRENT WORK
 
-## Task
-
-Create and validate the project session system.
-
-Objective:
-
-Allow a new conversation to know:
-
-- What is currently being worked on.
-- What was completed.
-- What is next.
-- What should not be changed.
-
----
-
-# CURRENT ARCHITECTURE STATE
-
-## Platform
-
-Android
-
-## Language
-
-Kotlin
-
-## UI
-
-Jetpack Compose
-
-## Architecture
-
-Clean Architecture principles.
-
----
-
-# MAIN MODULES
-
-Current:
-
-app
-
-core
-
-domain
-
-data
-
-features
-
-engineering
-
-KnowledgeBase
-
-
-Future:
-
-logcore
-
-logprobe
-
-thamis
+## Task: Universal Bluetooth Testing
+Objective: Verify that the Ejeas V6 and other non-standard devices appear correctly in the discovery list.
 
 ---
 
 # ACTIVE TECHNICAL AREA
-
-Bluetooth subsystem.
-
-Current architecture:
-
-MainActivity
-
-↓
-
-AppContainer
-
-↓
-
-BluetoothRepository
-
-↓
-
-BluetoothManager
-
-
-Supporting components:
-
-- BluetoothViewModel
-- BluetoothReceiver
-- BluetoothPermissionManager
-- LogPoseService
-- NotificationHelper
-- DevicePreferences
-- BluetoothState
-- LogPoseDevice
+Bluetooth subsystem and Command Execution Loop.
 
 ---
 
 # CURRENT BLOCKERS
-
-1. Complete project session documentation.
-
-2. Validate complete context restoration workflow.
-
-3. Define next engineering task after foundation.
+- None technical.
+- Needs verification of Ejeas V6 connection.
 
 ---
 
-# NEXT ACTION
-
-After validating this session file:
-
-Continue LogPose development using the established workflow:
-
-Research
-
-↓
-
-Architecture
-
-↓
-
-Ticket
-
-↓
-
-Implementation
-
-↓
-
-Review
-
-↓
-
-Documentation
+# NEXT ACTIONS
+1. **LOGPOSE-VOICE-004:** Implement Navigation (GPS) commands.
+2. **LOGPOSE-VOICE-005:** Implement Phone Call execution.
+3. **LOGPOSE-THAMIS-001:** Integrate THAMIS level 1.
 
 ---
 
 # DEVELOPMENT RULE
-
-Do not skip architecture.
-
-Do not create unnecessary complexity.
-
-Do not implement features without validated purpose.
+- Full files only.
+- Architecture First.
+- Focus: "99% Road / 1% LogPose".
 
 ==============================================================================
-
 END OF PROJECT SESSION
 ==============================================================================
-
-# LogPose Architecture Decisions Update
-
-## Command Engine
-
-Decisión:
-Separar interpretación de comandos de ejecución.
-
-Arquitectura:
-
-VoiceManager
-↓
-LogPoseEngine
-↓
-CommandParser
-↓
-CommandDispatcher
-↓
-CommandRegistry
-↓
-Handlers
-
-
-Motivo:
-
-Permitir agregar nuevos comandos sin modificar el núcleo.
-
----
-
-## Principios mantenidos
-
-- No duplicar módulos existentes.
-- Revisar arquitectura antes de crear archivos.
-- Separación por responsabilidad.
-- Core independiente de features.
-- IA futura debe integrarse encima del Command Engine, no dentro.

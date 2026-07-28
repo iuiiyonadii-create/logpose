@@ -19,6 +19,9 @@ dependencyResolutionManagement {
     repositories {
         google()
         mavenCentral()
+        maven { url = uri("https://jitpack.io") }
+        maven { url = uri("https://alphacephei.com/maven/") }
+        maven { url = uri("https://download.spotify.com/android-sdk/maven") }
     }
 }
 

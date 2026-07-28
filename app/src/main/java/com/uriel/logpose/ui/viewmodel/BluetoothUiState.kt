@@ -1,5 +1,6 @@
 package com.uriel.logpose.ui.viewmodel
 
+
 import com.uriel.logpose.domain.models.LogPoseDevice
 
 
@@ -20,6 +21,9 @@ data class BluetoothUiState(
     val serviceRunning: Boolean = false,
 
     val loading: Boolean = false,
+
+    val phoneBattery: Int? = null,
+    val deviceBattery: Int? = null,
 
     val error: String? = null
 

@@ -358,13 +358,22 @@ class BluetoothConnectionManager(
 
 
 
+    @Suppress("MissingPermission")
     fun isConnected(): Boolean {
+        // Actualizamos estado antes de responder (Fallback para Redmi/Xiaomi)
+        val adapter = BluetoothAdapter.getDefaultAdapter() ?: return false
+        
+        return try {
+            val a2dpState = adapter.getProfileConnectionState(BluetoothProfile.A2DP)
+            val hfpState = adapter.getProfileConnectionState(BluetoothProfile.HEADSET)
+            
+            val systemConnected = a2dpState == BluetoothProfile.STATE_CONNECTED || 
+                                 hfpState == BluetoothProfile.STATE_CONNECTED
 
-
-        return a2dpConnected ||
-                headsetConnected
-
-
+            systemConnected || a2dpConnected || headsetConnected
+        } catch (e: Exception) {
+            a2dpConnected || headsetConnected
+        }
     }
 
 

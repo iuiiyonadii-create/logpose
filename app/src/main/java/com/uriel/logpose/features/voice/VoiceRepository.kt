@@ -1,184 +1,52 @@
 package com.uriel.logpose.features.voice
 
+import android.Manifest
+import android.content.Context
+import android.content.pm.PackageManager
+import android.media.AudioManager
+import android.os.Handler
+import android.os.Looper
+import androidx.core.content.ContextCompat
+import com.uriel.logpose.core.compat.core.LogPoseLogger
 import kotlinx.coroutines.flow.StateFlow
 
-
+/**
+ * VoiceRepository: Ahora usa Vosk para reconocimiento OFFLINE de alta velocidad.
+ */
 class VoiceRepository(
-
     private val session: VoiceSession = VoiceSession()
-
 ) {
+    private var appContext: Context? = null
+    private val mainHandler = Handler(Looper.getMainLooper())
 
+    val state: StateFlow<VoiceState> get() = session.state
 
-    private var speechRecognizerManager: SpeechRecognizerManager? = null
-
-
-
-    val state: StateFlow<VoiceState>
-        get() = session.state
-
-
-
-
-
-    fun attachRecognizer(
-        manager: SpeechRecognizerManager
-    ) {
-
-        speechRecognizerManager = manager
-
-
-        manager.initialize(
-
-            SpeechRecognitionListener(
-
-                onTextReceived = { text ->
-
-
-                    VoiceManager.onTextReceived(
-                        text
-                    )
-
-
-                },
-
-
-                onReady = {
-
-
-                    session.update(
-                        VoiceState.READY
-                    )
-
-
-                },
-
-
-                onError = {
-
-
-                    session.update(
-                        VoiceState.ERROR
-                    )
-
-
-                }
-
-            )
-
-        )
-
+    fun attachRecognizer(manager: SpeechRecognizerManager, context: Context) {
+        this.appContext = context.applicationContext
+        // SINCRO CLAUDE: El motor ya se inicializa en el AppContainer.
+        // Solo nos aseguramos de que esté listo para la batalla.
+        LogPoseLogger.i("VoiceRepository: Vinculado al motor Vosk del AppContainer.")
     }
-
-
-
-
-
-    fun initialize() {
-
-        session.update(
-            VoiceState.READY
-        )
-
-    }
-
-
-
-
 
     fun startListening() {
+        if (session.state.value == VoiceState.LISTENING) return
+        
+        session.update(VoiceState.LISTENING)
+        LogPoseLogger.d("Micro: Escucha OFFLINE activada.")
 
-
-        session.update(
-            VoiceState.LISTENING
-        )
-
-
-        speechRecognizerManager?.start()
-
+        // Usamos la instancia del AppContainer
+        com.uriel.logpose.core.app.AppContainer.voskEngine.start()
     }
-
-
-
-
-
-    fun processing() {
-
-
-        session.update(
-            VoiceState.PROCESSING
-        )
-
-    }
-
-
-
-
 
     fun stopListening() {
-
-
-        speechRecognizerManager?.stop()
-
-
-
-        session.update(
-            VoiceState.STOPPED
-        )
-
+        com.uriel.logpose.core.app.AppContainer.voskEngine.stop()
+        session.update(VoiceState.STOPPED)
     }
 
-
-
-
-
-    fun error() {
-
-
-        session.update(
-            VoiceState.ERROR
-        )
-
+    fun resetStateForRestart() {
+        com.uriel.logpose.core.app.AppContainer.voskEngine.stop()
+        session.update(VoiceState.IDLE)
     }
 
-
-
-
-
-    fun reset() {
-
-
-        session.update(
-            VoiceState.IDLE
-        )
-
-    }
-
-
-
-
-
-    fun destroy() {
-
-
-        speechRecognizerManager?.destroy()
-
-
-        speechRecognizerManager = null
-
-
-        session.update(
-            VoiceState.IDLE
-        )
-
-    }
-
-
-
-
-
-    fun current(): VoiceState =
-
-        session.current()
-
+    fun current(): VoiceState = session.current()
 }

@@ -15,13 +15,20 @@ object DeviceClassifier {
                     "freedconn" in name ||
                     "lexin" in name ||
                     "fodsports" in name ||
-                    "interphone" in name ->
+                    "interphone" in name ||
+                    "ejeas" in name ||
+                    "v6" in name ||
+                    "v4" in name ||
+                    "vnetphone" in name ->
                 DeviceType.INTERCOM
 
             "buds" in name ||
                     "airpods" in name ||
                     "headset" in name ||
-                    "earbuds" in name ->
+                    "earbuds" in name ||
+                    "headphones" in name ||
+                    "moto" in name ||
+                    "qcy" in name ->
                 DeviceType.HEADPHONES
 
             "car" in name ||
@@ -31,13 +38,24 @@ object DeviceClassifier {
                     "fiat" in name ||
                     "renault" in name ||
                     "peugeot" in name ||
-                    "toyota" in name ->
+                    "toyota" in name ||
+                    "bt-audio" in name ->
                 DeviceType.CAR
 
             "speaker" in name ||
                     "jbl" in name ||
-                    "sony" in name ->
+                    "sony" in name ||
+                    "sound" in name ->
                 DeviceType.SPEAKER
+
+            "pc" in name ||
+                    "desktop" in name ||
+                    "laptop" in name ||
+                    "computer" in name ||
+                    "windows" in name ||
+                    "mac" in name ||
+                    "linux" in name ->
+                DeviceType.PC
 
             else ->
                 DeviceType.UNKNOWN

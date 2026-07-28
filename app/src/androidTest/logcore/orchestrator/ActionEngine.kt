@@ -41,19 +41,19 @@ class ActionEngine(
                     Capability.PreviousTrack -> service.previous()
 
                     Capability.RepeatTrack -> {
-                        // TODO
+                        service.repeat()
                     }
 
                     Capability.SetVolume -> {
-                        // TODO
+                        service.setVolume(action.parameters["level"]?.toInt() ?: 70)
                     }
 
                     Capability.Mute -> {
-                        // TODO
+                        service.mute()
                     }
 
                     Capability.Silence -> {
-                        // TODO
+                        service.silence()
                     }
 
                     else -> {

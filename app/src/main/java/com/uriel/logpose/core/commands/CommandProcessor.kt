@@ -41,6 +41,20 @@ object CommandProcessor {
 
 
 
+            ParseResult.MultiSuccess -> {
+
+
+                LogPoseLogger.i(
+                    "Multi-comando procesado con éxito"
+                )
+
+
+                Command.Multi
+
+            }
+
+
+
             ParseResult.Unknown -> {
 
 
@@ -51,6 +65,15 @@ object CommandProcessor {
 
                 Command.Unknown
 
+            }
+
+            ParseResult.Ignored -> {
+
+                LogPoseLogger.i(
+                    "Frase ignorada (ruido/muletilla): $text"
+                )
+
+                Command.Ignore
             }
 
         }

@@ -1,15 +1,30 @@
 package com.uriel.logpose.core.compat.core
 
 enum class AppState {
-
     STOPPED,
-
     READY,
-
     LISTENING,
-
     PROCESSING,
+    SPEAKING,
+    
+    // Sector 4 - Llamadas
+    CALL_INCOMING,
+    CALL_WAITING,
+    CALL_ACTIVE,
+    CALL_ENDING,
 
-    SPEAKING
+    // Sector 5 - Mensajes
+    MESSAGE_RECEIVED,
+    WAITING_USER_INTENT,
+    READING_CHAT,
+    DICTATING_REPLY,
+    WAITING_SEND_CONFIRMATION,
 
+    // Sector 6 - Navegación
+    NAVIGATION_IDLE,
+    NAVIGATION_STARTING,
+    NAVIGATION_ACTIVE,
+    NAVIGATION_INSTRUCTION_PENDING,
+    NAVIGATION_INTERRUPTING,
+    NAVIGATION_FINISHED
 }

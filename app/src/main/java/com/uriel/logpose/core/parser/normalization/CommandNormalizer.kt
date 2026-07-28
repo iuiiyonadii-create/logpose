@@ -5,34 +5,29 @@ import java.text.Normalizer
 object CommandNormalizer {
 
     private val stopWords = setOf(
+        "logpose",
+        "log",
+        "pose",
+        "lo",
+        "love",
+        "che",
+        "hey",
+        "hola",
         "por",
         "favor",
-        "porfavor",
-        "che",
-        "eh",
-        "emm",
-        "mmm",
-        "hola",
-        "ok",
-        "okay",
-        "bueno",
-        "entonces",
-        "me",
-        "podria",
-        "podrias",
         "podes",
         "podés",
         "quiero",
         "quisiera",
+        "me",
         "el",
         "la",
         "los",
         "las",
         "un",
         "una",
-        "unos",
-        "unas",
-        "a"
+        "a",
+        "al"
     )
 
     fun normalize(text: String): String {

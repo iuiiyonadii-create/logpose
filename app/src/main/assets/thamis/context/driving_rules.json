@@ -1,0 +1,6 @@
+{
+  "rules": [
+    { "state": "MOVING", "confidence_boost": -0.1, "reason": "wind_noise_potential" },
+    { "state": "STATIONARY", "confidence_boost": 0.05 }
+  ]
+}

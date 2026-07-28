@@ -8,5 +8,9 @@ sealed interface ParseResult {
         val command: Command
     ) : ParseResult
 
+    data object MultiSuccess : ParseResult
+
     data object Unknown : ParseResult
+
+    data object Ignored : ParseResult
 }

@@ -7,11 +7,12 @@ import android.bluetooth.BluetoothDevice
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
+import android.os.Build
 import android.util.Log
 import androidx.annotation.RequiresPermission
 import com.uriel.logpose.core.compat.core.DeviceClassifier
-import com.uriel.logpose.core.engine.LogPoseEngine
 import com.uriel.logpose.domain.models.LogPoseDevice
+
 
 
 class BluetoothReceiver(
@@ -22,19 +23,24 @@ class BluetoothReceiver(
 ) : BroadcastReceiver() {
 
 
+
     override fun onReceive(
         context: Context?,
         intent: Intent?
     ) {
 
 
-        val action = intent?.action
+        val action =
+            intent?.action
+
 
 
         Log.d(
             "LOGPOSE_BT",
             "RECEIVER ACTION = $action"
         )
+
+
 
 
 
@@ -47,33 +53,15 @@ class BluetoothReceiver(
 
                 Log.d(
                     "LOGPOSE_BT",
-                    "DEVICE FOUND EVENT"
-                )
-
-
-                val device =
-                    intent.getParcelableExtra<BluetoothDevice>(
-                        BluetoothDevice.EXTRA_DEVICE
-                    )
-                        ?: return
-
-
-
-                val logPoseDevice =
-                    device.toLogPoseDevice()
-
-
-
-                Log.d(
-                    "LOGPOSE_BT",
-                    "FOUND DEVICE: ${logPoseDevice.name} (${logPoseDevice.mac})"
+                    "ACTION_FOUND RECEIVED"
                 )
 
 
 
-                onDeviceFound(
-                    logPoseDevice
+                processFoundDevice(
+                    intent
                 )
+
 
             }
 
@@ -81,7 +69,33 @@ class BluetoothReceiver(
 
 
 
+
+            BluetoothDevice.ACTION_NAME_CHANGED -> {
+
+
+                Log.d(
+                    "LOGPOSE_BT",
+                    "ACTION_NAME_CHANGED RECEIVED"
+                )
+
+
+
+                processFoundDevice(
+                    intent
+                )
+
+
+            }
+
+
+
+
+
+
+
+
             BluetoothAdapter.ACTION_DISCOVERY_STARTED -> {
+
 
 
                 Log.d(
@@ -96,7 +110,11 @@ class BluetoothReceiver(
 
 
 
+
+
+
             BluetoothAdapter.ACTION_DISCOVERY_FINISHED -> {
+
 
 
                 Log.d(
@@ -105,9 +123,15 @@ class BluetoothReceiver(
                 )
 
 
+
                 onDiscoveryFinished()
 
+
+
             }
+
+
+
 
 
 
@@ -116,11 +140,14 @@ class BluetoothReceiver(
             BluetoothDevice.ACTION_ACL_CONNECTED -> {
 
 
+
                 val device =
-                    intent.getParcelableExtra<BluetoothDevice>(
-                        BluetoothDevice.EXTRA_DEVICE
+                    getBluetoothDevice(
+                        intent
                     )
                         ?: return
+
+
 
 
 
@@ -129,18 +156,18 @@ class BluetoothReceiver(
 
 
 
+
+
                 Log.d(
                     "LOGPOSE_BT",
                     "ACL CONNECTED: ${logPoseDevice.name}"
                 )
 
-
-
-                LogPoseEngine.onBluetoothConnected(
-                    logPoseDevice
-                )
-
-
+                if (context != null) {
+                    com.uriel.logpose.thamis.thamis_final.ThamisCore.getInstance(context).onBluetoothConnected(
+                        logPoseDevice
+                    )
+                }
 
                 onDeviceConnected?.invoke(
                     logPoseDevice
@@ -153,14 +180,20 @@ class BluetoothReceiver(
 
 
 
+
+
+
             BluetoothDevice.ACTION_ACL_DISCONNECTED -> {
 
 
+
                 val device =
-                    intent.getParcelableExtra<BluetoothDevice>(
-                        BluetoothDevice.EXTRA_DEVICE
+                    getBluetoothDevice(
+                        intent
                     )
                         ?: return
+
+
 
 
 
@@ -169,18 +202,18 @@ class BluetoothReceiver(
 
 
 
+
+
                 Log.d(
                     "LOGPOSE_BT",
                     "ACL DISCONNECTED: ${logPoseDevice.name}"
                 )
 
-
-
-                LogPoseEngine.onBluetoothDisconnected(
-                    logPoseDevice
-                )
-
-
+                if (context != null) {
+                    com.uriel.logpose.thamis.thamis_final.ThamisCore.getInstance(context).onBluetoothDisconnected(
+                        logPoseDevice
+                    )
+                }
 
                 onDeviceDisconnected?.invoke(
                     logPoseDevice
@@ -188,6 +221,105 @@ class BluetoothReceiver(
 
 
             }
+
+
+
+        }
+
+
+
+    }
+
+
+
+
+
+
+
+
+
+    private fun processFoundDevice(
+        intent: Intent?
+    ) {
+
+
+
+        val device =
+            getBluetoothDevice(
+                intent
+            )
+                ?: return
+
+
+
+
+
+        val logPoseDevice =
+            device.toLogPoseDevice()
+
+
+
+
+
+        Log.d(
+            "LOGPOSE_BT",
+            "FOUND DEVICE: ${logPoseDevice.name} (${logPoseDevice.mac})"
+        )
+
+
+
+
+
+        onDeviceFound(
+            logPoseDevice
+        )
+
+
+    }
+
+
+
+
+
+
+
+
+
+    private fun getBluetoothDevice(
+        intent: Intent?
+    ): BluetoothDevice? {
+
+
+        if(intent == null){
+
+            return null
+
+        }
+
+
+
+
+
+        return if(
+            Build.VERSION.SDK_INT >=
+            Build.VERSION_CODES.TIRAMISU
+        ){
+
+
+            intent.getParcelableExtra(
+                BluetoothDevice.EXTRA_DEVICE,
+                BluetoothDevice::class.java
+            )
+
+
+        }
+        else{
+
+
+            @Suppress("DEPRECATION")
+            intent.getParcelableExtra(
+                BluetoothDevice.EXTRA_DEVICE
+            )
 
 
         }
@@ -199,33 +331,71 @@ class BluetoothReceiver(
 
 
 
+
+
+
+
     @RequiresPermission(
         Manifest.permission.BLUETOOTH_CONNECT
     )
     private fun BluetoothDevice.toLogPoseDevice(): LogPoseDevice {
 
 
+
+        val deviceName =
+            try {
+
+                name
+
+            }
+            catch(
+                _: Exception
+            ){
+
+                null
+
+            }
+
+
+
+
+
         return LogPoseDevice(
 
-            mac = address,
+
+            mac =
+                address,
+
 
 
             name =
-                name ?: "Desconocido",
+                deviceName
+                    ?.takeIf {
+                        it.isNotBlank()
+                    }
+                    ?: "Desconocido",
+
+
 
 
             type =
                 DeviceClassifier.detect(
-                    name.orEmpty()
+                    deviceName.orEmpty()
                 ),
 
 
-            connected = false
+
+
+            connected =
+                false
+
+
 
         )
 
 
     }
+
 
 
 }

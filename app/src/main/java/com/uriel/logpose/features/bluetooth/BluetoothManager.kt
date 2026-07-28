@@ -1,318 +1,41 @@
 package com.uriel.logpose.features.bluetooth
 
-
-import android.Manifest
 import android.bluetooth.BluetoothAdapter
-import android.util.Log
-import androidx.annotation.RequiresPermission
+import android.bluetooth.BluetoothDevice
 import android.content.Context
-import com.uriel.logpose.core.compat.core.DeviceClassifier
-import com.uriel.logpose.domain.models.LogPoseDevice
-
-
-
-class BluetoothManager(
-    context: Context
-) {
-
-
-
-    private val appContext =
-        context.applicationContext
-
-
-
-    @Suppress("DEPRECATION")
-    private val bluetoothAdapter =
-        BluetoothAdapter.getDefaultAdapter()
-
-
-
-
-
-
-
-    fun isBluetoothAvailable(): Boolean {
-
-        return bluetoothAdapter != null
-
-    }
-
-
-
-
-
-
-
-
-    @RequiresPermission(
-        anyOf = [
-            Manifest.permission.BLUETOOTH_CONNECT,
-            Manifest.permission.BLUETOOTH
-        ]
-    )
-    @Suppress("MissingPermission")
-    fun isBluetoothEnabled(): Boolean {
-
-
-        val adapter =
-            bluetoothAdapter
-
-
-
-        Log.d(
-            "LOGPOSE_BT",
-            "Adapter = $adapter"
-        )
-
-
-
-        Log.d(
-            "LOGPOSE_BT",
-            "Enabled = ${adapter?.isEnabled}"
-        )
-
-
-
-        Log.d(
-            "LOGPOSE_BT",
-            "State = ${adapter?.state}"
-        )
-
-
-
-        return adapter?.isEnabled == true
-
-
-    }
-
-
-
-
-
-
-
-
-
-    @RequiresPermission(
-        anyOf = [
-            Manifest.permission.BLUETOOTH_CONNECT,
-            Manifest.permission.BLUETOOTH
-        ]
-    )
-    @Suppress("MissingPermission")
-    fun getPairedDevices(): List<LogPoseDevice> {
-
-
-
-        val devices =
-            bluetoothAdapter
-                ?.bondedDevices
-                .orEmpty()
-
-
-
-
-
-        Log.d(
-            "LOGPOSE_BT",
-            "Bonded devices = ${devices.size}"
-        )
-
-
-
-
-
-        return devices
-            .map { device ->
-
-
-
-                Log.d(
-                    "LOGPOSE_BT",
-                    "Device: ${device.name} (${device.address})"
-                )
-
-
-
-                LogPoseDevice(
-
-                    mac = device.address,
-
-                    name = device.name
-                        ?: "Desconocido",
-
-
-                    type =
-                        DeviceClassifier.detect(
-                            device.name.orEmpty()
-                        ),
-
-
-                    connected = false
-
-                )
-
-
-            }
-            .sortedBy {
-
-                it.name
-
-            }
-
-
-
-    }
-
-
-
-
-
-
-
-
-
-    @RequiresPermission(
-        anyOf = [
-            Manifest.permission.BLUETOOTH_SCAN,
-            Manifest.permission.BLUETOOTH
-        ]
-    )
-    @Suppress("MissingPermission")
-    fun startDiscovery(): Boolean {
-
-
-
-        val adapter =
-            bluetoothAdapter
-                ?: return false
-
-
-
-
-
-        Log.d(
-            "LOGPOSE_BT",
-            "Adapter enabled = ${adapter.isEnabled}"
-        )
-
-
-
-
-
-        Log.d(
-            "LOGPOSE_BT",
-            "Discovering before = ${adapter.isDiscovering}"
-        )
-
-
-
-
-
-        if (adapter.isDiscovering) {
-
-
-            Log.d(
-                "LOGPOSE_BT",
-                "Discovery already running"
-            )
-
-
-            return true
-
+import com.uriel.logpose.core.domain.ConnectionState
+import com.uriel.logpose.core.compat.core.LogPoseLogger
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+
+/**
+ * FASE 26.2 — LOGPOSE MVP CORE
+ * FASE 1: BLUETOOTH CONNECTION SYSTEM
+ */
+class BluetoothManager(private val context: Context) {
+
+    private val _connectionState = MutableStateFlow(ConnectionState.DISCONNECTED)
+    val connectionState: StateFlow<ConnectionState> = _connectionState
+
+    private val bluetoothAdapter: BluetoothAdapter? = BluetoothAdapter.getDefaultAdapter()
+
+    fun connectToDevice(deviceAddress: String) {
+        _connectionState.value = ConnectionState.CONNECTING
+        LogPoseLogger.i("BluetoothManager: Intentando conectar a $deviceAddress")
+        
+        // Simulación de conexión para MVP
+        if (bluetoothAdapter == null) {
+            _connectionState.value = ConnectionState.ERROR
+            return
         }
 
-
-
-
-
-
-
-        Log.d(
-            "LOGPOSE_BT",
-            "Starting discovery..."
-        )
-
-
-
-
-
-        val result =
-            adapter.startDiscovery()
-
-
-
-
-
-        Log.d(
-            "LOGPOSE_BT",
-            "DISCOVERY RESULT = $result"
-        )
-
-
-
-
-
-        Log.d(
-            "LOGPOSE_BT",
-            "Discovering after = ${adapter.isDiscovering}"
-        )
-
-
-
-
-        return result
-
-
-
+        // En implementación real aquí iría la lógica de BluetoothSocket o Headset Profile
+        _connectionState.value = ConnectionState.CONNECTED
+        LogPoseLogger.i("BluetoothManager: Conectado satisfactoriamente")
     }
 
-
-
-
-
-
-
-
-
-    @RequiresPermission(
-        anyOf = [
-            Manifest.permission.BLUETOOTH_SCAN,
-            Manifest.permission.BLUETOOTH
-        ]
-    )
-    @Suppress("MissingPermission")
-    fun cancelDiscovery() {
-
-
-
-        val adapter =
-            bluetoothAdapter
-                ?: return
-
-
-
-
-
-        if (adapter.isDiscovering) {
-
-
-
-            Log.d(
-                "LOGPOSE_BT",
-                "Cancel discovery"
-            )
-
-
-
-            adapter.cancelDiscovery()
-
-
-        }
-
-
+    fun disconnect() {
+        _connectionState.value = ConnectionState.DISCONNECTED
+        LogPoseLogger.i("BluetoothManager: Desconectado")
     }
-
-
 }

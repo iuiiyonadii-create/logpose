@@ -1,0 +1,49 @@
+{
+  "scenarios": [
+    {
+      "name": "📦 Pedido Nuevo (Urgente)",
+      "command": "DELIVERY_NEW_ORDER",
+      "color": "#00b894",
+      "params": { "priority": "MAX", "platform": "PedidosYa" }
+    },
+    {
+      "name": "🏍️ Ruta Alta Velocidad",
+      "command": "SIM_SPEED",
+      "color": "#e17055",
+      "physics": { "vibration_hz": 125, "lean_max": 45, "g_force": 1.2 }
+    },
+    {
+      "name": "🔋 Batería Crítica",
+      "command": "SIM_BATTERY",
+      "color": "#fdcb6e",
+      "params": { "voltage_drop": "0.1V/min", "threshold": 5 }
+    },
+    {
+      "name": "⛈️ Tormenta Tropical",
+      "command": "SIM_RAIN",
+      "color": "#0984e3",
+      "weather": { "intensity_mm_h": 100, "signal_loss_db": -15, "visibility_m": 50 }
+    },
+    {
+      "name": "🚫 Zona Muerta (Túnel)",
+      "command": "SIM_SIGNAL_LOSS",
+      "color": "#d63031",
+      "network": { "packet_loss": 0.95, "latency_ms": 2500, "jitter": 0.3 }
+    },
+    {
+      "name": "📊 Auditoría Estratégica",
+      "command": "AI_REPORT",
+      "color": "#6c5ce7"
+    }
+  ],
+  "intercoms": [
+    {"name": "Ejeas V6 Pro (BT 5.1)", "snr_base": 40, "latency_ms": 150},
+    {"name": "Cardo Packtalk Edge (DMC)", "snr_base": 65, "latency_ms": 40},
+    {"name": "Generic BT (BT 3.0)", "snr_base": 25, "latency_ms": 400}
+  ],
+  "phones": [
+    {"name": "Xiaomi Redmi 15C", "cpu_cores": 8, "ram_gb": 4, "api": 34},
+    {"name": "Samsung Galaxy S8", "cpu_cores": 4, "ram_gb": 4, "api": 26},
+    {"name": "Samsung A15", "cpu_cores": 8, "ram_gb": 6, "api": 33}
+  ]
+}

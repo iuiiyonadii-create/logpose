@@ -24,4 +24,16 @@ class MusicService(
     fun isPlaying(): Boolean =
         provider.isPlaying()
 
+    fun repeat() =
+        provider.repeat()
+
+    fun setVolume(level: Int) =
+        provider.setVolume(level)
+
+    fun mute() =
+        provider.mute()
+
+    fun silence() =
+        provider.silence()
+
 }

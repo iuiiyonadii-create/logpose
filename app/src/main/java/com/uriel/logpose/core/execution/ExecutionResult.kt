@@ -1,8 +1,9 @@
 package com.uriel.logpose.core.execution
 
+/**
+ * Resultado de una ejecución.
+ */
 data class ExecutionResult(
-
-    val status: ExecutionStatus,
-
-    val message: String? = null
+    val success: Boolean,
+    val message: String = ""
 )

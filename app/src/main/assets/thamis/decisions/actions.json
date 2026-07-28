@@ -1,0 +1,5 @@
+{
+  "EXECUTE": { "feedback": "bip_success" },
+  "CONFIRM": { "feedback": "voice_prompt" },
+  "IGNORE": { "feedback": "silent" }
+}

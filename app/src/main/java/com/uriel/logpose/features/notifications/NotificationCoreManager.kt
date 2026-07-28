@@ -1,26 +1,17 @@
 package com.uriel.logpose.features.notifications
 
 import com.uriel.logpose.domain.models.NotificationCategory
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
+
+import com.uriel.logpose.features.navigation.NavigationReader
 
 /**
- * Fachada oficial de Notification Core (Decision 4, Sprint Notification
- * Core: renombrada desde "NotificationManager" para no colisionar con
- * android.app.NotificationManager, ya en uso en
- * core.notifications.NotificationHelper).
- *
- * Es el unico punto de entrada que ViewModels/Compose deberian usar. Por
- * debajo coordina [NotificationSession] (reglas), [NotificationRepository]
- * (estado/historial) y [NotificationReceiver] (conexion con
- * NotificationProbeService), respetando el flujo oficial:
- *
- * Compose -> ViewModel -> NotificationCoreManager -> NotificationRepository
- * -> NotificationProbeService -> Android NotificationListenerService
- *
- * No depende de Bluetooth, Voice ni THAMIS (requisito explicito del
- * Sprint); expone [state] y [events] para que esos modulos se integren
- * a futuro sin que Notification Core dependa de ellos.
+ * Fachada oficial de Notification Core.
  */
 class NotificationCoreManager(
     private val session: NotificationSession = NotificationSession(),
@@ -28,10 +19,23 @@ class NotificationCoreManager(
 ) {
 
     private val receiver = NotificationReceiver(repository)
+    private val scope = CoroutineScope(Dispatchers.Main)
 
     val state: StateFlow<NotificationState> = repository.state
 
     val events: SharedFlow<NotificationCoreEvent> = repository.events
+
+    init {
+        events.onEach { event ->
+            if (event is NotificationCoreEvent.Posted) {
+                when (event.item.category) {
+                    NotificationCategory.DELIVERY -> NotificationReader.announce(event.item)
+                    NotificationCategory.NAVIGATION -> NavigationReader.read(event.item)
+                    else -> {}
+                }
+            }
+        }.launchIn(scope)
+    }
 
     /** Empieza a escuchar notificaciones. Llamar una vez, desde AppContainer. */
     fun start() {

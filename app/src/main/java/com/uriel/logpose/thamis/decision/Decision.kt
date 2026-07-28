@@ -11,6 +11,8 @@ data class Decision(
 
     val confidence: Float,
 
+    val entities: Map<String, String> = emptyMap(),
+
     val requiresConfirmation: Boolean = false
 
 )

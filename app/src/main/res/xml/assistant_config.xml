@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<voice-interaction-service xmlns:android="http://schemas.android.com/apk/res/android"
+    android:sessionService="com.uriel.logpose.core.services.assistant.LogPoseSessionService"
+    android:recognitionService="com.uriel.logpose.core.services.assistant.LogPoseRecognitionService"
+    android:settingsActivity="com.uriel.logpose.core.app.MainActivity"
+    android:supportsAssist="true"
+    android:supportsLocalInteraction="true" />

@@ -40,12 +40,29 @@ object CommandAliasRepository {
         // Abrir
         "abre" to "abrir",
         "abrime" to "abrir",
+        "abrí" to "abrir",
+        "abri" to "abrir",
         "abrir" to "abrir",
 
         // Música
         "musica" to "musica",
         "música" to "musica",
         "spotify" to "spotify",
+        "reproduce" to "reproducir",
+        "reproducí" to "reproducir",
+        "reproduci" to "reproducir",
+        "reproducir" to "reproducir",
+        "pone" to "poner",
+        "poné" to "poner",
+        "pone" to "poner",
+
+        // PC / Streaming
+        "yutub" to "youtube",
+        "yutu" to "youtube",
+        "youtbe" to "youtube",
+        "nefli" to "netflix",
+        "netfli" to "netflix",
+        "nesfli" to "netflix",
 
         // Conectores frecuentes
         "al" to "a",
