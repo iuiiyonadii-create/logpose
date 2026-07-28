@@ -1,48 +1,41 @@
-# brain_pc.py - THAMIS UNIFIED COGNITIVE SYSTEM (v25.0)
-# IA: Orchestrator, Security Architect & Auto-Documentation
+# brain_pc.py - THAMIS CLOUD & STRATEGIC BRAIN (v30.0)
+# IA: Master Controller, Distributed Scaling & Architecture Guardian
 from flask import Flask, request, jsonify
 import time
-from datetime import datetime
 
 app = Flask(__name__)
 
-# --- MEMORIA DE SEGURIDAD (TASA) ---
-SECURITY_POLICIES = {
-    "VOICE_ACTION_CRITICAL": "Requires 95% confidence + Context Validation",
-    "LOCATION_ACCESS": "Foreground only, permanent notification required",
-    "BT_PAIRING": "Trusted devices only"
-}
+# --- INFRASTRUCTURE STATUS (Simulado) ---
+NODES = [
+    {"id": "NODE_LOCAL", "type": "Master", "cpu": 45, "status": "ONLINE"},
+    {"id": "NODE_WORKER_1", "type": "Simulation", "cpu": 12, "status": "IDLE"},
+    {"id": "NODE_WORKER_2", "type": "Simulation", "cpu": 88, "status": "LOADED"}
+]
 
-@app.route('/taes/security/audit', methods=['POST'])
-def run_security_audit():
-    data = request.json
-    findings = [
-        "Permiso de Micrófono: OK (Uso bajo demanda)",
-        "Almacenamiento de Voz: OK (Datos anonimizados)",
-        "Riesgo de Inyección: BAJO (Capa de validación fonética activa)"
-    ]
-    return jsonify({"score": 99, "status": "SECURE", "findings": findings})
-
-@app.route('/taes/docs/generate', methods=['POST'])
-def generate_docs():
-    data = request.json
-    doc_type = data.get('type', 'ADR')
-    timestamp = datetime.now().strftime("%Y-%m-%d %H:%M")
-
-    if doc_type == "ADR":
-        content = f"ADR-025: Implementación de Orquestación Autónoma.\nFecha: {timestamp}\nMotivo: Centralizar toma de decisiones.\nResultado: Mejora en ciclo de vida de QA."
-    else:
-        content = f"Reporte Diario de Ingeniería THAMIS.\nPruebas Realizadas: 15.000\nErrores Detectados: 2\nEstado: release-ready."
-
-    return jsonify({"filename": f"{doc_type}_{int(time.time())}.md", "content": content})
-
-@app.route('/taes/orchestrator/dispatch', methods=['POST'])
-def orchestrator_dispatch():
-    task = request.json.get('task', 'Full System Loop')
-    print(f"📡 [TAO] Despachando agentes para: {task}")
+@app.route('/taes/cloud/status', methods=['GET'])
+def cloud_status():
     return jsonify({
-        "plan": ["Scan Code", "Run Chaos", "Audit Performance", "Update Knowledge Graph", "Generate Docs"],
-        "status": "IN_PROGRESS"
+        "active_nodes": len(NODES),
+        "total_simulations": 3500,
+        "nodes": NODES,
+        "job_queue": {"critical": 0, "high": 5, "medium": 12}
+    })
+
+@app.route('/taes/cloud/scale', methods=['POST'])
+def scale_infrastructure():
+    # Simulación de auto-scaling
+    new_node = {"id": f"NODE_WORKER_{len(NODES)}", "type": "Simulation", "cpu": 0, "status": "STARTING"}
+    NODES.append(new_node)
+    return jsonify({"msg": "Escalando infraestructura: Nuevo worker iniciado.", "node": new_node})
+
+@app.route('/taes/architecture/adr', methods=['POST'])
+def generate_adr():
+    data = request.json
+    decision = data.get('decision', 'Refactor')
+    return jsonify({
+        "status": "RECORDED",
+        "adr_id": f"ADR-{int(time.time())}",
+        "content": f"Decisión técnica: {decision} registrada en el Documento de Arquitectura Maestra."
     })
 
 @app.route('/process', methods=['POST'])
@@ -50,6 +43,6 @@ def process():
     return jsonify({"intent": "PLAY_MUSIC", "confidence": 1.0})
 
 if __name__ == '__main__':
-    print("--- 🧠 THAMIS CONSOLIDATED BRAIN v25.0 ---")
-    print("🚀 Orquestador, Seguridad y Documentación ACTIVOS.")
+    print("--- 🧠 THAMIS MASTER CLOUD BRAIN v30.0 ---")
+    print("🚀 Nodo Maestro, Escalabilidad y Arquitectura ACTIVOS.")
     app.run(host='0.0.0.0', port=5000)

@@ -1,31 +1,52 @@
-# LogPose & THAMIS LAB Architecture
+# THAMIS LAB - DOCUMENTO DE ARQUITECTURA MAESTRA
 
-## 1. Modular Structure (Clean Architecture)
-LogPose is built using a strict modular approach to ensure scalability and testability, validated by the THAMIS LAB platform.
+## 1. VISIÓN GENERAL
+THAMIS es una plataforma autónoma de ingeniería diseñada para evolucionar **LogPose**. No es solo un banco de pruebas; es un ecosistema que investiga, simula y repara software para motociclistas.
 
-- **`core`**: Contains system-wide logic, event bus, security, and global constants.
-- **`domain`**: The business logic. Contains pure Kotlin models, repository interfaces, and use cases. No Android dependencies.
-- **`data`**: Implementation of repositories. Handles Bluetooth APIs, Room database, DataStore, and external service listeners.
-- **`presentation`**: UI layer using Jetpack Compose and MVVM. ViewModels observe `StateFlow` from repositories.
-- **`services`**: Foreground services for background persistence and system-wide orchestration.
+## 2. FILOSOFÍA CENTRAL
+- **Clean Architecture & SOLID**: El código debe ser una obra de ingeniería, no un parche.
+- **Datos sobre Opiniones**: Cada decisión se basa en telemetría real y métricas científicas.
+- **Resiliencia proactiva**: Buscamos el fallo antes de que el usuario lo sufra.
 
-## 2. Intelligence Layer: THAMIS Core
-THAMIS is an 18-layer intelligence platform that orchestrates LogPose's behavior.
+## 3. ARQUITECTURA DE ALTO NIVEL
+```text
+                THAMIS CLOUD / DISTRIBUTED
+                         |
+                MASTER ORCHESTRATOR
+                         |
+        -------------------------------------------
+        |                |              |         |
+   VOICE LAB        SIM ENGINE     CHAOS ENG    TASA (SEC)
+        |                |              |         |
+        -------------------------------------------
+                         |
+                 AI DECISION CORE (TADE)
+                         |
+               KNOWLEDGE GRAPH MEMORY
+                         |
+                  TRAINING PIPELINE
+                         |
+                   CLAUDE CODE BRIDGE
+```
 
-### 2.1 The Event Pipeline
-1. **Source**: An event occurs (e.g., Message received, Voice command, Navigation turn).
-2. **Context Analyzer**: Evaluates the current state (Speed, Attention level, Music state).
-3. **Safety Engine**: Checks if the action is safe at this moment.
-4. **Decision Engine**: Determines the outcome (ALLOW, DELAY, IGNORE, BLOCK).
-5. **Action Executor**: Performs the physical action (Voice output, Music pause).
+## 4. CATÁLOGO DE MÓDULOS
+- **USO (Unified Simulation Orchestrator)**: Gestiona la carga de hardware físico.
+- **VITE (Voice Intelligence Training)**: Mejora del motor NLP bajo ruido extremo.
+- **AWS (Acoustic World Simulator)**: Recreación de climas y aerodinámica sonora.
+- **TKGM (Knowledge Graph Memory)**: Memoria permanente de relaciones de ingeniería.
+- **TDA (Distributed Lab)**: Escalabilidad masiva mediante nodos de simulación.
 
-### 2.2 Security Model (Zero Trust)
-- No module is trusted by default.
-- Every cross-module request through the `EventBus` is validated for permission and context.
-- Local-first memory: Conversational data is never stored; only authorized preferences are kept in encrypted local storage.
+## 5. FLUJO DE DATOS Y EVENTOS
+1. **Entrada**: Scenarios TSF, OSINT Findings, Logs de Usuarios Reales.
+2. **Proceso**: Simulación en Workers -> Análisis RCA -> Debate Agentes -> Propuesta TADE.
+3. **Salida**: Parches de Código, Documentación ADR, Certificados de Calidad.
 
-## 3. Persistent Operation
-LogPose utilizes a Foreground Service (`LogPoseService`) to ensure the "Copilot" remains active even when the screen is off or the app is in the background.
+## 6. PLAN DE ESCALABILIDAD
+- **FASE 1 (Local)**: Laboratorio en PC de desarrollo (Actual).
+- **FASE 2 (Híbrida)**: PC + Servidores dedicados para emulación masiva.
+- **FASE 3 (Nube)**: Infraestructura elástica en AWS/Azure para pruebas de flota global.
 
-## 4. Voice-First UX
-The UI is primarily for initial configuration. All interactions during riding are designed for Voice Input (STT) and Voice Output (TTS) through Bluetooth SCO channels.
+## 7. CONSTITUCIÓN TÉCNICA
+- **Límite de recursos**: < 80% utilización para garantizar fidelidad de simulación.
+- **Documentación ADR**: Obligatoria para cada cambio arquitectónico.
+- **Seguridad**: Cero exposición de datos personales de usuarios reales.
