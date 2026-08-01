@@ -1,0 +1,59 @@
+syntax = "proto3";
+
+package com.thamis.lab.core.contracts.proto;
+
+option java_multiple_files = true;
+option java_package = "com.thamis.lab.core.contracts.proto";
+
+message MessageVersionProto {
+  int32 major = 1;
+  int32 minor = 2;
+  int32 patch = 3;
+}
+
+message AudioStateProto {
+  bool is_playing = 1;
+  string current_media_app = 2;
+  int32 volume_percent = 3;
+}
+
+message BluetoothStateProto {
+  bool is_connected = 1;
+  string device_name = 2;
+  bool is_intercom = 3;
+}
+
+message LocationStateProto {
+  double speed_kmh = 1;
+  double latitude = 2;
+  double longitude = 3;
+}
+
+message BatteryStateProto {
+  int32 level_percent = 1;
+  bool is_charging = 2;
+}
+
+message CognitiveSnapshotProto {
+  int64 timestamp_ms = 1;
+  AudioStateProto audio_state = 2;
+  BluetoothStateProto bluetooth_state = 3;
+  LocationStateProto location_state = 4;
+  BatteryStateProto battery_state = 5;
+  string active_app = 6;
+}
+
+message CognitiveExplanationProto {
+  string reasoning_trace = 1;
+  repeated string evidences_used = 2;
+  repeated string evaluated_policies = 3;
+  double final_confidence = 4;
+}
+
+message CognitiveDecisionProto {
+  string intent_name = 1;
+  double confidence_score = 2;
+  string action_command = 3;
+  bool is_executable = 4;
+  CognitiveExplanationProto explanation = 5;
+}

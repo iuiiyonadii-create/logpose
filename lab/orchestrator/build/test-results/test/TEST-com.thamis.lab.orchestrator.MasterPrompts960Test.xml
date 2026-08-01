@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.thamis.lab.orchestrator.MasterPrompts960Test" tests="1" skipped="0" failures="0" errors="0" timestamp="2026-08-01T19:21:11.487Z" hostname="DESKTOP-A234HEL" time="0.004">
+  <properties/>
+  <testcase name="testEngineeringCivilizationEternalCharterAndCivilizationCore" classname="com.thamis.lab.orchestrator.MasterPrompts960Test" time="0.004"/>
+  <system-out><![CDATA[[INFO] [EngineeringCivilizationEngine] Auditing THAMIS LAB OS Engineering Civilization and institutional memory...
+[INFO] [ThamisEternalEngineeringCharterEngine] Auditing THAMIS Eternal Engineering Charter alignment (Target: LogPose)...
+[INFO] [ThamisEngineeringCivilizationCore] ========================================================================================
+[INFO] [ThamisEngineeringCivilizationCore] [THAMIS ENGINEERING CIVILIZATION CORE START] ID: civ-1785612071490
+[INFO] [ThamisEngineeringCivilizationCore] ========================================================================================
+[INFO] [EngineeringCivilizationEngine] Auditing THAMIS LAB OS Engineering Civilization and institutional memory...
+[INFO] [ThamisEternalEngineeringCharterEngine] Auditing THAMIS Eternal Engineering Charter alignment (Target: LogPose)...
+[INFO] [ThamisEngineeringCivilizationCore] [CIVILIZATION CORE VERIFICATION SUMMARY] THAMIS ENGINEERING CIVILIZATION CORE VERIFIED 100.0/100: 960/960 Master System Prompts PASSED.
+]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

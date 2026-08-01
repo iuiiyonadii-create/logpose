@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.thamis.ui.missioncontrol.MissionControlTest" tests="1" skipped="0" failures="0" errors="0" timestamp="2026-08-01T19:21:10.672Z" hostname="DESKTOP-A234HEL" time="0.052">
+  <properties/>
+  <testcase name="testMainDashboardControllerStateUpdates" classname="com.thamis.ui.missioncontrol.MissionControlTest" time="0.046"/>
+  <system-out><![CDATA[[INFO] [MainDashboardController] Updating ComboBox selector with 2 devices...
+[INFO] [MainDashboardController] ComboBox Option -> '2409BRN2CA (USB)' [serial=TKDMZPZDZ5MR8XNV]
+[INFO] [MainDashboardController] ComboBox Option -> '2409BRN2CA (WiFi)' [serial=adb-TKDMZPZDZ5MR8XNV-T8B1CJ._adb-tls-connect._tcp]
+[INFO] [MainDashboardController] Selected Option -> 'TKDMZPZDZ5MR8XNV'
+[INFO] [MainDashboardController] User selected device serial: adb-TKDMZPZDZ5MR8XNV-T8B1CJ._adb-tls-connect._tcp
+]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

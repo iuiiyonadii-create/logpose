@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.thamis.lab.evidence.ReleaseReadinessTest" tests="1" skipped="0" failures="0" errors="0" timestamp="2026-08-01T19:21:10.842Z" hostname="DESKTOP-A234HEL" time="0.002">
+  <properties/>
+  <testcase name="testReleaseReadinessEngine" classname="com.thamis.lab.evidence.ReleaseReadinessTest" time="0.002"/>
+  <system-out><![CDATA[[INFO] [ReleaseReadinessEngine] Calculating final Release Readiness Score for THAMIS LAB OS...
+]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

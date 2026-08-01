@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.thamis.lab.headless.HeadlessRunnerTest" tests="3" skipped="0" failures="0" errors="0" timestamp="2026-08-01T14:21:40.929Z" hostname="DESKTOP-A234HEL" time="0.038">
+  <properties/>
+  <testcase name="testHighThroughputSimulation" classname="com.thamis.lab.headless.HeadlessRunnerTest" time="0.027"/>
+  <testcase name="testDeterministicExecutionAndSpeedControl" classname="com.thamis.lab.headless.HeadlessRunnerTest" time="0.001"/>
+  <testcase name="testVirtualClockPauseAndResume" classname="com.thamis.lab.headless.HeadlessRunnerTest" time="0.0"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

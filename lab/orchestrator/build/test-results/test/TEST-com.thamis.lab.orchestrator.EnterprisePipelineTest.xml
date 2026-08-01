@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.thamis.lab.orchestrator.EnterprisePipelineTest" tests="1" skipped="0" failures="0" errors="0" timestamp="2026-08-01T19:21:11.337Z" hostname="DESKTOP-A234HEL" time="0.032">
+  <properties/>
+  <testcase name="testThamisEnterprisePipelineFullFlow" classname="com.thamis.lab.orchestrator.EnterprisePipelineTest" time="0.032"/>
+  <system-out><![CDATA[[INFO] [ThamisEnterprisePipeline] ==================================================
+[INFO] [ThamisEnterprisePipeline] [ENTERPRISE PIPELINE START] Serial: TKDMZPZDZ5MR8XNV
+[INFO] [ThamisEnterprisePipeline] ==================================================
+[ERROR] [RealAdbTelemetryCollector] Failed to execute shell command 'dumpsys cpuinfo' on TKDMZPZDZ5MR8XNV Cannot run program "adb": CreateProcess error=2, El sistema no puede encontrar el archivo especificado
+[ERROR] [RealAdbTelemetryCollector] Failed to execute shell command 'dumpsys meminfo' on TKDMZPZDZ5MR8XNV Cannot run program "adb": CreateProcess error=2, El sistema no puede encontrar el archivo especificado
+[ERROR] [RealAdbTelemetryCollector] Failed to execute shell command 'dumpsys battery' on TKDMZPZDZ5MR8XNV Cannot run program "adb": CreateProcess error=2, El sistema no puede encontrar el archivo especificado
+[INFO] [DigitalTwinCollector] [DIGITAL TWIN SYNC] Serial: TKDMZPZDZ5MR8XNV -> CPU: 2.4%, RAM: 6964.0MB, Temp: 34.5°C
+[INFO] [ThamisEnterprisePipeline] [STEP 1] Digital Twin Synced -> CPU: 2.4%, RAM: 6964.0MB
+[INFO] [RealBluetoothValidator] Validating Bluetooth connection for 'Cardo Packtalk Edge' on TKDMZPZDZ5MR8XNV...
+[INFO] [ThamisEnterprisePipeline] [STEP 2] Bluetooth Real -> Device: Cardo Packtalk Edge, RSSI: -58dBm
+[INFO] [SpeechRecognitionLab] Evaluating engine 'AndroidSpeechRecognizer' on audio 'sample.pcm'...
+[INFO] [ThamisEnterprisePipeline] [STEP 3] Speech Lab -> WER: 0.0, ResponseTime: 180ms
+[INFO] [AiBugHunter] Hunting for bugs across logcat traces (crashes: 0)...
+[INFO] [ThamisEnterprisePipeline] [STEP 4] AI Bug Hunter -> Bugs found: 0
+[INFO] [ThamisEnterprisePipeline] [STEP 5] Official Certificate Generated -> ID: CERT-LOGPOSE-1785612071367, Score: 100.0/100, Badge: PASSED
+]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

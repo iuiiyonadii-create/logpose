@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.thamis.lab.orchestrator.AutonomousCampaignTest" tests="2" skipped="0" failures="0" errors="0" timestamp="2026-08-01T19:21:11.196Z" hostname="DESKTOP-A234HEL" time="0.138">
+  <properties/>
+  <testcase name="testAutonomousCampaignPipelineAndLearningStore" classname="com.thamis.lab.orchestrator.AutonomousCampaignTest" time="0.117"/>
+  <testcase name="testRealCommandRunnerAndValidationEngine" classname="com.thamis.lab.orchestrator.AutonomousCampaignTest" time="0.016"/>
+  <system-out><![CDATA[[INFO] [AutonomousCampaignEngine] [AUTONOMOUS START] Launching pipeline on TKDMZPZDZ5MR8XNV with command 'poné música'...
+[ERROR] [RealAdbTelemetryCollector] Failed to execute shell command 'dumpsys battery' on TKDMZPZDZ5MR8XNV Cannot run program "adb": CreateProcess error=2, El sistema no puede encontrar el archivo especificado
+[INFO] [AutonomousCampaignEngine] [STEP 1] Battery level: 85%
+[ERROR] [RealCommandRunner] Failed command 'adb -s TKDMZPZDZ5MR8XNV shell am start -n com.uriel.logpose/.MainActivity' Cannot run program "adb": CreateProcess error=2, El sistema no puede encontrar el archivo especificado
+[INFO] [RealCommandRunner] Command Record -> 'adb -s TKDMZPZDZ5MR8XNV shell am start -n com.uriel.logpose/.MainActivity' [Exit: -1, Latency: 7ms, Success: false]
+[INFO] [AutonomousCampaignEngine] [STEP 2] Open App -> false
+[ERROR] [RealCommandRunner] Failed command 'adb -s TKDMZPZDZ5MR8XNV shell input text poné música' Cannot run program "adb": CreateProcess error=2, El sistema no puede encontrar el archivo especificado
+[INFO] [RealCommandRunner] Command Record -> 'adb -s TKDMZPZDZ5MR8XNV shell input text poné música' [Exit: -1, Latency: 4ms, Success: false]
+[INFO] [AutonomousCampaignEngine] [STEP 3] Input Text -> false
+[ERROR] [RealCommandRunner] Failed command 'adb -s TKDMZPZDZ5MR8XNV shell screencap -p /sdcard/screen.png' Cannot run program "adb": CreateProcess error=2, El sistema no puede encontrar el archivo especificado
+[INFO] [RealCommandRunner] Command Record -> 'adb -s TKDMZPZDZ5MR8XNV shell screencap -p /sdcard/screen.png' [Exit: -1, Latency: 5ms, Success: false]
+[INFO] [AutonomousCampaignEngine] [STEP 4] Screenshot -> false
+[ERROR] [RealLogposeController] Failed shell command 'pidof com.uriel.logpose' on TKDMZPZDZ5MR8XNV Cannot run program "adb": CreateProcess error=2, El sistema no puede encontrar el archivo especificado
+[ERROR] [RealLogcatEngine] Failed to capture logcat from TKDMZPZDZ5MR8XNV Cannot run program "adb": CreateProcess error=2, El sistema no puede encontrar el archivo especificado
+[INFO] [AutonomousCampaignEngine] [STEP 5] Validation -> ProcessAlive=false, Score=50.0
+[ERROR] [RealCommandRunner] Failed command 'adb -s TKDMZPZDZ5MR8XNV shell am force-stop com.uriel.logpose' Cannot run program "adb": CreateProcess error=2, El sistema no puede encontrar el archivo especificado
+[INFO] [RealCommandRunner] Command Record -> 'adb -s TKDMZPZDZ5MR8XNV shell am force-stop com.uriel.logpose' [Exit: -1, Latency: 4ms, Success: false]
+[INFO] [AutonomousCampaignEngine] [STEP 6] Close App finished.
+[ERROR] [RealCommandRunner] Failed command 'adb -s emulator-5554 shell am start -n com.uriel.logpose/.MainActivity' Cannot run program "adb": CreateProcess error=2, El sistema no puede encontrar el archivo especificado
+[INFO] [RealCommandRunner] Command Record -> 'adb -s emulator-5554 shell am start -n com.uriel.logpose/.MainActivity' [Exit: -1, Latency: 4ms, Success: false]
+[ERROR] [RealCommandRunner] Failed command 'adb -s emulator-5554 shell am force-stop com.uriel.logpose' Cannot run program "adb": CreateProcess error=2, El sistema no puede encontrar el archivo especificado
+[INFO] [RealCommandRunner] Command Record -> 'adb -s emulator-5554 shell am force-stop com.uriel.logpose' [Exit: -1, Latency: 4ms, Success: false]
+[ERROR] [RealLogposeController] Failed shell command 'pidof com.uriel.logpose' on emulator-5554 Cannot run program "adb": CreateProcess error=2, El sistema no puede encontrar el archivo especificado
+[ERROR] [RealLogcatEngine] Failed to capture logcat from emulator-5554 Cannot run program "adb": CreateProcess error=2, El sistema no puede encontrar el archivo especificado
+]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>
