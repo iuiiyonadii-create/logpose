@@ -1,52 +1,43 @@
-# THAMIS LAB - DOCUMENTO DE ARQUITECTURA MAESTRA
+# THAMIS LAB - DOCUMENTO DE ARQUITECTURA MAESTRA (v35.0)
 
 ## 1. VISIÓN GENERAL
-THAMIS es una plataforma autónoma de ingeniería diseñada para evolucionar **LogPose**. No es solo un banco de pruebas; es un ecosistema que investiga, simula y repara software para motociclistas.
+THAMIS es un ecosistema autónomo de ingeniería diseñado para garantizar la perfección de **LogPose**. Se basa en un ciclo cerrado de mejora continua alimentado por datos del mundo real y validado por un riguroso motor de calidad.
 
-## 2. FILOSOFÍA CENTRAL
-- **Clean Architecture & SOLID**: El código debe ser una obra de ingeniería, no un parche.
-- **Datos sobre Opiniones**: Cada decisión se basa en telemetría real y métricas científicas.
-- **Resiliencia proactiva**: Buscamos el fallo antes de que el usuario lo sufra.
-
-## 3. ARQUITECTURA DE ALTO NIVEL
+## 2. ARQUITECTURA DE ALTO NIVEL
 ```text
                 THAMIS CLOUD / DISTRIBUTED
                          |
-                MASTER ORCHESTRATOR
+                MASTER ORCHESTRATOR (TAO)
                          |
         -------------------------------------------
         |                |              |         |
-   VOICE LAB        SIM ENGINE     CHAOS ENG    TASA (SEC)
+   VOICE LAB        REALITY ENGINE   CHAOS ENG    TASA (SEC)
         |                |              |         |
         -------------------------------------------
                          |
                  AI DECISION CORE (TADE)
                          |
+               QUALITY ASSURANCE ENGINE (TQAE)
+                         |
                KNOWLEDGE GRAPH MEMORY
                          |
-                  TRAINING PIPELINE
-                         |
-                   CLAUDE CODE BRIDGE
+                  CLAUDE CODE BRIDGE (RELEASE GATE)
 ```
 
-## 4. CATÁLOGO DE MÓDULOS
-- **USO (Unified Simulation Orchestrator)**: Gestiona la carga de hardware físico.
-- **VITE (Voice Intelligence Training)**: Mejora del motor NLP bajo ruido extremo.
-- **AWS (Acoustic World Simulator)**: Recreación de climas y aerodinámica sonora.
-- **TKGM (Knowledge Graph Memory)**: Memoria permanente de relaciones de ingeniería.
-- **TDA (Distributed Lab)**: Escalabilidad masiva mediante nodos de simulación.
+## 3. CATÁLOGO DE MÓDULOS (MVP+)
+- **TQAE (Quality Assurance Engine)**: Certificación de estabilidad y regresiones.
+- **TURE (User Reality Engine)**: Inteligencia de campo y minería de comunidades.
+- **USO (Unified Simulation Orchestrator)**: Orquestador de hardware local/nube.
+- **VITE (Voice Intelligence Training)**: Motor NLP adaptativo.
+- **TDA (Distributed Lab)**: Escalado horizontal de la capacidad de testeo.
 
-## 5. FLUJO DE DATOS Y EVENTOS
-1. **Entrada**: Scenarios TSF, OSINT Findings, Logs de Usuarios Reales.
-2. **Proceso**: Simulación en Workers -> Análisis RCA -> Debate Agentes -> Propuesta TADE.
-3. **Salida**: Parches de Código, Documentación ADR, Certificados de Calidad.
+## 4. FLUJO DEL QUALITY GATE
+1. **Detección**: El Reality Engine detecta un nuevo patrón de uso (ej: "Nueva versión de Android causa eco").
+2. **Generación**: Se crea un escenario TSF automáticamente.
+3. **Simulación**: TAO distribuye la prueba entre los Workers.
+4. **Validación**: TQAE mide el impacto y decide si la versión actual es apta para release.
 
-## 6. PLAN DE ESCALABILIDAD
-- **FASE 1 (Local)**: Laboratorio en PC de desarrollo (Actual).
-- **FASE 2 (Híbrida)**: PC + Servidores dedicados para emulación masiva.
-- **FASE 3 (Nube)**: Infraestructura elástica en AWS/Azure para pruebas de flota global.
-
-## 7. CONSTITUCIÓN TÉCNICA
-- **Límite de recursos**: < 80% utilización para garantizar fidelidad de simulación.
-- **Documentación ADR**: Obligatoria para cada cambio arquitectónico.
-- **Seguridad**: Cero exposición de datos personales de usuarios reales.
+## 5. REGLAS DE ORO
+- **No Release sin QA**: El Quality Score debe ser > 95% para autorizar un APK.
+- **Human in the Loop**: TADE debe explicar las causas de rechazo a un ingeniero humano.
+- **Memoria de Errores**: Todo crash se traduce en un test de regresión en < 24hs.

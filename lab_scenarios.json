@@ -1,49 +1,39 @@
 {
   "scenarios": [
     {
-      "name": "📦 Pedido Nuevo (Urgente)",
-      "command": "DELIVERY_NEW_ORDER",
+      "id": "SCN_01",
+      "name": "📦 Reparto Urbano (PedidosYa)",
+      "command": "SIM_URBAN",
       "color": "#00b894",
-      "params": { "priority": "MAX", "platform": "PedidosYa" }
+      "environment": { "wind_kmh": 20, "rain_mmh": 0, "traffic": "High", "lean_deg": 5 },
+      "multimedia": { "music": "Spotify", "volume": 70 },
+      "comms": { "notifications": "Frequent", "calls": "None" }
     },
     {
-      "name": "🏍️ Ruta Alta Velocidad",
-      "command": "SIM_SPEED",
+      "id": "SCN_02",
+      "name": "🏍️ Autopista Veloz",
+      "command": "SIM_HIGH_SPEED",
       "color": "#e17055",
-      "physics": { "vibration_hz": 125, "lean_max": 45, "g_force": 1.2 }
+      "environment": { "wind_kmh": 120, "rain_mmh": 10, "traffic": "Medium", "lean_deg": 15 },
+      "multimedia": { "music": "YouTube Music", "volume": 100 },
+      "comms": { "notifications": "Low", "calls": "Incoming_1" }
     },
     {
-      "name": "🔋 Batería Crítica",
-      "command": "SIM_BATTERY",
-      "color": "#fdcb6e",
-      "params": { "voltage_drop": "0.1V/min", "threshold": 5 }
-    },
-    {
-      "name": "⛈️ Tormenta Tropical",
-      "command": "SIM_RAIN",
+      "id": "SCN_03",
+      "name": "⛈️ Tormenta en Ruta",
+      "command": "SIM_STORM",
       "color": "#0984e3",
-      "weather": { "intensity_mm_h": 100, "signal_loss_db": -15, "visibility_m": 50 }
-    },
-    {
-      "name": "🚫 Zona Muerta (Túnel)",
-      "command": "SIM_SIGNAL_LOSS",
-      "color": "#d63031",
-      "network": { "packet_loss": 0.95, "latency_ms": 2500, "jitter": 0.3 }
-    },
-    {
-      "name": "📊 Auditoría Estratégica",
-      "command": "AI_REPORT",
-      "color": "#6c5ce7"
+      "environment": { "wind_kmh": 80, "rain_mmh": 85, "traffic": "None", "lean_deg": 0 },
+      "multimedia": { "music": "None", "volume": 50 },
+      "comms": { "notifications": "None", "calls": "Emergency" }
     }
   ],
   "intercoms": [
     {"name": "Ejeas V6 Pro (BT 5.1)", "snr_base": 40, "latency_ms": 150},
-    {"name": "Cardo Packtalk Edge (DMC)", "snr_base": 65, "latency_ms": 40},
-    {"name": "Generic BT (BT 3.0)", "snr_base": 25, "latency_ms": 400}
+    {"name": "Cardo Packtalk Edge", "snr_base": 65, "latency_ms": 40}
   ],
   "phones": [
-    {"name": "Xiaomi Redmi 15C", "cpu_cores": 8, "ram_gb": 4, "api": 34},
-    {"name": "Samsung Galaxy S8", "cpu_cores": 4, "ram_gb": 4, "api": 26},
-    {"name": "Samsung A15", "cpu_cores": 8, "ram_gb": 6, "api": 33}
+    {"name": "Samsung S8 (Legacy)", "api": 26, "ram_gb": 4, "oem_skin": "OneUI 1.0"},
+    {"name": "Xiaomi Redmi 15C (Modern)", "api": 34, "ram_gb": 4, "oem_skin": "HyperOS"}
   ]
 }

@@ -1,32 +1,36 @@
-# BIBLIA THAMIS LAB - ESPECIFICACIÓN MAESTRA v30.0 (MASTER RELEASE)
+# BIBLIA THAMIS LAB - ESPECIFICACIÓN MAESTRA v35.0 (QUALITY & REALITY RELEASE)
 
-## 1. THAMIS DISTRIBUTED ARCHITECTURE (TDA)
-El laboratorio evoluciona de una PC local a una plataforma de nube distribuida.
-- **Master Controller**: Nodo central que coordina la asignación de pruebas y prioridades.
-- **Simulation Workers**: Nodos esclavos que ejecutan emuladores Android y escenarios pesados.
-- **Auto-Scaling**: Capacidad de activar workers adicionales según la cola de pruebas (Job Queue).
+## 1. THAMIS QUALITY ASSURANCE ENGINE (TQAE)
+El guardián de los estándares de LogPose. Implementa el "Quality Gate" definitivo.
+- **Test Pyramid**: Desde Unit Tests hasta Scenario Tests complejos de uso real.
+- **Quality Metrics**: Estabilidad, Voz, Bluetooth y Rendimiento consolidados en un Score Único.
+- **Regression System**: Cada error corregido se convierte en una barrera defensiva permanente.
 
-## 2. THAMIS AUTONOMOUS ORCHESTRATOR (TAO)
-- **Task Distribution**: Asignación inteligente a especialistas (Voice, Chaos, Security).
-- **Autonomous Loop**: Ciclo infinito de `Observar -> Aprender -> Probar -> Mejorar -> Validar`.
+## 2. THAMIS USER REALITY ENGINE (TURE)
+El puente entre el laboratorio y la calle.
+- **OSINT & Community Mining**: Recopila feedback de Reddit, Foros y Reseñas para entender el uso real.
+- **Voice Confusion Database**: Identifica palabras problemáticas en condiciones de ruido (ej: "YSY A" -> "ese y ese").
+- **User Scenario Generator**: Transforma quejas de usuarios reales en pruebas técnicas automatizadas.
 
-## 3. CORE PHILOSOPHY & CONSTITUTION
-1. **Calidad antes que Velocidad**: Ningún release sale sin certificar estabilidad.
-2. **Seguridad del Rider**: La integridad física del usuario es el KPI número 1.
-3. **Aprendizaje Acumulativo**: Cada error es una oportunidad para fortalecer la memoria del sistema.
-4. **Documentación Automática**: Lo que no está documentado no existe para la IA.
+## 3. THAMIS DISTRIBUTED ARCHITECTURE (TDA)
+Plataforma de nube para escalabilidad masiva.
+- **Master & Workers**: Coordinación central de flotas de emuladores y dispositivos físicos.
 
-## 4. MODULE ARCHITECTURE (TOC/TADE/TASA)
-- **Observability (Black Box)**: Telemetría total y correlación de eventos físicos/lógicos.
-- **Decision Core**: Cerebro estratégico que explica decisiones de alto impacto.
-- **Security Guardian**: Auditoría militar de permisos y privacidad.
+## 4. THAMIS AUTONOMOUS ORCHESTRATOR (TAO)
+Ciclo de vida independiente de ingeniería: `Observar -> Aprender -> Probar -> Mejorar -> Validar`.
 
-## 5. VOICE & LANGUAGE ENGINE (VLI / TVAE)
-- **VITE**: Fábrica de datos sintéticos con inyección de ruido ambiental.
-- **Adaptive AI**: Aprendizaje personalizado de localismos y hábitos del conductor.
+## 5. CORE PHILOSOPHY & CONSTITUTION
+1. **Calidad antes que Velocidad**: Ninguna versión cruza el Quality Gate sin evidencia científica.
+2. **Realidad sobre Suposiciones**: El feedback del usuario real es la prioridad de diseño.
+3. **Seguridad del Rider**: Mantenemos la integridad física como KPI supremo.
 
-## 6. FIELD & MARKET INTELLIGENCE (RWIE)
-- **OSINT Mining**: Escaneo proactivo de internet para anticipar problemas de Android y hardware.
+## 6. MODULE ARCHITECTURE (TOC/TADE/TASA)
+- **Observability**: Telemetría y Caja Negra.
+- **Decision Core**: Inteligencia estratégica explicable.
+- **Security Guardian**: Auditoría militar de privacidad.
 
-## 7. CONSTITUCIÓN DE INGENIERÍA
+## 7. VOICE & LANGUAGE ENGINE (VITE / TVAE)
+Entrenamiento adaptativo y personalización por repartidor.
+
+## 8. CONSTITUCIÓN DE INGENIERÍA
 `ERROR -> INVESTIGACIÓN -> EXPLICACIÓN -> APROBACIÓN -> CORRECCIÓN -> VALIDACIÓN -> DOCUMENTACIÓN -> APRENDIZAJE.`

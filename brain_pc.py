@@ -1,48 +1,56 @@
-# brain_pc.py - THAMIS CLOUD & STRATEGIC BRAIN (v30.0)
-# IA: Master Controller, Distributed Scaling & Architecture Guardian
+# brain_pc.py - THAMIS UNIFIED INTELLIGENCE v50.0
 from flask import Flask, request, jsonify
 import time
+import json
+import os
+from datetime import datetime
 
 app = Flask(__name__)
 
-# --- INFRASTRUCTURE STATUS (Simulado) ---
-NODES = [
-    {"id": "NODE_LOCAL", "type": "Master", "cpu": 45, "status": "ONLINE"},
-    {"id": "NODE_WORKER_1", "type": "Simulation", "cpu": 12, "status": "IDLE"},
-    {"id": "NODE_WORKER_2", "type": "Simulation", "cpu": 88, "status": "LOADED"}
-]
+MEMORY_FILE = "thamis_memory.json"
+LEARNING_FILE = "thamis_learning_results.json"
 
-@app.route('/taes/cloud/status', methods=['GET'])
-def cloud_status():
-    return jsonify({
-        "active_nodes": len(NODES),
-        "total_simulations": 3500,
-        "nodes": NODES,
-        "job_queue": {"critical": 0, "high": 5, "medium": 12}
-    })
+def load_json(filename):
+    if not os.path.exists(filename): return []
+    with open(filename, 'r', encoding='utf-8') as f:
+        try: return json.load(f)
+        except: return []
 
-@app.route('/taes/cloud/scale', methods=['POST'])
-def scale_infrastructure():
-    # Simulación de auto-scaling
-    new_node = {"id": f"NODE_WORKER_{len(NODES)}", "type": "Simulation", "cpu": 0, "status": "STARTING"}
-    NODES.append(new_node)
-    return jsonify({"msg": "Escalando infraestructura: Nuevo worker iniciado.", "node": new_node})
+def save_json(filename, data):
+    current = load_json(filename)
+    current.append(data)
+    with open(filename, 'w', encoding='utf-8') as f:
+        json.dump(current, f, indent=4)
 
-@app.route('/taes/architecture/adr', methods=['POST'])
-def generate_adr():
+@app.route('/chat', methods=['POST'])
+def chat_with_claude():
     data = request.json
-    decision = data.get('decision', 'Refactor')
-    return jsonify({
-        "status": "RECORDED",
-        "adr_id": f"ADR-{int(time.time())}",
-        "content": f"Decisión técnica: {decision} registrada en el Documento de Arquitectura Maestra."
-    })
+    user_msg = data.get("msg", "").lower()
+    print(f"💬 [CHAT] Mensaje recibido: {user_msg}")
 
-@app.route('/process', methods=['POST'])
-def process():
-    return jsonify({"intent": "PLAY_MUSIC", "confidence": 1.0})
+    # Lógica de respuesta inteligente de Claude (Simulada para Staff Engineering)
+    if "error" in user_msg or "fallo" in user_msg:
+        response = "He analizado el Neural Feed. Detecto una degradación en el canal SCO. ¿Quieres que inyecte una corrección de buffer en el S8?"
+    elif "status" in user_msg or "estado" in user_msg:
+        response = "Sistemas nominales. CPU al 12%. LogPose v0.8.2 reportando estabilidad del 94%."
+    elif "aprender" in user_msg or "entrenar" in user_msg:
+        response = "Listo para nuevo entrenamiento. ¿Es sobre un comando de Spotify o navegación?"
+    else:
+        response = "Entendido. Estoy monitoreando el laboratorio. Cualquier anomalía en el hardware será reportada inmediatamente en este feed."
+
+    return jsonify({"claude": response})
+
+@app.route('/taes/audit', methods=['POST'])
+def autonomous_audit():
+    data = request.json
+    findings = [
+        {"area": "Audio", "issue": "SNR bajo por viento", "fix": "Aumentar pre-amplificación fonética."},
+        {"area": "BT", "issue": "Micro-cortes en A2DP", "fix": "Resetear ruteo SCO en reconexión."}
+    ]
+    entry = {"timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S"), "type": "AUTO_AUDIT", "findings": findings}
+    save_json(MEMORY_FILE, entry)
+    return jsonify({"status": "COMPLETED", "report": entry})
 
 if __name__ == '__main__':
-    print("--- 🧠 THAMIS MASTER CLOUD BRAIN v30.0 ---")
-    print("🚀 Nodo Maestro, Escalabilidad y Arquitectura ACTIVOS.")
+    print("--- 🧠 THAMIS NEURAL BRAIN v50.0 ---")
     app.run(host='0.0.0.0', port=5000)

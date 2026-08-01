@@ -141,38 +141,46 @@ class LogPoseCallService : Service() {
 
         tripJob?.cancel()
         tripJob = serviceScope.launch {
-            LogPoseCallService._isServiceRunning.value = true
-            _tripStatus.value = ServiceTripStatus.CONNECTING
-            
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                startForeground(
-                    NOTIFICATION_ID, 
-                    buildOngoingNotification("Conectando..."),
-                    android.content.pm.ServiceInfo.FOREGROUND_SERVICE_TYPE_MICROPHONE or 
-                    android.content.pm.ServiceInfo.FOREGROUND_SERVICE_TYPE_PHONE_CALL or
-                    android.content.pm.ServiceInfo.FOREGROUND_SERVICE_TYPE_MEDIA_PLAYBACK
-                )
-            } else {
-                startForeground(NOTIFICATION_ID, buildOngoingNotification("Conectando..."))
-            }
-            
-            AlertManager.enqueue("LogPose iniciado. Buen viaje, Uriel.", priority = AlertPriority.SYSTEM)
-            
-            isTripActive = true
-            isHeadsetConnected = true
-            _tripStatus.value = ServiceTripStatus.ACTIVE
-            
             try {
-                val component = android.content.ComponentName(this@LogPoseCallService, LogPoseNotificationListener::class.java)
-                android.service.notification.NotificationListenerService.requestRebind(component)
-            } catch (e: Exception) {
-                LogPoseLogger.e("Service: Falló rebind de notificaciones: ${e.message}")
-            }
+                LogPoseCallService._isServiceRunning.value = true
+                _tripStatus.value = ServiceTripStatus.CONNECTING
+                
+                // SINCRO: Garantizar canales en S8
+                com.uriel.logpose.core.app.LogPoseApplication.instance.createNotificationChannels()
+                
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                    startForeground(
+                        NOTIFICATION_ID, 
+                        buildOngoingNotification("Conectando..."),
+                        android.content.pm.ServiceInfo.FOREGROUND_SERVICE_TYPE_MICROPHONE or 
+                        android.content.pm.ServiceInfo.FOREGROUND_SERVICE_TYPE_PHONE_CALL or
+                        android.content.pm.ServiceInfo.FOREGROUND_SERVICE_TYPE_MEDIA_PLAYBACK
+                    )
+                } else {
+                    startForeground(NOTIFICATION_ID, buildOngoingNotification("Conectando..."))
+                }
+                
+                AlertManager.enqueue("LogPose iniciado. Buen viaje, Uriel.", priority = AlertPriority.SYSTEM)
+                
+                isTripActive = true
+                isHeadsetConnected = true
+                _tripStatus.value = ServiceTripStatus.ACTIVE
+                
+                try {
+                    val component = android.content.ComponentName(this@LogPoseCallService, LogPoseNotificationListener::class.java)
+                    android.service.notification.NotificationListenerService.requestRebind(component)
+                } catch (e: Exception) {
+                    LogPoseLogger.e("Service: Falló rebind de notificaciones: ${e.message}")
+                }
 
-            onSystemsReady()
-            updateNotification("Viaje activo")
-            com.uriel.logpose.core.workers.ServicePersistenceWorker.schedule(applicationContext)
-            FlightRecorder.startSession()
+                onSystemsReady()
+                updateNotification("Viaje activo")
+                com.uriel.logpose.core.workers.ServicePersistenceWorker.schedule(applicationContext)
+                FlightRecorder.startSession()
+            } catch (e: Exception) {
+                LogPoseLogger.e("THAMIS_LAB: Fallo crítico al iniciar viaje: ${e.message}")
+                stopSelf()
+            }
         }
     }
 

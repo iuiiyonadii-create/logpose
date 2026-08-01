@@ -45,7 +45,12 @@ object AlertManager : TextToSpeech.OnInitListener {
         }
 
         tts = TextToSpeech(attributionContext, this)
-        toneGenerator = ToneGenerator(AudioManager.STREAM_VOICE_CALL, 80)
+        
+        try {
+            toneGenerator = ToneGenerator(AudioManager.STREAM_VOICE_CALL, 80)
+        } catch (e: Exception) {
+            LogPoseLogger.e("AlertManager: No se pudo inicializar ToneGenerator: ${e.message}")
+        }
         
         // Iniciamos el procesador de la cola
         scope.launch {
