@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.thamis.lab.core.contracts.ContractsTest" tests="4" skipped="0" failures="0" errors="0" timestamp="2026-08-01T14:18:55.833Z" hostname="DESKTOP-A234HEL" time="0.027">
+  <properties/>
+  <testcase name="testCognitiveSnapshotCreation" classname="com.thamis.lab.core.contracts.ContractsTest" time="0.004"/>
+  <testcase name="testPolymorphicEvents" classname="com.thamis.lab.core.contracts.ContractsTest" time="0.002"/>
+  <testcase name="testMessageVersionCompatibility" classname="com.thamis.lab.core.contracts.ContractsTest" time="0.0"/>
+  <testcase name="testCognitiveDecisionAndExplanation" classname="com.thamis.lab.core.contracts.ContractsTest" time="0.017"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

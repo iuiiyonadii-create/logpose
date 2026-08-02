@@ -27,4 +27,13 @@ dependencyResolutionManagement {
 
 rootProject.name = "LogPose"
 include(":app")
- 
+include(":core:common")
+include(":core:contracts")
+include(":lab:headless-runner")
+include(":lab:time-machine")
+include(":lab:performance-farm")
+include(":lab:simulation-engine")
+include(":lab:intelligence")
+include(":lab:orchestrator")
+include(":lab:evidence")
+include(":ui:mission-control")

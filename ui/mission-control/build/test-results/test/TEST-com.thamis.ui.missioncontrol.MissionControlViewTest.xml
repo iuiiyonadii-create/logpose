@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.thamis.ui.missioncontrol.MissionControlViewTest" tests="1" skipped="0" failures="0" errors="0" timestamp="2026-08-01T19:21:10.728Z" hostname="DESKTOP-A234HEL" time="0.037">
+  <properties/>
+  <testcase name="testMissionControlHtmlGenerationWithDevices" classname="com.thamis.ui.missioncontrol.MissionControlViewTest" time="0.037"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>
