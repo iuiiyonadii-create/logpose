@@ -1,7 +1,7 @@
 package com.thamis.lab.orchestrator.master1000
 
 import com.thamis.lab.core.common.logging.LabLogger
-import com.thamis.lab.intelligence.theory.ThamisGrandEngineeringTheoryEngine
+import com.thamis.lab.intelligence.evolution.ThamisGrandEngineeringTheoryEngine
 import com.thamis.lab.orchestrator.prime.ThamisPrimeSpecificationEngine
 
 public data class Master1000UltimateStatusReport(

@@ -1,15 +1,16 @@
 package com.thamis.lab.orchestrator
 
 import com.thamis.lab.core.common.result.LabResult
-import com.thamis.lab.intelligence.analysis.AiAnalysisEngine
-import com.thamis.lab.intelligence.quality.QualityEngine
-import com.thamis.lab.intelligence.reports.IntelligenceReportGenerator
+import com.thamis.lab.intelligence.core.AiAnalysisEngine
+import com.thamis.lab.intelligence.engineering.QualityEngine
+import com.thamis.lab.intelligence.engineering.IntelligenceReportGenerator
 import com.thamis.lab.orchestrator.campaign.CampaignExecutionSummary
 import com.thamis.lab.orchestrator.campaign.TestCampaign
 import com.thamis.lab.orchestrator.campaign.TestCampaignEngine
 import com.thamis.lab.orchestrator.logpose.LogPoseIntegrationLayer
 import com.thamis.lab.performance.device.DeviceInfo
 import com.thamis.lab.performance.device.DeviceRegistry
+import kotlinx.coroutines.*
 
 public data class FullOrchestrationReport(
     public val campaignSummary: CampaignExecutionSummary,
@@ -33,6 +34,7 @@ public class UnifiedSimulationOrchestrator(
         apkPath: String,
         campaign: TestCampaign
     ): LabResult<FullOrchestrationReport> {
+        com.thamis.lab.core.common.telemetry.LabTelemetry.logEvent("Orchestrator", "Starting campaign: ${campaign.campaignId}")
         // 1. Register Device
         deviceRegistry.registerDevice(device)
 

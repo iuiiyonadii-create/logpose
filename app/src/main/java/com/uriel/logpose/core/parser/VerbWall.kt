@@ -1,6 +1,6 @@
 package com.uriel.logpose.core.parser
 
-import com.uriel.logpose.thamis.intent.Intent
+import com.thamis.lab.core.contracts.intent.Intent
 import com.uriel.logpose.thamis.language.PhoneticEngine
 
 /**

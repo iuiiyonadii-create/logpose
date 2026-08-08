@@ -3,7 +3,7 @@ package com.uriel.logpose.core.music
 import android.content.Context
 import android.media.AudioManager
 import android.view.KeyEvent
-import com.uriel.logpose.domain.models.LogPoseCommand
+import com.thamis.lab.core.contracts.command.LogPoseCommand
 
 /**
  * Controller for device media playback using key event simulation.
@@ -14,15 +14,15 @@ class MusicController(private val context: Context) {
 
     fun execute(command: LogPoseCommand): Boolean {
         return when (command) {
-            LogPoseCommand.PLAY -> sendMediaKey(KeyEvent.KEYCODE_MEDIA_PLAY)
-            LogPoseCommand.PAUSE -> sendMediaKey(KeyEvent.KEYCODE_MEDIA_PAUSE)
-            LogPoseCommand.NEXT -> sendMediaKey(KeyEvent.KEYCODE_MEDIA_NEXT)
-            LogPoseCommand.PREVIOUS -> sendMediaKey(KeyEvent.KEYCODE_MEDIA_PREVIOUS)
-            LogPoseCommand.VOLUME_UP -> {
+            is LogPoseCommand.PlayMusic -> sendMediaKey(KeyEvent.KEYCODE_MEDIA_PLAY)
+            LogPoseCommand.PauseMusic -> sendMediaKey(KeyEvent.KEYCODE_MEDIA_PAUSE)
+            LogPoseCommand.NextTrack -> sendMediaKey(KeyEvent.KEYCODE_MEDIA_NEXT)
+            LogPoseCommand.PreviousTrack -> sendMediaKey(KeyEvent.KEYCODE_MEDIA_PREVIOUS)
+            LogPoseCommand.VolumeUp -> {
                 audioManager.adjustStreamVolume(AudioManager.STREAM_MUSIC, AudioManager.ADJUST_RAISE, AudioManager.FLAG_SHOW_UI)
                 true
             }
-            LogPoseCommand.VOLUME_DOWN -> {
+            LogPoseCommand.VolumeDown -> {
                 audioManager.adjustStreamVolume(AudioManager.STREAM_MUSIC, AudioManager.ADJUST_LOWER, AudioManager.FLAG_SHOW_UI)
                 true
             }

@@ -69,15 +69,33 @@ object CallManager {
 
     @RequiresPermission(Manifest.permission.CALL_PHONE)
     fun makeCall(contactName: String) {
-        LogPoseLogger.i("Iniciando llamada a: $contactName")
+        LogPoseLogger.i("CallManager: Solicitud de llamada para: $contactName")
         
-        val number = contactName.filter { it.isDigit() }
+        // 1. Resolver contacto usando el motor de inteligencia
+        val resolution = com.uriel.logpose.thamis.communication.resolver.ContactResolver.resolve(contactName)
         
-        if (number.isBlank()) {
-            LogPoseLogger.w("No se detectó un número válido para llamar.")
-            return
+        if (resolution.resolvedContact != null) {
+            val contact = resolution.resolvedContact
+            LogPoseLogger.i("CallManager: Contacto resuelto: ${contact.name} (${contact.phoneNumber})")
+            executeCall(contact.phoneNumber)
+            
+            // 2. Aprender del éxito
+            com.uriel.logpose.thamis.learning.LearningEngine.registerUsage(com.thamis.lab.core.contracts.intent.Intent.CALL_CONTACT)
+        } else if (resolution.isAmbiguous) {
+            val names = resolution.candidates.take(3).joinToString(" o ") { it.name }
+            FeedbackManager.speak("¿Querés llamar a $names?")
+        } else {
+            // Intento desesperado: ver si el nombre tiene números
+            val number = contactName.filter { it.isDigit() }
+            if (number.isNotBlank()) {
+                executeCall(number)
+            } else {
+                FeedbackManager.speak("No encontré a $contactName en tus contactos.")
+            }
         }
+    }
 
+    private fun executeCall(number: String) {
         val intent = Intent(Intent.ACTION_CALL).apply {
             data = Uri.parse("tel:$number")
             addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP)

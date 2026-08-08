@@ -2,7 +2,7 @@ package com.uriel.logpose.thamis.navigation.provider
 
 import android.content.Intent
 import android.net.Uri
-import com.uriel.logpose.core.app.AppContainer
+import com.uriel.logpose.core.app.LogPoseApplication
 
 /**
  * Encapsula toda la integración con Waze.
@@ -16,7 +16,7 @@ class WazeProvider : NavigationProvider {
             val intent = Intent(Intent.ACTION_VIEW, Uri.parse("waze://"))
             intent.setPackage(PACKAGE_NAME)
             intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-            AppContainer.appContext.startActivity(intent)
+            LogPoseApplication.instance.startActivity(intent)
             NavigationProviderResult(true, NavigationProviderType.WAZE, "Waze Opened")
         } catch (e: Exception) {
             NavigationProviderResult(false, NavigationProviderType.WAZE, "Error: ${e.message}")
@@ -32,7 +32,7 @@ class WazeProvider : NavigationProvider {
             val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
             intent.setPackage(PACKAGE_NAME)
             intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-            AppContainer.appContext.startActivity(intent)
+            LogPoseApplication.instance.startActivity(intent)
             NavigationProviderResult(true, NavigationProviderType.WAZE, "Navigating to $destination with Waze")
         } catch (e: Exception) {
             NavigationProviderResult(false, NavigationProviderType.WAZE, "Error: ${e.message}")
@@ -45,7 +45,7 @@ class WazeProvider : NavigationProvider {
 
     override fun isInstalled(): Boolean {
         return try {
-            AppContainer.appContext.packageManager.getPackageInfo(PACKAGE_NAME, 0)
+            LogPoseApplication.instance.packageManager.getPackageInfo(PACKAGE_NAME, 0)
             true
         } catch (e: Exception) {
             false

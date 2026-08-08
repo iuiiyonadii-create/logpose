@@ -1,7 +1,7 @@
 package com.thamis.lab.orchestrator.platform
 
 import com.thamis.lab.core.common.logging.LabLogger
-import com.thamis.lab.intelligence.analytics.EngineeringAnalytics
+import com.thamis.lab.intelligence.core.EngineeringAnalytics
 import com.thamis.lab.performance.chaos.ChaosResilienceEngine
 
 public data class EvolutionPlatformMasterStatus(

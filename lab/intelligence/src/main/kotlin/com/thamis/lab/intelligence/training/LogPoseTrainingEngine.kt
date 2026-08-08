@@ -60,4 +60,25 @@ public class LogPoseTrainingEngine {
             projectHealthScore = healthScore
         )
     }
+
+    /**
+     * Records a phonetic confusion event to build the AI Confusion Matrix.
+     * Supports v4.0 Semantic Drift tracking.
+     */
+    public fun recordConfusion(
+        expected: String, 
+        actual: String, 
+        noiseLevel: Float,
+        wasSemanticBoostUsed: Boolean = false
+    ) {
+        val boostTag = if (wasSemanticBoostUsed) "[SEMANTIC_BOOST]" else "[PURE_PHONETIC]"
+        LabLogger.info(TAG, "Recording Confusion: '$expected' was heard as '$actual' (Noise: $noiseLevel) $boostTag")
+        
+        executionHistory.add("confusion-$expected-$actual-$boostTag")
+    }
+
+    public fun clear() {
+        executionHistory.clear()
+        fingerprints.clear()
+    }
 }

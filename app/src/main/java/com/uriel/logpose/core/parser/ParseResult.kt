@@ -1,11 +1,11 @@
 package com.uriel.logpose.core.parser
 
-import com.uriel.logpose.core.compat.core.Command
+import com.thamis.lab.core.contracts.command.LogPoseCommand
 
 sealed interface ParseResult {
 
     data class Success(
-        val command: Command
+        val command: LogPoseCommand
     ) : ParseResult
 
     data object MultiSuccess : ParseResult

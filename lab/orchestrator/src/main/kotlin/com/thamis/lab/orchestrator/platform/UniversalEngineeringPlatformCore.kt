@@ -1,7 +1,7 @@
 package com.thamis.lab.orchestrator.platform
 
 import com.thamis.lab.core.common.logging.LabLogger
-import com.thamis.lab.intelligence.genome.SoftwareGenomeEngine
+import com.thamis.lab.intelligence.evolution.SoftwareGenomeEngine
 import com.thamis.lab.orchestrator.hypervisor.ThamisHypervisorCore
 
 public data class UniversalPlatformStatus(

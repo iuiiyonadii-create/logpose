@@ -1,5 +1,6 @@
 package com.uriel.logpose.features.voice_ai
 
+import com.thamis.lab.core.contracts.command.LogPoseCommand
 import com.uriel.logpose.core.compat.core.LogPoseLogger
 import com.uriel.logpose.features.voice.VoiceCommandParser
 
@@ -15,7 +16,7 @@ object VoiceEngine {
         // Integración inicial con el parser de comandos
         val command = VoiceCommandParser.parse(text)
         
-        if (command != com.uriel.logpose.core.Command.UNKNOWN) {
+        if (command != LogPoseCommand.Unknown) {
             LogPoseLogger.i("VoiceEngine: Comando detectado: $command")
             // Enviar al ActionManager (Fase 7)
         } else {

@@ -26,12 +26,27 @@ public class AdvancedVoiceLab {
     public fun testVoiceProfile(profile: VoiceProfile, commandText: String): VoiceRecognitionMetrics {
         LabLogger.info(TAG, "Testing voice profile '${profile.locale}' (${profile.gender}, ${profile.speechStyle}, ${profile.acousticNoiseProfile}) for '$commandText'...")
 
+        // Simulated realistic degradation based on noise profile
+        val baseAccuracy = 0.99
+        val noisePenalty = when (profile.acousticNoiseProfile) {
+            "WIND" -> 0.15
+            "TRAFFIC" -> 0.05
+            "RAIN" -> 0.10
+            "MOTORCYCLE_HELMET" -> 0.02
+            else -> 0.0
+        }
+        
+        val stylePenalty = if (profile.speechStyle == "FAST") 0.05 else 0.0
+        
+        val finalAccuracy = (baseAccuracy - noisePenalty - stylePenalty).coerceAtLeast(0.60)
+        val simulatedLatency = 80L + (noisePenalty * 1000).toLong()
+
         return VoiceRecognitionMetrics(
-            recognitionAccuracyPercent = 98.6,
-            latencyMs = 145L,
-            confidenceScore = 0.986,
-            falsePositiveRate = 0.001,
-            falseNegativeRate = 0.002
+            recognitionAccuracyPercent = finalAccuracy * 100.0,
+            latencyMs = simulatedLatency,
+            confidenceScore = finalAccuracy,
+            falsePositiveRate = noisePenalty * 0.1,
+            falseNegativeRate = noisePenalty * 0.2
         )
     }
 }

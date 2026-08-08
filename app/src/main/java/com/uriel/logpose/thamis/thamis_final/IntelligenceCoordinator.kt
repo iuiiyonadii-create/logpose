@@ -1,6 +1,6 @@
 package com.uriel.logpose.thamis.thamis_final
 
-import com.uriel.logpose.core.compat.core.Command
+import com.thamis.lab.core.contracts.command.LogPoseCommand
 import com.uriel.logpose.core.compat.core.LogPoseLogger
 import com.uriel.logpose.thamis.context.SituationAnalyzer
 import com.uriel.logpose.thamis.voiceexperience.personality.PersonalityEngine

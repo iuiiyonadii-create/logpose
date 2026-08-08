@@ -8,8 +8,11 @@ import com.uriel.logpose.core.services.LogPoseCallService
 import com.uriel.logpose.core.telecom.LogPoseTelecom
 import com.uriel.logpose.core.utils.BatteryMonitor
 import com.uriel.logpose.features.navigation.NavigationManager
+import dagger.hilt.android.lifecycle.HiltViewModel
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
+import javax.inject.Inject
 
 enum class TripStatus { IDLE, CONNECTING, ACTIVE, ERROR }
 
@@ -30,8 +33,9 @@ data class TripUiState(
     val navigationInstruction: String? = null
 )
 
-class DashboardViewModel(
-    private val appContext: Context,
+@HiltViewModel
+class DashboardViewModel @Inject constructor(
+    @ApplicationContext private val appContext: Context,
     private val telecom: LogPoseTelecom
 ) : ViewModel() {
 
@@ -124,12 +128,3 @@ class DashboardViewModel(
     }
 }
 
-class DashboardViewModelFactory(
-    private val context: Context,
-    private val telecom: LogPoseTelecom
-) : androidx.lifecycle.ViewModelProvider.Factory {
-    @Suppress("UNCHECKED_CAST")
-    override fun <T : ViewModel> create(modelClass: Class<T>): T {
-        return DashboardViewModel(context, telecom) as T
-    }
-}

@@ -16,14 +16,15 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.uriel.logpose.core.app.AppContainer
+import androidx.hilt.navigation.compose.hiltViewModel
 
 @Composable
 fun SettingsScreen(
-    onOpenDrawer: () -> Unit = {}
+    onOpenDrawer: () -> Unit = {},
+    viewModel: SettingsViewModel = hiltViewModel()
 ) {
-    val settings = AppContainer.settingsManager
-    val state by settings.state.collectAsState()
+    val settings = viewModel.settingsManager
+    val state by viewModel.state.collectAsState()
     val isSystemDark = isSystemInDarkTheme()
     val isDarkMode = settings.getBoolean("dark_mode", isSystemDark)
     

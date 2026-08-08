@@ -1,7 +1,7 @@
 package com.thamis.lab.orchestrator.enterprise
 
 import com.thamis.lab.core.common.logging.LabLogger
-import com.thamis.lab.intelligence.bughunter.AiBugHunter
+import com.thamis.lab.intelligence.engineering.AiBugHunter
 import com.thamis.lab.performance.adb.AdbManager
 import com.thamis.lab.performance.bluetooth.RealBluetoothValidator
 import com.thamis.lab.performance.twin.DigitalTwinCollector

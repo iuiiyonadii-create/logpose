@@ -2,7 +2,7 @@ package com.uriel.logpose.thamis.shadow
 
 import com.uriel.logpose.thamis.cognitive.model.ThamisDecision
 import com.uriel.logpose.thamis.cognitive.model.CognitiveTrace
-import com.uriel.logpose.thamis.intent.Intent
+import com.thamis.lab.core.contracts.intent.Intent
 
 /**
  * Representa la comparación entre THAMIS v3.0 y el sistema legado.

@@ -1,6 +1,6 @@
 package com.uriel.logpose.thamis.learning.mismatch
 
-import com.uriel.logpose.thamis.intent.Intent
+import com.thamis.lab.core.contracts.intent.Intent
 
 /**
  * Registra un evento donde el texto de Vosk no coincide con la expectativa del usuario.

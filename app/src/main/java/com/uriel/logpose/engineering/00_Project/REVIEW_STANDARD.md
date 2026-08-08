@@ -88,7 +88,7 @@ La revisión tiene prioridad sobre la velocidad de desarrollo.
 
 ## Android
 
-□ AppContainer actualizado.
+□ Módulos de Hilt actualizados.
 
 □ AndroidManifest actualizado.
 

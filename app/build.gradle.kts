@@ -20,6 +20,16 @@ android {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
+    flavorDimensions += "version"
+    productFlavors {
+        create("production") {
+            dimension = "version"
+        }
+        create("lab") {
+            dimension = "version"
+        }
+    }
+
     buildTypes {
         release {
             isMinifyEnabled = false
@@ -68,6 +78,8 @@ dependencies {
     implementation(libs.androidx.lifecycle.viewmodel.compose)
     implementation(libs.androidx.lifecycle.runtime.compose)
 
+    implementation(project(":core:contracts"))
+
     implementation(libs.kotlinx.coroutines.core)
     implementation(libs.kotlinx.coroutines.android)
 
@@ -84,6 +96,7 @@ dependencies {
     implementation(libs.androidx.navigation.compose)
 
     implementation(libs.vosk.android)
+    implementation("com.github.k2-fsa:sherpa-onnx:v1.13.4")
     implementation(libs.retrofit)
     implementation(libs.retrofit.gson)
     implementation(libs.spotify.auth)
@@ -91,6 +104,7 @@ dependencies {
     implementation(libs.commons.text)
     implementation(libs.androidx.work.runtime.ktx)
     implementation(libs.androidx.core.splashscreen)
+    implementation(libs.androidx.startup)
 
     testImplementation(libs.junit)
     testImplementation(libs.mockk)

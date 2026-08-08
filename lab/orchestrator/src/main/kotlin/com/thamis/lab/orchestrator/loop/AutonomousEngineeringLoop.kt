@@ -1,7 +1,7 @@
 package com.thamis.lab.orchestrator.loop
 
 import com.thamis.lab.core.common.logging.LabLogger
-import com.thamis.lab.intelligence.analytics.EngineeringAnalytics
+import com.thamis.lab.intelligence.core.EngineeringAnalytics
 
 public data class EngineeringLoopCycleReport(
     public val cycleId: String,

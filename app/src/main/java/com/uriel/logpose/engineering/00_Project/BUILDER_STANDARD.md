@@ -64,7 +64,7 @@ Antes de finalizar un Sprint verificar:
 
 □ Clases modificadas incluidas.
 
-□ AppContainer actualizado.
+□ Módulos de Hilt actualizados.
 
 □ AndroidManifest actualizado (si corresponde).
 

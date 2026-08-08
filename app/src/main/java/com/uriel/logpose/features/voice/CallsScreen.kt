@@ -15,16 +15,21 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.uriel.logpose.core.app.AppContainer
+import androidx.hilt.navigation.compose.hiltViewModel
+import com.uriel.logpose.features.settings.SettingsViewModel
 
 @Composable
-fun CallsScreen(onOpenDrawer: () -> Unit, isDark: Boolean) {
+fun CallsScreen(
+    onOpenDrawer: () -> Unit, 
+    isDark: Boolean,
+    viewModel: SettingsViewModel = hiltViewModel()
+) {
     val bg = if (isDark) Color.Black else Color.White
     val text = if (isDark) Color.White else Color.Black
     val variant = Color(0xFFB2BEC3)
     val accent = if (isDark) Color(0xFF00CEC9) else Color.Black
 
-    val settingsState by AppContainer.settingsManager.state.collectAsState()
+    val settingsState by viewModel.state.collectAsState()
     val autoAnswer = settingsState.booleans["auto_answer"] ?: false
     val announceCaller = settingsState.booleans["announce_caller"] ?: true
     val emergencyNumber = settingsState.strings["emergency_contact"] ?: "No configurado"
@@ -66,11 +71,11 @@ fun CallsScreen(onOpenDrawer: () -> Unit, isDark: Boolean) {
         Spacer(Modifier.height(16.dp))
 
         CallToggleItem("Respuesta automática", autoAnswer, text, accent) {
-            AppContainer.settingsManager.setBoolean("auto_answer", it)
+            viewModel.settingsManager.setBoolean("auto_answer", it)
         }
 
         CallToggleItem("Anunciar contacto", announceCaller, text, accent) {
-            AppContainer.settingsManager.setBoolean("announce_caller", it)
+            viewModel.settingsManager.setBoolean("announce_caller", it)
         }
 
         Spacer(Modifier.height(48.dp))
@@ -162,7 +167,7 @@ fun CallsScreen(onOpenDrawer: () -> Unit, isDark: Boolean) {
             confirmButton = {
                 TextButton(onClick = {
                     val key = if (showEditDialog == "emergency") "emergency_contact" else "assistance_contact"
-                    AppContainer.settingsManager.setString(key, tempPhone)
+                    viewModel.settingsManager.setString(key, tempPhone)
                     showEditDialog = null
                 }) {
                     Text("GUARDAR", color = if (isDark) accent else Color.Black, fontWeight = FontWeight.Bold)

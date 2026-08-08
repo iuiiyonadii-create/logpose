@@ -1,6 +1,6 @@
 package com.uriel.logpose.core.execution
 
-import com.uriel.logpose.core.compat.core.Command
+import com.thamis.lab.core.contracts.command.LogPoseCommand
 import com.uriel.logpose.core.engine.CommandDispatcher
 
 /**
@@ -8,7 +8,7 @@ import com.uriel.logpose.core.engine.CommandDispatcher
  */
 object CommandExecutor {
 
-    fun execute(command: Command) {
+    fun execute(command: LogPoseCommand) {
         CommandDispatcher.execute(command)
     }
 }

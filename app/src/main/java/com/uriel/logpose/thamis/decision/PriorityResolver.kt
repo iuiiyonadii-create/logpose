@@ -1,6 +1,6 @@
 package com.uriel.logpose.thamis.decision
 
-import com.uriel.logpose.core.Command
+import com.thamis.lab.core.contracts.command.LogPoseCommand
 import com.uriel.logpose.core.Priority
 
 /**
@@ -9,11 +9,11 @@ import com.uriel.logpose.core.Priority
  */
 object PriorityResolver {
 
-    fun resolve(command: Command): Priority {
+    fun resolve(command: LogPoseCommand): Priority {
         return when (command) {
-            Command.CALL_CONTACT -> Priority.CRITICAL
-            Command.GET_LOCATION -> Priority.IMPORTANT
-            Command.PLAY_MUSIC, Command.PAUSE_MUSIC -> Priority.NORMAL
+            is LogPoseCommand.Call -> Priority.CRITICAL
+            LogPoseCommand.WhereAmI -> Priority.IMPORTANT
+            is LogPoseCommand.PlayMusic, LogPoseCommand.PauseMusic -> Priority.NORMAL
             else -> Priority.LOW
         }
     }

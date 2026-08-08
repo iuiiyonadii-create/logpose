@@ -33,13 +33,29 @@ object IntercomCaptureManager {
     private const val MAX_RESTART_ATTEMPTS = 5
     private var lastCallback: ((ShortArray, Int) -> Unit)? = null
     private var isPersistent = false
+    private var lastAudioChunkTimestamp = 0L
+
+    // --- AUDIO POOL v1.7 (Misión #029) ---
+    private val bufferPool = java.util.concurrent.LinkedBlockingQueue<ShortArray>(20)
+    
+    private fun getBufferFromPool(size: Int): ShortArray {
+        return bufferPool.poll() ?: ShortArray(size)
+    }
+
+    private fun releaseBufferToPool(buffer: ShortArray) {
+        bufferPool.offer(buffer)
+    }
 
     fun isCapturing(): Boolean = audioRecord?.recordingState == AudioRecord.RECORDSTATE_RECORDING
     fun getActiveSessionId(): Int = audioRecord?.audioSessionId ?: -1
 
     @SuppressLint("MissingPermission")
     fun start(context: Context, onAudioData: (ShortArray, Int) -> Unit) {
-        lastCallback = onAudioData
+        lastCallback = { data, len ->
+            val poolBuffer = getBufferFromPool(len)
+            System.arraycopy(data, 0, poolBuffer, 0, len)
+            onAudioData(poolBuffer, len)
+        }
         isPersistent = true
         
         if (isCapturing()) {
@@ -49,6 +65,13 @@ object IntercomCaptureManager {
         
         LogPoseLogger.i("Capture: Iniciando micrófono persistente (Always-On).")
         internalStart(context)
+    }
+
+    /**
+     * Misión #029: Permite a los consumidores devolver el buffer al pool.
+     */
+    fun releaseBuffer(buffer: ShortArray) {
+        releaseBufferToPool(buffer)
     }
 
     private var currentGain = 4.0f
@@ -168,6 +191,7 @@ object IntercomCaptureManager {
                         return@launch
                     }
                     read > 0 -> {
+                        lastAudioChunkTimestamp = System.currentTimeMillis()
                         // --- AGC DINÁMICO ---
                         processAGC(buffer, read)
                         lastCallback?.invoke(buffer, read)
@@ -198,6 +222,18 @@ object IntercomCaptureManager {
         for (i in 0 until read) {
             val amplified = buffer[i].toInt() * currentGain
             buffer[i] = amplified.toInt().coerceIn(-32768, 32767).toShort()
+        }
+    }
+
+    fun checkHealth(context: Context) {
+        if (!isPersistent) return
+        
+        val now = System.currentTimeMillis()
+        val silenceDuration = now - lastAudioChunkTimestamp
+        
+        if (silenceDuration > 5000L && lastAudioChunkTimestamp > 0) {
+            LogPoseLogger.w("Capture Watchdog: Silencio prolongado detectado (${silenceDuration}ms). Reiniciando hardware...")
+            handleRestart(context)
         }
     }
 

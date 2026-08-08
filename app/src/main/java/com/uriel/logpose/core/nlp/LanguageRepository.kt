@@ -1,6 +1,8 @@
 package com.uriel.logpose.core.nlp
 
 import android.content.Context
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import org.json.JSONArray
 import org.json.JSONObject
 
@@ -14,47 +16,40 @@ object LanguageRepository {
     private lateinit var separators: JSONArray
     private lateinit var stopWords: JSONArray
 
-    fun initialize(
+    private var isInitialized = false
 
-        context: Context
+    suspend fun initialize(context: Context) = withContext(Dispatchers.IO) {
+        if (isInitialized) return@withContext
+        
+        try {
+            val jsonString = context.assets.open("logpose_glosario.json").bufferedReader().use { it.readText() }
+            val root = JSONObject(jsonString)
 
-    ) {
+            // Mapeo Staff-Level: Adaptamos el glosario unificado a la estructura legacy para no romper nada
+            val tempAliases = JSONObject()
+            val verbos = root.getJSONObject("verbos")
+            verbos.keys().forEach { key ->
+                val arr = verbos.getJSONArray(key)
+                for (i in 0 until arr.length()) {
+                    tempAliases.put(arr.getString(i), key)
+                }
+            }
+            aliases = tempAliases
 
-        aliases =
-            LanguageLoader.loadObject(
-                context,
-                "language/es/aliases.json"
-            )
+            entities = JSONObject()
+            entities.put("apps", root.getJSONObject("apps"))
+            entities.put("artistas", root.getJSONObject("musica").getJSONArray("artistas"))
 
-        entities =
-            LanguageLoader.loadObject(
-                context,
-                "language/es/entities.json"
-            )
+            intents = root.getJSONObject("verbos")
+            phrases = root.getJSONObject("verbos") // Usado por NlpEngine
 
-        intents =
-            LanguageLoader.loadObject(
-                context,
-                "language/es/intents.json"
-            )
-
-        phrases =
-            LanguageLoader.loadObject(
-                context,
-                "language/es/phrases.json"
-            )
-
-        separators =
-            LanguageLoader.loadArray(
-                context,
-                "language/es/separators.json"
-            )
-
-        stopWords =
-            LanguageLoader.loadArray(
-                context,
-                "language/es/stopwords.json"
-            )
+            separators = JSONArray().apply { put(" y "); put(",") }
+            stopWords = root.getJSONArray("muletillas_a_ignorar")
+            
+            isInitialized = true
+        } catch (e: Exception) {
+            com.uriel.logpose.core.compat.core.LogPoseLogger.e("LanguageRepository: Error cargando glosario: ${e.message}")
+        }
     }
 
     fun aliases() = aliases
@@ -68,4 +63,6 @@ object LanguageRepository {
     fun separators() = separators
 
     fun stopWords() = stopWords
+    
+    fun isReady() = isInitialized
 }

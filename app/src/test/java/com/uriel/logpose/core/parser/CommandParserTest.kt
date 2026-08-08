@@ -1,6 +1,7 @@
 package com.uriel.logpose.core.parser
 
-import com.uriel.logpose.core.compat.core.Command
+import com.thamis.lab.core.contracts.command.LogPoseCommand
+import com.uriel.logpose.features.voice.VoiceCommandParser
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
@@ -9,32 +10,30 @@ class CommandParserTest {
     @Test
     fun parse_start_listening() {
 
-        val result = CommandParser.parse("escuchar")
+        val result = VoiceCommandParser.parse("logpose escuchar")
 
         assertTrue(
-            result is ParseResult.Success &&
-                    result.command == Command.StartListening
+            result == LogPoseCommand.StartListening
         )
     }
 
     @Test
     fun parse_stop_listening() {
 
-        val result = CommandParser.parse("detener")
+        val result = VoiceCommandParser.parse("logpose detener")
 
         assertTrue(
-            result is ParseResult.Success &&
-                    result.command == Command.StopListening
+            result == LogPoseCommand.StopListening
         )
     }
 
     @Test
     fun parse_unknown_command() {
 
-        val result = CommandParser.parse("hola mundo")
+        val result = VoiceCommandParser.parse("logpose hola mundo")
 
         assertTrue(
-            result is ParseResult.Unknown
+            result == LogPoseCommand.Unknown
         )
     }
 }

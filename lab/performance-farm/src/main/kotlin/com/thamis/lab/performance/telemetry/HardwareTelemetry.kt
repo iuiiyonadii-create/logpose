@@ -8,6 +8,7 @@ public data class HardwareTelemetry(
     public val deviceId: String,
     public val cpuPercent: Double = 0.0,
     public val ramUsedMb: Double = 0.0,
+    public val batteryLevel: Int = 0,
     public val gpuPercent: Double = 0.0,
     public val diskUsagePercent: Double = 0.0,
     public val networkBytesPerSec: Long = 0L

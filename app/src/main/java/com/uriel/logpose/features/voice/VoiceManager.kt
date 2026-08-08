@@ -7,17 +7,21 @@ import android.os.Looper
 import android.speech.SpeechRecognizer
 import android.media.AudioRecordingConfiguration
 import android.os.Build
+import com.uriel.logpose.core.app.LogPoseApplication
 import com.uriel.logpose.core.compat.core.LogPoseLogger
 import com.uriel.logpose.core.engine.CommandDispatcher
+import com.uriel.logpose.core.parser.PhoneticDictionary
+import com.uriel.logpose.core.services.LogPoseHudService
 import com.uriel.logpose.thamis.THAMIS
 import com.uriel.logpose.thamis.action.ActionMapper
 import com.uriel.logpose.thamis.decision.Decision
-import com.uriel.logpose.thamis.intent.Intent
+import com.thamis.lab.core.contracts.intent.Intent
 import com.uriel.logpose.thamis.request.THAMISRequest
 import com.uriel.logpose.thamis.language.PhoneticEngine
 import com.uriel.logpose.core.services.IntercomCaptureManager
 import com.uriel.logpose.core.services.LogPoseCallService
 import com.uriel.logpose.domain.repositories.VoiceRepository
+import kotlinx.coroutines.*
 
 /**
  * VoiceManager: Orquestador del flujo de voz con tolerancia fonética de alto nivel.
@@ -27,6 +31,11 @@ object VoiceManager {
     private var voiceRepository: VoiceRepository? = null
     private var appContext: Context? = null
     private val handler = Handler(Looper.getMainLooper())
+    
+    // SINCRO: Control de concurrencia mediante Coroutines para el Handshake (Fase 2)
+    private val scope = CoroutineScope(Dispatchers.Main.immediate + SupervisorJob())
+    private var handshakeJob: Job? = null
+
     private var isStopping = false
     private var isPrivacyMode = false
     private var isPausedForExternalApp = false
@@ -100,26 +109,34 @@ object VoiceManager {
         
         val context = appContext ?: return
         handler.removeCallbacks(autoSleepRunnable)
+        
+        // SINCRO: Cancelamos cualquier handshake previo para evitar colisiones
+        handshakeJob?.cancel()
         isStartingHandshake = true
+        
         com.uriel.logpose.features.music.MusicManager.duck() 
         com.uriel.logpose.thamis.thamis_final.ThamisCore.getInstance(context).ready()
         isQuickWindowActive = false
         
-        com.uriel.logpose.core.app.AppContainer.communicationManager.startCommunication()
-        com.uriel.logpose.core.app.AppContainer.communicationManager.enterFullCommunicationMode()
+        LogPoseApplication.entryPoint.bluetoothCommunicationManager().startCommunication()
+        LogPoseApplication.entryPoint.bluetoothCommunicationManager().enterFullCommunicationMode()
         
-        handler.postDelayed({
-            if (!isTransitioningToMusic && !isStopping) {
-                voiceRepository?.startListening()
+        handshakeJob = scope.launch {
+            try {
+                delay(100)
+                if (!isTransitioningToMusic && !isStopping) {
+                    voiceRepository?.startListening()
+                }
+                handler.postDelayed(autoSleepRunnable, 60000)
+            } finally {
+                isStartingHandshake = false
             }
-            isStartingHandshake = false
-            handler.postDelayed(autoSleepRunnable, 60000)
-        }, 1000)
+        }
     }
 
     fun lockForMusicTransition() {
         LogPoseLogger.i("VoiceManager: SISTEMA EN ESPERA (Esperando música...)")
-        com.uriel.logpose.core.app.AppContainer.communicationManager.prepareForMusic()
+        LogPoseApplication.entryPoint.bluetoothCommunicationManager().prepareForMusic()
         isTransitioningToMusic = true
         stop()
         
@@ -137,7 +154,7 @@ object VoiceManager {
     fun unlockMusicTransition(success: Boolean = true) {
         if (!isTransitioningToMusic) return
         com.uriel.logpose.core.services.ComfortNoiseManager.restoreVolume()
-        com.uriel.logpose.core.app.AppContainer.communicationManager.restoreCommunication()
+        LogPoseApplication.entryPoint.bluetoothCommunicationManager().restoreCommunication()
 
         isTransitioningToMusic = false
         isStartingHandshake = false
@@ -148,18 +165,25 @@ object VoiceManager {
 
     fun stop() {
         if (isStopping) return
+        
+        // SINCRO: Cancelamos el Job de handshake inmediatamente
+        handshakeJob?.cancel()
+
         isStopping = true
         resetQuickWindow()
         voiceRepository?.stopListening()
         
-        com.uriel.logpose.core.app.AppContainer.communicationManager.exitFullCommunicationMode()
-        com.uriel.logpose.core.app.AppContainer.communicationManager.stopCommunication()
+        LogPoseApplication.entryPoint.bluetoothCommunicationManager().exitFullCommunicationMode()
+        LogPoseApplication.entryPoint.bluetoothCommunicationManager().stopCommunication()
 
         handler.postDelayed({ isStopping = false }, 800)
     }
 
     private var repeatCount = 0
-    private val WAKE_WORD_VARIANTS = setOf("log", "logpose", "log pose", "lock", "lockpose", "low", "lon", "los")
+    
+    private val dictionary: PhoneticDictionary by lazy {
+        PhoneticDictionary(LogPoseApplication.instance)
+    }
 
     fun onTextReceived(text: String) {
         LogPoseLogger.d("VoiceManager: Recibido -> '$text'")
@@ -171,22 +195,39 @@ object VoiceManager {
         val cleanText = PhoneticEngine.normalize(text).lowercase()
         if (cleanText.isBlank()) return
 
-        val words = cleanText.split(" ")
-        val firstWord = words.firstOrNull() ?: ""
-        val isCalled = firstWord in WAKE_WORD_VARIANTS
+        val isCalled = dictionary.contieneWakeWord(cleanText)
         
         if (isCalled) {
-            val commandAfterWake = words.drop(1).joinToString(" ").trim()
+            val words = cleanText.split(" ")
+            // Buscamos cuál de las wake words hizo match para removerla
+            val wakeWords = dictionary.listaDe("fonetica.wake_words")
+            var commandAfterWake = cleanText
+            for (wake in wakeWords) {
+                if (cleanText.startsWith(wake)) {
+                    commandAfterWake = cleanText.substringAfter(wake).trim()
+                    break
+                }
+            }
+
             if (commandAfterWake.isNotEmpty()) {
+                LogPoseHudService.updateStatus("THAMIS: ESCUCHANDO...")
                 executeMainCommand(commandAfterWake)
             } else {
+                LogPoseHudService.updateStatus("THAMIS: TE ESCUCHO")
                 FeedbackManager.speak("Te escucho.")
                 startQuickWindow(5000)
             }
         } else if (isQuickWindowActive) {
             executeMainCommand(cleanText)
         } else {
-            handler.postDelayed(autoSleepRunnable, 5000)
+            // Intentar match directo para comandos directos conocidos (Navegación / Staff) sin requerir wake word explícita si la confianza fonética es alta
+            val directMatch = PhoneticEngine.normalizeWithTrace(cleanText)
+            if (directMatch.pspCorrected != null || directMatch.glosarioCorrected != null) {
+                LogPoseHudService.updateStatus("THAMIS: MATCH DIRECTO...")
+                executeMainCommand(directMatch.finalResult)
+            } else {
+                handler.postDelayed(autoSleepRunnable, 5000)
+            }
         }
     }
 
@@ -202,24 +243,35 @@ object VoiceManager {
         val request = THAMISRequest(text = commandText)
         if (repeatCount >= 1) request.overrideConfidence = 1.0f
 
-        val decision = THAMIS.process(request)
+        val decisions = THAMIS.processSequence(request)
 
-        if (decision.intent != Intent.UNKNOWN) {
-            com.uriel.logpose.thamis.learning.LearningEngine.registerCorrection(commandText, decision.intent)
-            val command = ActionMapper.map(decision, commandText)
-            
-            if (decision.intent == Intent.PLAY_MUSIC) {
-                lockForMusicTransition()
-                stop() 
+        if (decisions.isNotEmpty() && decisions.all { it.intent != Intent.UNKNOWN }) {
+            decisions.forEach { decision ->
+                val prompt = decision.entities["prompt"]
+                if (prompt != null) {
+                    FeedbackManager.speak(prompt)
+                    return@forEach
+                }
+                
+                LogPoseHudService.updateStatus("ACCION: ${decision.intent}")
+                com.uriel.logpose.thamis.learning.LearningEngine.registerCorrection(commandText, decision.intent)
+                val command = ActionMapper.map(decision, commandText)
+                
+                if (decision.intent == Intent.PLAY_MUSIC) {
+                    lockForMusicTransition()
+                    stop() 
+                }
+                handleCommandFeedback(decision)
+                CommandDispatcher.execute(command)
             }
-            handleCommandFeedback(decision)
-            CommandDispatcher.execute(command)
             
+            // Handover logic only for the last one if needed
+            val lastIntent = decisions.last().intent
             val handoverIntents = setOf(Intent.OPEN_APP, Intent.CALL_CONTACT, Intent.SEND_MESSAGE)
-            if (decision.intent in handoverIntents) {
+            if (lastIntent in handoverIntents) {
                 pauseForExternalApp(12000) 
-            } else if (decision.intent != Intent.PLAY_MUSIC) {
-                stop()
+            } else if (lastIntent != Intent.PLAY_MUSIC) {
+                restartListeningSlightly(2500)
             }
         } else {
             com.uriel.logpose.core.services.AlertManager.enqueue("No entendí ese comando.")

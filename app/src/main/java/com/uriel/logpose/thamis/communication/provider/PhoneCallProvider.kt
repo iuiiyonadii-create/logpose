@@ -2,7 +2,7 @@ package com.uriel.logpose.thamis.communication.provider
 
 import android.content.Intent
 import android.net.Uri
-import com.uriel.logpose.core.app.AppContainer
+import com.uriel.logpose.core.app.LogPoseApplication
 import com.uriel.logpose.core.compat.core.LogPoseLogger
 
 /**
@@ -17,7 +17,7 @@ class PhoneCallProvider : CommunicationProvider {
             val intent = Intent(Intent.ACTION_CALL)
             intent.data = Uri.parse("tel:$contactName")
             intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-            AppContainer.appContext.startActivity(intent)
+            LogPoseApplication.instance.startActivity(intent)
             CommunicationResult(true, CommunicationProviderType.PHONE, "Calling $contactName")
         } catch (e: Exception) {
             LogPoseLogger.e("PhoneCallProvider: Error calling $contactName - ${e.message}")
@@ -40,7 +40,7 @@ class PhoneCallProvider : CommunicationProvider {
             intent.data = Uri.parse("smsto:$contactName")
             intent.putExtra("sms_body", message)
             intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-            AppContainer.appContext.startActivity(intent)
+            LogPoseApplication.instance.startActivity(intent)
             CommunicationResult(true, CommunicationProviderType.PHONE, "SMS prepared for $contactName")
         } catch (e: Exception) {
             CommunicationResult(false, CommunicationProviderType.PHONE, "Error: ${e.message}")

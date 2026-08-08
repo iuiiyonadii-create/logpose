@@ -1,7 +1,7 @@
 package com.uriel.logpose.core.voice
 
 import android.content.Context
-import com.uriel.logpose.domain.models.LogPoseCommand
+import com.thamis.lab.core.contracts.command.LogPoseCommand
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 

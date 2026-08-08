@@ -1,6 +1,6 @@
 package com.uriel.logpose.thamis.actuation
 
-import com.uriel.logpose.thamis.intent.Intent
+import com.thamis.lab.core.contracts.intent.Intent
 
 /**
  * Define qué acciones tienen autorización para ser ejecutadas por THAMIS v3.0.

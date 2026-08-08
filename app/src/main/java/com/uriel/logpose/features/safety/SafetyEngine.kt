@@ -1,6 +1,6 @@
 package com.uriel.logpose.features.safety
 
-import com.uriel.logpose.core.Command
+import com.thamis.lab.core.contracts.command.LogPoseCommand
 import com.uriel.logpose.core.compat.core.LogPoseLogger
 
 /**
@@ -12,8 +12,8 @@ object SafetyEngine {
     /**
      * Valida si un comando es seguro dadas las condiciones actuales.
      */
-    fun isActionAllowed(command: Command, isMoving: Boolean): Boolean {
-        if (isMoving && command == Command.CALL_CONTACT) {
+    fun isActionAllowed(command: LogPoseCommand, isMoving: Boolean): Boolean {
+        if (isMoving && command is LogPoseCommand.Call) {
             LogPoseLogger.w("SafetyEngine: Bloqueando llamada directa durante movimiento rápido.")
             return false
         }

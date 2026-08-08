@@ -1,9 +1,9 @@
 package com.uriel.logpose.core.engine.registry
 
-import com.uriel.logpose.core.compat.core.Command
+import com.thamis.lab.core.contracts.command.LogPoseCommand
 
 fun interface CommandHandler {
 
-    fun execute(command: Command)
+    fun execute(command: LogPoseCommand)
 
 }

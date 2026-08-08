@@ -1,6 +1,6 @@
 package com.uriel.logpose.thamis.context
 
-import com.uriel.logpose.thamis.intent.Intent
+import com.thamis.lab.core.contracts.intent.Intent
 
 /**
  * Memoria de corto plazo de THAMIS para mantener el hilo de la conversación.

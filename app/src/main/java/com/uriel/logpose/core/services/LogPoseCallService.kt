@@ -10,47 +10,43 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
-import android.graphics.PixelFormat
 import android.os.Binder
 import android.os.Build
 import android.os.IBinder
-import android.view.View
-import android.view.WindowManager
 import androidx.core.app.NotificationCompat
 import com.uriel.logpose.R
-import com.uriel.logpose.core.app.AppContainer
-import com.uriel.logpose.core.app.MainActivity
 import com.uriel.logpose.core.compat.core.LogPoseLogger
 import com.uriel.logpose.core.notifications.NotificationHelper
 import com.uriel.logpose.core.telecom.LogPoseTelecom
 import com.uriel.logpose.core.telecom.ScoStateManager
-import com.uriel.logpose.core.utils.BatteryMonitor
 import com.uriel.logpose.core.utils.PowerManagerHelper
+import com.uriel.logpose.features.voice.PlaybackAwareMicGate
 import com.uriel.logpose.features.voice.VoskVoiceEngine
-import com.uriel.logpose.features.navigation.NavigationManager
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
 import java.lang.ref.WeakReference
+import javax.inject.Inject
 
+@AndroidEntryPoint
 class LogPoseCallService : Service() {
 
     enum class ServiceTripStatus { IDLE, CONNECTING, ACTIVE, ERROR }
 
-    private lateinit var telecom: LogPoseTelecom
-    private lateinit var batteryMonitor: BatteryMonitor
+    @Inject lateinit var telecom: LogPoseTelecom
+    @Inject lateinit var voskEngine: VoskVoiceEngine
+    @Inject lateinit var communicationManager: BluetoothCommunicationManager
+    @Inject lateinit var micGate: PlaybackAwareMicGate
+    @Inject lateinit var tripOrchestrator: TripOrchestrator
+
     private lateinit var attributionContext: Context
     private lateinit var scoStateManager: ScoStateManager
+    private val mediaButtonTrigger by lazy { com.uriel.logpose.features.bluetooth.MediaButtonTrigger(this) }
 
     private val serviceScope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
     private var tripJob: Job? = null
-    private var batteryPollingJob: Job? = null
     private var watchdogJob: Job? = null
     private lateinit var watchdog: ListenerWatchdog
-
-    // SINCRO CLAUDE: Umbrales de batería para modo ahorro (Tarea A)
-    private var isBatteryLow = false
-    private val BATTERY_THRESHOLD_LOW = 20
-    private val BATTERY_THRESHOLD_NORMAL = 25
 
     private val _recognizedCommands = MutableSharedFlow<VoskVoiceEngine.RecognizedCommand>(replay = 1)
     val recognizedCommands: SharedFlow<VoskVoiceEngine.RecognizedCommand> = _recognizedCommands.asSharedFlow()
@@ -69,8 +65,6 @@ class LogPoseCallService : Service() {
 
     private val binder = LocalBinder()
     private var headsetReceiver: BroadcastReceiver? = null
-    private var windowManager: WindowManager? = null
-    private var overlayView: View? = null
 
     inner class LocalBinder : Binder() {
         fun getService(): LogPoseCallService = this@LogPoseCallService
@@ -78,7 +72,6 @@ class LogPoseCallService : Service() {
 
     override fun onCreate() {
         super.onCreate()
-        // SINCRO CLAUDE: Detectamos reinicio inesperado por batería
         if (LogPoseCallService._isServiceRunning.value) {
             LogPoseLogger.w("Service: Reinicio detectado. HyperOS mató el proceso previo.")
         }
@@ -92,33 +85,37 @@ class LogPoseCallService : Service() {
             this
         }
 
-        AppContainer.voskEngine.setAttributionContext(attributionContext)
+        voskEngine.setAttributionContext(attributionContext)
 
-        telecom = com.uriel.logpose.core.telecom.LogPoseTelecom(
-            attributionContext,
-            attributionContext.getSystemService(Context.AUDIO_SERVICE) as android.media.AudioManager
-        )
-        
         scoStateManager = ScoStateManager(this, attributionContext.getSystemService(Context.AUDIO_SERVICE) as android.media.AudioManager) {
-            // Callback de reconexión
             if (isTripActive) {
                 LogPoseLogger.i("Service: Gatillando reconexión SCO automática.")
-                AppContainer.communicationManager.hammerScoConnection()
+                communicationManager.hammerScoConnection()
             }
         }
         
         com.uriel.logpose.features.music.MusicManager.initialize(attributionContext)
-        AppContainer.communicationManager.updateContext(attributionContext)
+        communicationManager.updateContext(attributionContext)
 
-        batteryMonitor = BatteryMonitor(attributionContext)
         watchdog = ListenerWatchdog(attributionContext)
+        AudioPathGuardian.initialize(this)
         registerHeadsetReceiver()
         scoStateManager.startMonitoring()
         
-        // SINCRO CLAUDE: Solicitamos ignorar optimizaciones de batería para asegurar supervivencia
         PowerManagerHelper.requestIgnoreBatteryOptimizations(this)
-
         FlightRecorder.initialize(this)
+        checkAndRestoreSession()
+    }
+
+    private fun checkAndRestoreSession() {
+        val restored = com.uriel.logpose.thamis.world.engine.WorldModelEngine.restoreFromCheckpoint()
+        if (restored) {
+            val snapshot = com.uriel.logpose.thamis.world.engine.WorldModelEngine.getCurrentSnapshot()
+            if (snapshot.systems.navigation.isNavigating) {
+                LogPoseLogger.i("Recovery: Detectada sesión de navegación previa. Restaurando viaje...")
+                startTrip()
+            }
+        }
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
@@ -145,7 +142,6 @@ class LogPoseCallService : Service() {
                 LogPoseCallService._isServiceRunning.value = true
                 _tripStatus.value = ServiceTripStatus.CONNECTING
                 
-                // SINCRO: Garantizar canales en S8
                 com.uriel.logpose.core.app.LogPoseApplication.instance.createNotificationChannels()
                 
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
@@ -173,8 +169,11 @@ class LogPoseCallService : Service() {
                     LogPoseLogger.e("Service: Falló rebind de notificaciones: ${e.message}")
                 }
 
-                onSystemsReady()
-                updateNotification("Viaje activo")
+                tripOrchestrator.startTrip {
+                    updateNotification("Viaje activo")
+                }
+                
+                startWatchdog()
                 com.uriel.logpose.core.workers.ServicePersistenceWorker.schedule(applicationContext)
                 FlightRecorder.startSession()
             } catch (e: Exception) {
@@ -191,21 +190,17 @@ class LogPoseCallService : Service() {
         LogPoseCallService._isServiceRunning.value = false
         isTripActive = false
         _tripStatus.value = ServiceTripStatus.IDLE
+        
         com.uriel.logpose.thamis.thamis_final.ThamisCore.getInstance(this).shutdown()
         com.uriel.logpose.core.workers.ServicePersistenceWorker.stop(applicationContext)
         
         tripJob?.cancel()
         serviceScope.launch {
-            NavigationManager.stopNavigation()
+            tripOrchestrator.endTrip()
             AlertManager.enqueue("Viaje finalizado.")
 
-            com.uriel.logpose.thamis.ThamisAssistant.stop()
-            batteryPollingJob?.cancel()
             watchdogJob?.cancel()
-            ComfortNoiseManager.stop()
-            AppContainer.communicationManager.stopCommunication()
 
-            removeOverlay()
             stopForeground(STOP_FOREGROUND_REMOVE)
             stopSelf()
         }
@@ -223,99 +218,26 @@ class LogPoseCallService : Service() {
         updateNotification("Viaje activo — casco conectado")
     }
 
-    private fun onSystemsReady() {
-        createInvisibleOverlay()
-        
-        // SINCRO: Enviar "Hola" al PC para aparecer en la lista del laboratorio
-        com.uriel.logpose.core.network.PCBridge.sendCommand("RIDER_ONLINE:¡Listo para el reparto!")
-
-        val isScoActive = com.uriel.logpose.core.app.AppContainer.communicationManager.isScoActive.value
-        ComfortNoiseManager.start(attributionContext, isScoActive)
-        
-        // SINCRO CLAUDE: El Service ya no intenta llamar métodos estáticos.
-        // Toda la lógica de voz está encapsulada en ThamisAssistant + VoskEngine
-        com.uriel.logpose.thamis.ThamisAssistant.start(attributionContext)
-
-        startBatteryPolling()
-        startWatchdog()
-    }
-
     private fun startWatchdog() {
         watchdogJob?.cancel()
         watchdogJob = serviceScope.launch {
             while (isActive) {
-                delay(60_000L) // SINCRO: Aumentamos a 1 minuto para menos spam
-                // SINCRO CLAUDE: Si el servicio está vivo, refrescamos el heartbeat
+                delay(15_000L) // v2.0: Intervalo reducido (Misión #025)
+                
+                // 1. Salud del Notification Listener
                 if (LogPoseNotificationListener.getInstance() != null) {
                     LogPoseNotificationListener.updateHeartbeat()
                 }
                 val lastHeartbeat = LogPoseNotificationListener.getLastHeartbeat()
                 watchdog.checkAndHandle(lastHeartbeat)
+                
+                // 2. Salud de la Captura de Audio (Micrófono)
+                IntercomCaptureManager.checkHealth(this@LogPoseCallService)
             }
-        }
-    }
-
-    private fun createInvisibleOverlay() {
-        if (overlayView != null) return
-        
-        // SINCRO CLAUDE: Verificamos permiso para evitar BadTokenException
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && !android.provider.Settings.canDrawOverlays(this)) {
-            LogPoseLogger.w("Service: No hay permiso SYSTEM_ALERT_WINDOW. Omitiendo overlay.")
-            return
-        }
-
-        try {
-            // SINCRO CLAUDE: Usamos attributionContext para el WindowManager también
-            windowManager = attributionContext.getSystemService(WINDOW_SERVICE) as WindowManager
-            overlayView = View(attributionContext)
-            val params = WindowManager.LayoutParams(
-                1, 1,
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) 
-                    WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY 
-                else @Suppress("DEPRECATION") WindowManager.LayoutParams.TYPE_PHONE,
-                WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE,
-                PixelFormat.TRANSLUCENT
-            )
-            windowManager?.addView(overlayView, params)
-            LogPoseLogger.i("Service: Overlay invisible creado para persistencia.")
-        } catch (e: Exception) {
-            LogPoseLogger.e("Service: Falló la creación del overlay: ${e.message}")
-        }
-    }
-
-    private fun removeOverlay() {
-        try {
-            overlayView?.let { windowManager?.removeView(it) }
-            overlayView = null
-        } catch (e: Exception) {
-            LogPoseLogger.e("Service: Error al remover overlay: ${e.message}")
         }
     }
 
     fun dismissBanner() { _bannerText.value = null }
-
-    private fun startBatteryPolling() {
-        batteryPollingJob?.cancel()
-        batteryPollingJob = serviceScope.launch {
-            while (isActive) {
-                val phonePct = batteryMonitor.phoneBatteryPct
-                updateNotification("Viaje activo — Tel: $phonePct%")
-                
-                // SINCRO CLAUDE: Lógica de modo ahorro con histéresis (Tarea A)
-                if (!isBatteryLow && phonePct <= BATTERY_THRESHOLD_LOW) {
-                    isBatteryLow = true
-                    LogPoseLogger.w("ThamisBattery: Entrando en modo BATERÍA BAJA ($phonePct%)")
-                    AppContainer.voskEngine.setPowerSaveMode(true)
-                } else if (isBatteryLow && phonePct >= BATTERY_THRESHOLD_NORMAL) {
-                    isBatteryLow = false
-                    LogPoseLogger.i("ThamisBattery: Restaurando modo NORMAL ($phonePct%)")
-                    AppContainer.voskEngine.setPowerSaveMode(false)
-                }
-
-                delay(60000L)
-            }
-        }
-    }
 
     private fun registerHeadsetReceiver() {
         headsetReceiver = object : BroadcastReceiver() {
@@ -344,7 +266,7 @@ class LogPoseCallService : Service() {
             .setContentText(status)
             .setContentIntent(openAppIntent)
             .setOngoing(true)
-            .setPriority(NotificationCompat.PRIORITY_LOW) // SINCRO: LOW para evitar que "salte" en pantalla todo el tiempo
+            .setPriority(NotificationCompat.PRIORITY_LOW)
             .setCategory(NotificationCompat.CATEGORY_SERVICE)
             .addAction(android.R.drawable.ic_menu_close_clear_cancel, "Finalizar viaje", stopPendingIntent)
             .build()
@@ -358,8 +280,9 @@ class LogPoseCallService : Service() {
     override fun onDestroy() {
         super.onDestroy()
         LogPoseCallService._isServiceRunning.value = false
+        mediaButtonTrigger.destroy()
         headsetReceiver?.let { unregisterReceiver(it) }
-        removeOverlay()
+        tripOrchestrator.endTrip()
         serviceScope.cancel()
     }
 

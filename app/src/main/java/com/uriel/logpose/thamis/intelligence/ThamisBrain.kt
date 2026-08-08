@@ -1,8 +1,8 @@
 package com.uriel.logpose.thamis.intelligence
 
-import com.uriel.logpose.core.app.AppContainer
+import com.uriel.logpose.core.app.LogPoseApplication
 import com.uriel.logpose.core.compat.core.LogPoseLogger
-import com.uriel.logpose.thamis.intent.Intent
+import com.thamis.lab.core.contracts.intent.Intent
 import com.uriel.logpose.thamis.intent.IntentDetector
 import com.uriel.logpose.thamis.request.THAMISRequest
 import com.uriel.logpose.thamis.decision.Decision
@@ -31,14 +31,26 @@ object ThamisBrain {
             LogPoseLogger.d("ThamisBrain: Usando motor local (Conf: ${localDetection.score})")
             return@withContext Decision(
                 intent = localDetection.intent,
-                confidence = localDetection.score
+                confidence = localDetection.score,
+                entities = localDetection.entities
             )
         }
 
         // 2. Si el motor local duda, usamos el "Cerebro Remoto" (Gratis vía PC o API)
         LogPoseLogger.i("ThamisBrain: Confianza baja (${localDetection.score}). Consultando IA Avanzada...")
         
-        val remoteDecision = queryRemoteLLM(request.text)
+        var remoteDecision = queryRemoteLLM(request.text)
+
+        // v4.6.3: Guardrail Global contra secuestro de intención
+        val lowerText = request.text.lowercase()
+        val musicTriggers = setOf("pone", "poneme", "poné", "poner", "reproduce", "reproduci", "reproducir", "play", "pasame", "escuchar", "sonar", "tira", "tirame")
+        val isMusicVerb = musicTriggers.any { lowerText.startsWith(it) }
+
+        if (isMusicVerb && remoteDecision?.intent == Intent.OPEN_APP) {
+            LogPoseLogger.w("ThamisBrain: Corrigiendo intención OPEN_APP -> PLAY_MUSIC por Verbo Musical")
+            remoteDecision = remoteDecision.copy(intent = Intent.PLAY_MUSIC)
+        }
+
         return@withContext remoteDecision ?: Decision(
             intent = localDetection.intent,
             confidence = localDetection.score
@@ -50,11 +62,11 @@ object ThamisBrain {
      */
     private suspend fun queryRemoteLLM(text: String): Decision? = withContext(Dispatchers.IO) {
         // OPCIÓN A: Usar la PC del usuario (Gratis total, requiere PC encendida)
-        val pcIp = AppContainer.settingsManager.getString("pc_ip", "192.168.1.33")
-        val useLocalPC = AppContainer.settingsManager.getBoolean("use_local_ai", true)
+        val pcIp = LogPoseApplication.entryPoint.settingsManager().getString("pc_ip", "192.168.1.34") ?: "192.168.1.34"
+        val useLocalPC = LogPoseApplication.entryPoint.settingsManager().getBoolean("use_local_ai", true)
 
         if (useLocalPC) {
-            val decision = queryLocalPCProxy(text, pcIp ?: "192.168.1.33")
+            val decision = queryLocalPCProxy(text, pcIp)
             if (decision != null) return@withContext decision
         }
 
@@ -71,6 +83,8 @@ object ThamisBrain {
             conn.requestMethod = "POST"
             conn.doOutput = true
             conn.setRequestProperty("Content-Type", "application/json")
+            // Security: Requiere API Key para el PC Proxy
+            conn.setRequestProperty("X-THAMIS-API-KEY", com.uriel.logpose.core.network.NetworkConfig.THAMIS_API_KEY)
             conn.connectTimeout = 2000
 
             val jsonInput = JSONObject().apply {

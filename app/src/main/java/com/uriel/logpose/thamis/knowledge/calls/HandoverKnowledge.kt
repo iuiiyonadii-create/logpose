@@ -1,6 +1,6 @@
 package com.uriel.logpose.thamis.knowledge.calls
 
-import com.uriel.logpose.thamis.intent.Intent
+import com.thamis.lab.core.contracts.intent.Intent
 import com.uriel.logpose.thamis.knowledge.KnowledgeRule
 
 object HandoverKnowledge {

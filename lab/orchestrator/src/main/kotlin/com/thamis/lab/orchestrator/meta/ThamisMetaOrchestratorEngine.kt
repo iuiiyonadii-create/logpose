@@ -1,7 +1,7 @@
 package com.thamis.lab.orchestrator.meta
 
 import com.thamis.lab.core.common.logging.LabLogger
-import com.thamis.lab.intelligence.hive.EngineeringHiveMindEngine
+import com.thamis.lab.intelligence.evolution.EngineeringHiveMindEngine
 
 public data class MetaOrchestrationReport(
     public val isMetaOrchestratorSynchronized: Boolean,

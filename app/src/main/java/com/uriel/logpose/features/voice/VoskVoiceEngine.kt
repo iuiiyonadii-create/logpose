@@ -1,7 +1,7 @@
 package com.uriel.logpose.features.voice
 
 import android.content.Context
-import com.uriel.logpose.core.app.AppContainer
+import com.uriel.logpose.core.app.LogPoseApplication
 import com.uriel.logpose.core.compat.core.LogPoseLogger
 import com.uriel.logpose.core.services.IntercomCaptureManager
 import com.uriel.logpose.core.utils.AudioUtils
@@ -16,7 +16,7 @@ import org.vosk.android.StorageService
 import java.io.File
 
 /**
- * VoskVoiceEngine v4.8: Con Supresión de Eco por Estado de Reproducción y TTS.
+ * VoskVoiceEngine v5.2: Con Actualización Dinámica de Gramática (Misión #013).
  */
 class VoskVoiceEngine(private var context: Context) {
 
@@ -34,17 +34,14 @@ class VoskVoiceEngine(private var context: Context) {
     private val _recognizedCommands = MutableSharedFlow<RecognizedCommand>()
     val recognizedCommands: SharedFlow<RecognizedCommand> = _recognizedCommands
 
-    // SINCRO CLAUDE: El buffer alimenta al nuevo controlador de música
     private val integrityBuffer = CommandIntegrityBuffer(scope) { command, duration ->
         val wasSlot = slotInterceptor.intercept(command)
         if (!wasSlot) {
-            val outcome = musicController.handleTranscript(command)
-            if (outcome is VoiceMusicController.Outcome.NotUnderstood) {
-                LogPoseLogger.d("Vosk: No se detectó música en '$command'")
-            }
+            // v4.6: Si detectamos música, pero el texto de Vosk es basura (reloj, mental),
+            // el pipeline principal debería disparar el análisis del audio buffer.
+            LogPoseLogger.d("Vosk: Centinela detectó -> '$command'")
         }
         
-        // Notificamos a la UI para feedback visual
         scope.launch {
             _recognizedCommands.emit(RecognizedCommand(command, 1.0f, duration))
         }
@@ -52,13 +49,17 @@ class VoskVoiceEngine(private var context: Context) {
 
     private val audioChannel = Channel<AudioChunk>(128)
     private var processingJob: Job? = null
+    
+    // --- ESTRATEGIA HÍBRIDA v4.6: ROLLING BUFFER ---
+    private val rollingBuffer = ShortArray(16000 * 8) // 8 segundos Staff Standard (Anti-Clipping)
+    private var writePointer = 0
+    private val bufferLock = Any()
 
     private var isInitialized = false
     @Volatile private var isProcessing = false
     private var silenceCounter = 0
     private var speechStartTime = 0L
 
-    // SINCRO CLAUDE: Modo ahorro para batería baja
     @Volatile private var isPowerSaveMode = false
 
     data class RecognizedCommand(val text: String, val confidence: Float, val durationMs: Long = 0)
@@ -76,30 +77,67 @@ class VoskVoiceEngine(private var context: Context) {
     }
 
     private fun loadModelAsync() {
-        // SINCRO: Desempaquetamos el modelo desde assets a la memoria interna (v8.6)
+        if (isInitialized && model != null) return
+        
         StorageService.unpack(context, "model-es", "model",
             { m: Model ->
                 model = m
-                val grammarJson = VoskGrammarBuilder.buildFullGrammar()
-                synchronized(recognizerLock) {
-                    grammarRecognizer = Recognizer(model, 16000f, grammarJson)
-                    isInitialized = true
-                }
-                LogPoseLogger.i("Vosk: MODELO DESEMPAQUETADO Y ACTIVO.")
+                updateGrammar()
             },
             { e: Exception ->
-                LogPoseLogger.e("Vosk Init Error: ${e.message}. Asegurate de que 'model-es' esté en assets.")
+                LogPoseLogger.e("Vosk Init Error: ${e.message}")
             }
         )
+    }
+
+    /**
+     * Re-compila la gramática JSON e instancia un nuevo Recognizer sin reiniciar el modelo.
+     */
+    fun updateGrammar() {
+        val m = model ?: return
+        LogPoseLogger.i("Vosk: Actualizando gramática dinámica...")
+        
+        val grammarJson = VoskGrammarBuilder.buildFullGrammar()
+        synchronized(recognizerLock) {
+            try {
+                grammarRecognizer?.close()
+                grammarRecognizer = Recognizer(m, 16000f, grammarJson)
+                isInitialized = true
+                LogPoseLogger.d("Vosk: Gramática actualizada con éxito.")
+            } catch (e: Exception) {
+                LogPoseLogger.e("Vosk: Error al instanciar Recognizer con nueva gramática: ${e.message}")
+            }
+        }
+    }
+
+    fun releaseResources() {
+        LogPoseLogger.i("Vosk: Liberando recursos pesados.")
+        stop()
+        synchronized(recognizerLock) {
+            try {
+                grammarRecognizer?.close()
+            } catch (e: Exception) {}
+            grammarRecognizer = null
+            model = null
+            isInitialized = false
+        }
+        System.gc()
     }
 
     private fun startProcessingLoop() {
         processingJob?.cancel()
         processingJob = scope.launch {
             for (chunk in audioChannel) {
-                // SINCRO CLAUDE: Si el "gate" está cerrado (por música o por habla), ignoramos el audio
-                if (!isProcessing || !AppContainer.micGate.isGateOpen()) continue
+                if (!isProcessing || !LogPoseApplication.entryPoint.playbackAwareMicGate().isGateOpen()) continue
                 
+                // Misión #022.3: Llenado de Rolling Buffer para Handover v4.6
+                synchronized(bufferLock) {
+                    chunk.buffer.forEach { sample ->
+                        rollingBuffer[writePointer] = sample
+                        writePointer = (writePointer + 1) % rollingBuffer.size
+                    }
+                }
+
                 synchronized(recognizerLock) {
                     val rec = grammarRecognizer ?: return@synchronized
                     try {
@@ -107,35 +145,37 @@ class VoskVoiceEngine(private var context: Context) {
                         if (ready) {
                             val text = extractText(rec.result, "text")
                             if (text.isNotBlank()) {
-                                // SINCRO CLAUDE: Solo los resultados FINALES disparan la lógica pesada
                                 integrityBuffer.feed(text, isFinal = true, startTime = speechStartTime)
-                                speechStartTime = 0 // Reseteamos tras alimentar al buffer
+                                speechStartTime = 0 
                             }
                         } else {
-                            // SINCRO CLAUDE: En modo ahorro de energía, omitimos procesar el JSON de parciales
-                            // para reducir la carga de CPU en cada frame de audio.
                             if (isPowerSaveMode) return@synchronized
-
                             val partial = extractText(rec.partialResult, "partial")
                             if (partial.isNotBlank() && speechStartTime == 0L) {
                                 speechStartTime = System.currentTimeMillis()
                             }
-                            // Omitimos mandar parciales al buffer de integridad para evitar disparos prematuros
                         }
                     } catch (e: Exception) {
                         LogPoseLogger.e("Vosk JNI Error: ${e.message}")
+                    } finally {
+                        // v1.7: Devolver al pool para reducir GC (Misión #029)
+                        IntercomCaptureManager.releaseBuffer(chunk.buffer)
                     }
                 }
             }
         }
     }
 
-    fun start() { isProcessing = true; resetSession(); attachToCapture() }
+    fun start() { 
+        if (!isInitialized) loadModelAsync()
+        isProcessing = true
+        resetSession()
+        attachToCapture() 
+    }
     
     fun stop() { 
         isProcessing = false 
         vad.reset()
-        // SINCRO: Cerramos el hardware de audio para evitar fugas y bloqueos de sistema
         IntercomCaptureManager.stop()
         LogPoseLogger.d("Vosk: Hardware de audio liberado.")
     }
@@ -144,30 +184,25 @@ class VoskVoiceEngine(private var context: Context) {
         this.context = newContext
     }
 
-    // El método setMute ahora es redundante ya que el gate maneja los estados
-    @Deprecated("Usar AppContainer.micGate")
-    fun setMute(mute: Boolean) {
-        if (mute) AppContainer.micGate.onTtsStarted() else AppContainer.micGate.onTtsEnded()
-    }
-
     private fun attachToCapture() {
         IntercomCaptureManager.start(context) { buffer, length ->
-            if (!isProcessing) return@start 
+            if (!isProcessing) {
+                IntercomCaptureManager.releaseBuffer(buffer)
+                return@start
+            }
             val cleanBuffer = filter.apply(buffer, length)
-            
-            // Adaptación dinámica del VAD según ruido ambiente (Velocidad/Viento)
             val noiseLevel = vad.getNormalizedNoiseLevel()
             currentNoiseLevel = noiseLevel
-            
             val hasVoice = vad.hasVoice(cleanBuffer, length)
             
-            if (!hasVoice) silenceCounter++ else silenceCounter = 0
-            
-            // Si hay mucho ruido (viento > 0.7), incrementamos la exigencia del buffer
+            silenceCounter = if (!hasVoice) silenceCounter + 1 else 0
             val persistenceThreshold = if (noiseLevel > 0.7f) 40 else 30
             
             if (hasVoice || (silenceCounter in 1..persistenceThreshold)) {
-                audioChannel.trySend(AudioChunk(cleanBuffer.copyOf(), length))
+                // Ya no hacemos copyOf(), usamos el buffer del pool (Misión #029)
+                audioChannel.trySend(AudioChunk(buffer, length))
+            } else {
+                IntercomCaptureManager.releaseBuffer(buffer)
             }
         }
     }
@@ -180,6 +215,32 @@ class VoskVoiceEngine(private var context: Context) {
     private fun extractText(json: String, key: String): String = try { 
         JSONObject(json).optString(key, "") 
     } catch (e: Exception) { "" }
+
+    /**
+     * Misión #022.3: Extrae una copia instantánea del audio PCM reciente.
+     * Útil para que Whisper procese nombres que Vosk ignora.
+     */
+    fun getRecentAudioBuffer(): ShortArray {
+        synchronized(bufferLock) {
+            val result = ShortArray(rollingBuffer.size)
+            // Re-alineamos el buffer circular para que sea lineal
+            val part1 = rollingBuffer.size - writePointer
+            System.arraycopy(rollingBuffer, writePointer, result, 0, part1)
+            System.arraycopy(rollingBuffer, 0, result, part1, writePointer)
+            return result
+        }
+    }
+
+    /**
+     * Staff v5.4: Limpia el buffer de audio para evitar el "eco" de comandos previos.
+     */
+    fun clearRollingBuffer() {
+        synchronized(bufferLock) {
+            rollingBuffer.fill(0)
+            writePointer = 0
+            LogPoseLogger.d("Vosk: Rolling buffer purgado.")
+        }
+    }
 
     companion object {
         private var currentNoiseLevel = 0.3f

@@ -3,7 +3,7 @@ package com.uriel.logpose.thamis.validation
 import com.uriel.logpose.thamis.cognitive.model.ThamisDecision
 import com.uriel.logpose.thamis.cognitive.model.WorldState
 import com.uriel.logpose.thamis.shadow.ShadowResult
-import com.uriel.logpose.thamis.intent.Intent
+import com.thamis.lab.core.contracts.intent.Intent
 
 /**
  * Representa un evento de interacción individual durante una sesión de validación.

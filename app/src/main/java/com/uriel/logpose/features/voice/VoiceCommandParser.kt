@@ -1,6 +1,6 @@
 package com.uriel.logpose.features.voice
 
-import com.uriel.logpose.core.Command
+import com.thamis.lab.core.contracts.command.LogPoseCommand
 
 /**
  * FASE 26.2 — LOGPOSE MVP CORE
@@ -13,21 +13,21 @@ object VoiceCommandParser {
     /**
      * Parsea un texto crudo para identificar un comando básico.
      */
-    fun parse(text: String): Command {
+    fun parse(text: String): LogPoseCommand {
         val cleanText = text.lowercase().trim()
         
-        if (!cleanText.contains(TRIGGER)) return Command.UNKNOWN
+        if (!cleanText.contains(TRIGGER)) return LogPoseCommand.Unknown
 
         return when {
-            cleanText.contains("reproducir") || cleanText.contains("play") -> Command.PLAY_MUSIC
-            cleanText.contains("pausa") || cleanText.contains("parar") -> Command.PAUSE_MUSIC
-            cleanText.contains("siguiente") -> Command.NEXT_TRACK
-            cleanText.contains("subir volumen") -> Command.INCREASE_VOLUME
-            cleanText.contains("bajar volumen") -> Command.DECREASE_VOLUME
-            cleanText.contains("llamar") -> Command.CALL_CONTACT
-            cleanText.contains("detener") -> Command.STOP_LOGPOSE
-            cleanText.contains("notificaciones") -> Command.READ_NOTIFICATIONS
-            else -> Command.UNKNOWN
+            cleanText.contains("reproducir") || cleanText.contains("play") -> LogPoseCommand.PlayMusic("")
+            cleanText.contains("pausa") || cleanText.contains("parar") -> LogPoseCommand.PauseMusic
+            cleanText.contains("siguiente") -> LogPoseCommand.NextTrack
+            cleanText.contains("subir volumen") -> LogPoseCommand.VolumeUp
+            cleanText.contains("bajar volumen") -> LogPoseCommand.VolumeDown
+            cleanText.contains("llamar") -> LogPoseCommand.Call("")
+            cleanText.contains("detener") -> LogPoseCommand.StopListening
+            cleanText.contains("notificaciones") -> LogPoseCommand.ReadNotifications
+            else -> LogPoseCommand.Unknown
         }
     }
 }

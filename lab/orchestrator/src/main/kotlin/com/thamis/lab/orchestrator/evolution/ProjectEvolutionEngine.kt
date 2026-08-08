@@ -1,8 +1,8 @@
 package com.thamis.lab.orchestrator.evolution
 
 import com.thamis.lab.core.common.logging.LabLogger
-import com.thamis.lab.intelligence.enforcer.ArchitectureEnforcerEngine
-import com.thamis.lab.intelligence.review.CodeReviewEngine
+import com.thamis.lab.intelligence.engineering.ArchitectureEnforcerEngine
+import com.thamis.lab.intelligence.engineering.CodeReviewEngine
 import com.thamis.lab.performance.memory.MemoryOptimizerEngine
 import com.thamis.lab.performance.thread.ThreadAnalyzerEngine
 

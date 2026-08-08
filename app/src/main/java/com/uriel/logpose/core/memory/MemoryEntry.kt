@@ -1,9 +1,9 @@
 package com.uriel.logpose.core.memory
 
-import com.uriel.logpose.core.compat.core.Command
+import com.thamis.lab.core.contracts.command.LogPoseCommand
 
 data class MemoryEntry(
-    val command: Command,
+    val command: LogPoseCommand,
     val timestamp: Long = System.currentTimeMillis(),
     val metadata: Map<String, String> = emptyMap()
 )

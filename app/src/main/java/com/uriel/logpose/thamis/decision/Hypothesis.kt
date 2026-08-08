@@ -1,6 +1,6 @@
 package com.uriel.logpose.thamis.decision
 
-import com.uriel.logpose.thamis.intent.Intent
+import com.thamis.lab.core.contracts.intent.Intent
 
 /**
  * Representa una posible interpretación de la intención del usuario.

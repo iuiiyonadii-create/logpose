@@ -13,10 +13,15 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.uriel.logpose.core.app.AppContainer
+import androidx.hilt.navigation.compose.hiltViewModel
+import com.uriel.logpose.features.settings.SettingsViewModel
 
 @Composable
-fun MusicScreen(onOpenDrawer: () -> Unit, isDark: Boolean) {
+fun MusicScreen(
+    onOpenDrawer: () -> Unit, 
+    isDark: Boolean,
+    settingsViewModel: SettingsViewModel = hiltViewModel()
+) {
     val musicState by MusicManager.state.collectAsState()
     val volumeLevel by MusicManager.volume.collectAsState()
     val accentColor = Color(0xFF00CEC9)
@@ -27,7 +32,7 @@ fun MusicScreen(onOpenDrawer: () -> Unit, isDark: Boolean) {
     val cardBg = if (isDark) Color(0xFF1E1E1E) else Color(0xFFF1F2F6)
 
     // Observamos los cambios en los ajustes de forma reactiva
-    val settingsState by AppContainer.settingsManager.state.collectAsState()
+    val settingsState by settingsViewModel.state.collectAsState()
     val savedPlayer = settingsState.strings["music_default_player"] ?: ""
 
     Column(

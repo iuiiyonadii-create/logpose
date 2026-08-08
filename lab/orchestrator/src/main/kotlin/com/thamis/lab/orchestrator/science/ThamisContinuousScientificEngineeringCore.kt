@@ -1,7 +1,7 @@
 package com.thamis.lab.orchestrator.science
 
 import com.thamis.lab.core.common.logging.LabLogger
-import com.thamis.lab.intelligence.framework.MetaEngineeringFrameworkEngine
+import com.thamis.lab.intelligence.engineering.MetaEngineeringFrameworkEngine
 import com.thamis.lab.orchestrator.charter.ThamisScientificEvolutionCharterEngine
 
 public data class ScientificEngineeringStatusReport(

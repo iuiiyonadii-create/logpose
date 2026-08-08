@@ -5,11 +5,12 @@ import android.os.Build
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.uriel.logpose.core.app.AppContainer
 import com.uriel.logpose.core.services.LogPoseCallService
 import com.uriel.logpose.domain.repositories.BluetoothRepository
 import com.uriel.logpose.domain.models.LogPoseDevice
 import com.uriel.logpose.features.voice.VoiceManager
+import com.uriel.logpose.thamis.thamis_final.ThamisCore
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collectLatest
@@ -20,9 +21,12 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.IntentFilter
 import android.os.BatteryManager
+import javax.inject.Inject
 
-class BluetoothViewModel(
-    private val repository: BluetoothRepository
+@HiltViewModel
+class BluetoothViewModel @Inject constructor(
+    private val repository: BluetoothRepository,
+    private val thamisCore: ThamisCore
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(BluetoothUiState())
@@ -108,8 +112,7 @@ class BluetoothViewModel(
         }
 
         viewModelScope.launch {
-            val core = com.uriel.logpose.thamis.thamis_final.ThamisCore.getInstance(com.uriel.logpose.core.app.LogPoseApplication.instance)
-            core.state.collectLatest { engineState ->
+            thamisCore.state.collectLatest { engineState ->
                 // SINCRO CLAUDE: Si el motor de Thamis está detenido, el botón DEBE estar en verde (Iniciar)
                 if (engineState == com.uriel.logpose.core.compat.core.AppState.STOPPED) {
                     _state.update { it.copy(serviceRunning = false) }
@@ -198,7 +201,7 @@ class BluetoothViewModel(
                 _state.update { it.copy(serviceRunning = true, selectedDevice = device, savedDevice = device, error = null) }
                 
                 if (context != null) {
-                    com.uriel.logpose.thamis.thamis_final.ThamisCore.getInstance(context).onBluetoothConnected(device)
+                    thamisCore.onBluetoothConnected(device)
                     val intent = Intent(context, LogPoseCallService::class.java).apply {
                         action = LogPoseCallService.ACTION_START_TRIP
                     }
@@ -213,7 +216,7 @@ class BluetoothViewModel(
 
     fun startLogPoseDebug(context: android.content.Context) {
         _state.update { it.copy(serviceRunning = true, error = "Modo pruebas.") }
-        com.uriel.logpose.thamis.thamis_final.ThamisCore.getInstance(context).ready()
+        thamisCore.ready()
         val intent = Intent(context, LogPoseCallService::class.java).apply {
             action = LogPoseCallService.ACTION_START_TRIP
         }
@@ -227,7 +230,7 @@ class BluetoothViewModel(
             action = LogPoseCallService.ACTION_END_TRIP
         }
         context.startForegroundService(intent) // Usamos startForegroundService para endTrip también por consistencia
-        com.uriel.logpose.thamis.thamis_final.ThamisCore.getInstance(context).shutdown()
+        thamisCore.shutdown()
         _state.update { it.copy(serviceRunning = false) }
     }
 }

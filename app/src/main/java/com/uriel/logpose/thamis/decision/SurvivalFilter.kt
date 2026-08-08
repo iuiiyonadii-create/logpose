@@ -1,6 +1,6 @@
 package com.uriel.logpose.thamis.decision
 
-import com.uriel.logpose.core.compat.core.Command
+import com.thamis.lab.core.contracts.command.LogPoseCommand
 import com.uriel.logpose.core.compat.core.LogPoseLogger
 import com.uriel.logpose.core.parser.FastParser
 import com.uriel.logpose.core.parser.ParseResult
@@ -10,7 +10,7 @@ import com.uriel.logpose.features.voice.VoskVoiceEngine
 enum class Criticality { LOW, HIGH }
 
 sealed class FilterResult {
-    data class Confirmed(val command: Command) : FilterResult()
+    data class Confirmed(val command: LogPoseCommand) : FilterResult()
     object TooUncertain : FilterResult()
     object MissingObject : FilterResult()
     object NoIntent : FilterResult()
@@ -38,7 +38,7 @@ object SurvivalFilter {
 
         // SINCRO CLAUDE: Override Semántico (Punto 4 del Análisis)
         // Si el objeto matchea el vocabulario, le damos prioridad absoluta
-        val semanticBoost = if (command is Command.PlayMusic && MusicVocabulary.isKnown(command.query)) {
+        val semanticBoost = if (command is LogPoseCommand.PlayMusic && MusicVocabulary.isKnown(command.query)) {
             LogPoseLogger.i("SurvivalFilter: Match semántico detectado (${command.query}). Prioridad ALTA.")
             0.40f // Reducimos el umbral necesario a la mitad
         } else if (isMultimediaCommand(command)) {
@@ -51,7 +51,7 @@ object SurvivalFilter {
         }
 
         // SINCRO CLAUDE: Validación de Objeto contra Diccionario
-        if (command is Command.PlayMusic) {
+        if (command is LogPoseCommand.PlayMusic) {
             val query = command.query.trim()
             if (query.isNotEmpty()) {
                 // SINCRO CLAUDE: Si el comando es genérico ("poné música"), lo dejamos pasar.
@@ -79,7 +79,7 @@ object SurvivalFilter {
         }
     }
 
-    private fun evaluateHighCriticality(command: Command, result: VoskVoiceEngine.RecognizedCommand): FilterResult {
+    private fun evaluateHighCriticality(command: LogPoseCommand, result: VoskVoiceEngine.RecognizedCommand): FilterResult {
         // Para acciones críticas, el umbral es el dinámico + un pequeño margen de seguridad
         val noiseLevel = VoskVoiceEngine.getAmbientNoiseLevel()
         val criticalThreshold = (BASE_THRESHOLD + (MAX_THRESHOLD - BASE_THRESHOLD) * noiseLevel) + 0.05f
@@ -91,23 +91,23 @@ object SurvivalFilter {
 
         // Requisito de Token Dual para acciones sensibles
         return when (command) {
-            is Command.OpenApp -> {
+            is LogPoseCommand.OpenApp -> {
                 // "Abrir" solo no vale, tiene que tener el nombre de la app
                 if (command.appName.length < 3) FilterResult.MissingObject else FilterResult.Confirmed(command)
             }
-            is Command.CloseApp -> {
+            is LogPoseCommand.CloseApp -> {
                 if (command.appName.length < 3) FilterResult.MissingObject else FilterResult.Confirmed(command)
             }
-            is Command.Call -> {
+            is LogPoseCommand.Call -> {
                 // Exigimos frase reforzada para llamadas para evitar disparos accidentales
                 val text = result.text.lowercase()
                 val hasVerb = text.contains("llama") || text.contains("llamá")
                 if (!hasVerb || command.contact.isBlank()) FilterResult.MissingObject else FilterResult.Confirmed(command)
             }
-            is Command.SendMessage -> {
+            is LogPoseCommand.SendMessage -> {
                 if (command.contact.isBlank()) FilterResult.MissingObject else FilterResult.Confirmed(command)
             }
-            is Command.EndTrip -> {
+            LogPoseCommand.EndTrip -> {
                 // Finalizar viaje requiere mucha certeza
                 if (result.confidence < 0.96f) FilterResult.TooUncertain else FilterResult.Confirmed(command)
             }
@@ -115,22 +115,22 @@ object SurvivalFilter {
         }
     }
 
-    private fun getCriticality(command: Command): Criticality {
+    private fun getCriticality(command: LogPoseCommand): Criticality {
         return when (command) {
-            is Command.Call, is Command.OpenApp, is Command.CloseApp, 
-            is Command.SendMessage, is Command.EndTrip,
-            is Command.GetWeather, is Command.ReadNotifications -> Criticality.HIGH
+            is LogPoseCommand.Call, is LogPoseCommand.OpenApp, is LogPoseCommand.CloseApp, 
+            is LogPoseCommand.SendMessage, LogPoseCommand.EndTrip,
+            LogPoseCommand.GetWeather, LogPoseCommand.ReadNotifications -> Criticality.HIGH
             else -> Criticality.LOW
         }
     }
 
-    private fun isMultimediaCommand(command: Command): Boolean {
-        return command is Command.PlayMusic || 
-               command is Command.PauseMusic || 
-               command is Command.NextTrack || 
-               command is Command.PreviousTrack || 
-               command is Command.VolumeUp || 
-               command is Command.VolumeDown || 
-               command is Command.VolumeAbsolute
+    private fun isMultimediaCommand(command: LogPoseCommand): Boolean {
+        return command is LogPoseCommand.PlayMusic || 
+               command == LogPoseCommand.PauseMusic || 
+               command == LogPoseCommand.NextTrack || 
+               command == LogPoseCommand.PreviousTrack || 
+               command == LogPoseCommand.VolumeUp || 
+               command == LogPoseCommand.VolumeDown || 
+               command is LogPoseCommand.VolumeAbsolute
     }
 }

@@ -54,13 +54,18 @@ class CommandParser(private val glosario: PhoneticDictionary) {
     }
 }
 
-class UdpSender(private val pcIp: String, private val pcPort: Int = 5050) {
+class UdpSender(private val pcIp: String, private val pcPort: Int = 5055) {
     private val scope = CoroutineScope(Dispatchers.IO)
+    
     fun enviar(comando: LogPoseCommand) {
+        enviarJson(comando.toJson())
+    }
+
+    fun enviarJson(json: String) {
         scope.launch {
             try {
                 DatagramSocket().use { socket ->
-                    val data = comando.toJson().toByteArray()
+                    val data = json.toByteArray()
                     val address = InetAddress.getByName(pcIp)
                     val packet = DatagramPacket(data, data.size, address, pcPort)
                     socket.send(packet)

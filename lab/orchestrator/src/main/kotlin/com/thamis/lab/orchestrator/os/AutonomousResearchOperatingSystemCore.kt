@@ -1,7 +1,7 @@
 package com.thamis.lab.orchestrator.os
 
 import com.thamis.lab.core.common.logging.LabLogger
-import com.thamis.lab.intelligence.constitution.EngineeringPhilosophyConstitution
+import com.thamis.lab.intelligence.security.EngineeringPhilosophyConstitution
 
 public data class ResearchOsStatusReport(
     public val isResearchOsActive: Boolean,

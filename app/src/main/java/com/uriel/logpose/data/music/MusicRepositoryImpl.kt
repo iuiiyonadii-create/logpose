@@ -1,16 +1,15 @@
 package com.uriel.logpose.data.music
 
-import android.content.Context
 import com.uriel.logpose.core.music.MusicController
-import com.uriel.logpose.domain.models.LogPoseCommand
+import com.thamis.lab.core.contracts.command.LogPoseCommand
 import com.uriel.logpose.domain.repositories.MusicRepository
 import javax.inject.Inject
+import javax.inject.Singleton
 
+@Singleton
 class MusicRepositoryImpl @Inject constructor(
-    private val context: Context
+    private val musicController: com.uriel.logpose.core.music.MusicController
 ) : MusicRepository {
-
-    private val musicController = MusicController(context)
 
     override fun executeCommand(command: LogPoseCommand): Boolean {
         return musicController.execute(command)

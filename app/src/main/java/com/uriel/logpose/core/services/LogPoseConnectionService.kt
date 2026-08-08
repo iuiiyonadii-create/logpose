@@ -6,7 +6,7 @@ import android.telecom.ConnectionService
 import android.telecom.PhoneAccountHandle
 import android.telecom.DisconnectCause
 
-import com.uriel.logpose.core.app.AppContainer
+import com.uriel.logpose.core.app.LogPoseApplication
 
 class LogPoseConnectionService : ConnectionService() {
 
@@ -15,7 +15,7 @@ class LogPoseConnectionService : ConnectionService() {
         request: ConnectionRequest?
     ): Connection {
         val connection = LogPoseConnection(applicationContext)
-        AppContainer.telecom.setActiveConnection(connection)
+        LogPoseApplication.entryPoint.logPoseTelecom().setActiveConnection(connection)
         return connection.apply {
             setInitializing()
             setActive()
@@ -27,7 +27,7 @@ class LogPoseConnectionService : ConnectionService() {
         request: ConnectionRequest?
     ): Connection {
         val connection = LogPoseConnection(applicationContext)
-        AppContainer.telecom.setActiveConnection(connection)
+        LogPoseApplication.entryPoint.logPoseTelecom().setActiveConnection(connection)
         return connection.apply {
             setInitializing()
             // Marcamos como silenciosa para evitar ringtone del casco

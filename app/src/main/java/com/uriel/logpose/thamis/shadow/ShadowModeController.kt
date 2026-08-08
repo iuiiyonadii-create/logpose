@@ -4,7 +4,7 @@ import com.uriel.logpose.thamis.cognitive.engine.EvidenceEngine
 import com.uriel.logpose.thamis.cognitive.decision.DecisionEngine
 import com.uriel.logpose.thamis.cognitive.decision.RiskEvaluator
 import com.uriel.logpose.thamis.cognitive.model.*
-import com.uriel.logpose.thamis.intent.Intent
+import com.thamis.lab.core.contracts.intent.Intent
 import com.uriel.logpose.thamis.entity.EntityExtractor
 
 /**

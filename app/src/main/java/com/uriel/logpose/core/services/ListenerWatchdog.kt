@@ -55,8 +55,13 @@ class ListenerWatchdog(private val context: Context) {
                 lastAlertTimestamp = now
                 hasAlertedActiveIssue = true
             } else {
-                // Si el permiso está pero no hay instancia, solo intentamos rebind silencioso
-                LogPoseLogger.w("Watchdog: Intentando recuperar Thamis silenciosamente...")
+                // v1.1: Fase de Pánico (Misión #025)
+                if (consecutiveFailures >= FAILURE_THRESHOLD * 2) {
+                    LogPoseLogger.e("Watchdog: ¡FASE DE PÁNICO! Forzando Deep Rebind...")
+                    LogPoseHudService.updateStatus("⚠️ RECUPERANDO...")
+                } else {
+                    LogPoseLogger.w("Watchdog: Intentando recuperar Thamis silenciosamente...")
+                }
                 requestRebind()
             }
         }

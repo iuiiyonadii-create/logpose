@@ -1,6 +1,6 @@
 package com.uriel.logpose.thamis.decision
 
-import com.uriel.logpose.thamis.intent.Intent
+import com.thamis.lab.core.contracts.intent.Intent
 
 /**
  * Representa el veredicto final de THAMIS tras evaluar evidencias y contexto.

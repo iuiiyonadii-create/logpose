@@ -1,8 +1,8 @@
 package com.uriel.logpose.thamis
 
-import com.uriel.logpose.core.compat.core.Command
+import com.thamis.lab.core.contracts.command.LogPoseCommand
 import com.uriel.logpose.thamis.action.ActionMapper
-import com.uriel.logpose.thamis.intent.Intent
+import com.thamis.lab.core.contracts.intent.Intent
 import com.uriel.logpose.thamis.request.THAMISRequest
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
@@ -20,8 +20,8 @@ class THAMISArgentinoTest {
         assertEquals(Intent.PLAY_MUSIC, decision.intent)
         
         val command = ActionMapper.map(decision, text)
-        assertTrue(command is Command.PlayMusic)
-        assertEquals("cumbia", (command as Command.PlayMusic).app)
+        assertTrue(command is LogPoseCommand.PlayMusic)
+        assertEquals("cumbia", (command as LogPoseCommand.PlayMusic).query)
     }
 
     @Test
@@ -34,8 +34,8 @@ class THAMISArgentinoTest {
         assertEquals(Intent.NAVIGATE, decision.intent)
         
         val command = ActionMapper.map(decision, text)
-        assertTrue(command is Command.Navigate)
-        assertEquals("el centro", (command as Command.Navigate).destination)
+        assertTrue(command is LogPoseCommand.Navigate)
+        assertEquals("el centro", (command as LogPoseCommand.Navigate).destination)
     }
     
     @Test
@@ -48,7 +48,7 @@ class THAMISArgentinoTest {
         assertEquals(Intent.CALL_CONTACT, decision.intent)
         
         val command = ActionMapper.map(decision, text)
-        assertTrue(command is Command.Call)
-        assertEquals("la vieja", (command as Command.Call).contact)
+        assertTrue(command is LogPoseCommand.Call)
+        assertEquals("la vieja", (command as LogPoseCommand.Call).contact)
     }
 }

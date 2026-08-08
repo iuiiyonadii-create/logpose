@@ -74,5 +74,13 @@ class BluetoothConnectionManager(private val context: Context) {
         _connectionState.value = BluetoothState.DISCONNECTED
     }
 
+    fun release() {
+        disconnect()
+        val adapter = android.bluetooth.BluetoothAdapter.getDefaultAdapter()
+        adapter?.closeProfileProxy(BluetoothProfile.HEADSET, bluetoothHeadset)
+        bluetoothHeadset = null
+        scope.cancel()
+    }
+
     fun isConnected(): Boolean = _connectionState.value == BluetoothState.CONNECTED
 }

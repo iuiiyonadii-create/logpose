@@ -1,10 +1,10 @@
 package com.uriel.logpose.core.queue
 
-import com.uriel.logpose.core.compat.core.Command
+import com.thamis.lab.core.contracts.command.LogPoseCommand
 
 data class QueuedCommand(
 
-    val command: Command,
+    val command: LogPoseCommand,
 
     val timestamp: Long =
         System.currentTimeMillis()

@@ -1,5 +1,6 @@
 package com.uriel.logpose.thamis.policy
 
+import com.thamis.lab.core.contracts.intent.Intent
 import com.uriel.logpose.thamis.decision.Decision
 
 /**
@@ -11,7 +12,7 @@ object THAMISPolicy {
         // Por ejemplo, si la confianza es muy baja, forzamos que sea UNKNOWN
         if (decision.confidence < 0.4f) {
             return decision.copy(
-                intent = com.uriel.logpose.thamis.intent.Intent.UNKNOWN,
+                intent = Intent.UNKNOWN,
                 requiresConfirmation = false
             )
         }

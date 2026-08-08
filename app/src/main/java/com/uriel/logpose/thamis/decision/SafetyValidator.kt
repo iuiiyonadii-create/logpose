@@ -1,6 +1,6 @@
 package com.uriel.logpose.thamis.decision
 
-import com.uriel.logpose.core.Command
+import com.thamis.lab.core.contracts.command.LogPoseCommand
 import com.uriel.logpose.thamis.context.ActivityDetector
 
 /**
@@ -9,12 +9,12 @@ import com.uriel.logpose.thamis.context.ActivityDetector
  */
 object SafetyValidator {
 
-    fun isSafe(command: Command): Boolean {
+    fun isSafe(command: LogPoseCommand): Boolean {
         val isRiding = ActivityDetector.getActivity() == ActivityDetector.Activity.RIDING
         
         return when (command) {
-            Command.CALL_CONTACT -> !isRiding
-            Command.STOP_LOGPOSE -> true
+            is LogPoseCommand.Call -> !isRiding
+            LogPoseCommand.StopListening -> true
             else -> true
         }
     }

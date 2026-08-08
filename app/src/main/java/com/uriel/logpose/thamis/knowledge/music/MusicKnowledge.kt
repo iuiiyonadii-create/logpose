@@ -1,32 +1,28 @@
 package com.uriel.logpose.thamis.knowledge.music
 
-import com.uriel.logpose.thamis.intent.Intent
+import com.uriel.logpose.core.app.LogPoseApplication
+import com.uriel.logpose.core.parser.PhoneticDictionary
+import com.thamis.lab.core.contracts.intent.Intent
 import com.uriel.logpose.thamis.knowledge.KnowledgeRule
 
 object MusicKnowledge {
 
-    val rules = listOf(
+    private val dictionary: PhoneticDictionary by lazy {
+        PhoneticDictionary(LogPoseApplication.instance)
+    }
+
+    val rules: List<KnowledgeRule> get() = listOf(
         KnowledgeRule(
             intent = Intent.PLAY_MUSIC,
-            phrases = setOf(
-                "pone musica", "poné música", "reproduci musica", "reproducir musica",
-                "play", "inicia musica", "mandale musica", "ponete algo",
-                "pone cumbia", "pone rock", "pone uzbekistan", "pone cuarteto",
-                "reproduci", "reproducir", "un tema de", "pone un tema de",
-                "poné un tema de", "escuchar a", "reproducir duki", "pone duki",
-                "pone spotify", "poné spotify", "abrir spotify", "reproducí spotify",
-                "pone musica en spotify", "poné música en spotify", "quería escuchar",
-                "pone algo de", "poné algo de", "reproducí algo de", "reproducime",
-                "poneme", "buscame", "buscar", "escuchar", "escucha", "sonar", "hace sonar"
-            )
+            phrases = (dictionary.listaDe("verbos.reproducir") + setOf("reproducción", "musica", "reproducime", "sonar")).toSet()
         ),
         KnowledgeRule(
             intent = Intent.PAUSE_MUSIC,
-            phrases = setOf("pausa", "pausar", "detene musica", "parar musica", "silencio", "para", "parar", "detener", "shh", "callate", "cállate")
+            phrases = (dictionary.listaDe("verbos.pausar") + setOf("pausa", "parar musica", "detener musica", "frenar musica")).toSet()
         ),
         KnowledgeRule(
             intent = Intent.REPEAT_MUSIC,
-            phrases = setOf("repetir", "bucle", "en bucle", "repetir este tema", "pone en bucle", "poné en bucle", "otra vez", "de nuevo", "loop")
+            phrases = dictionary.listaDe("verbos.bucle").toSet()
         )
     )
 

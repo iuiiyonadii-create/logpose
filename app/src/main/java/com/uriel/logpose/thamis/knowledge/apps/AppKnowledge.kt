@@ -1,28 +1,20 @@
 package com.uriel.logpose.thamis.knowledge.apps
 
-import com.uriel.logpose.thamis.intent.Intent
+import com.uriel.logpose.core.app.LogPoseApplication
+import com.uriel.logpose.core.parser.PhoneticDictionary
+import com.thamis.lab.core.contracts.intent.Intent
 import com.uriel.logpose.thamis.knowledge.KnowledgeRule
 
 object AppKnowledge {
 
-    val rules = listOf(
+    private val dictionary: PhoneticDictionary by lazy {
+        PhoneticDictionary(LogPoseApplication.instance)
+    }
+
+    val rules: List<KnowledgeRule> get() = listOf(
         KnowledgeRule(
             intent = Intent.OPEN_APP,
-            phrases = setOf(
-                "abrir whatsapp", "abrí whatsapp", "abri whatsapp", "abre whatsapp", "whatsapp", "guasap", "wasap", "wasa", "guasá",
-                "abrir instagram", "abrí instagram", "abri instagram", "abre instagram", "instagram", "insta", "ig",
-                "abrir facebook", "facebook", "face", "fase", "feisbuk",
-                "abrir tiktok", "tiktok", "tito",
-                "abrir mapas", "mapas", "google maps", "maps",
-                "abrir spotify", "spotify", "spoty", "spoti", "espotifai",
-                "abrir pedido ya", "abri pedido ya", "abrí peya", "abri peya", "peya", "pedidosya", "pedidos ya",
-                "abrir rappi", "rappi", "rapi",
-                "abrir uber", "uber",
-                "abrir pedidos ya",
-                "ver netflix", "poner netflix", "abrí netflix", "abrir netflix", "netflix", "nefli", "nesfli", "netfli", "netflixe",
-                "ver youtube", "abrí youtube", "youtube", "yutub", "iutub", "yutu",
-                "abrir navegador", "abrir cromo", "abrir brave", "navegador", "brave"
-            )
+            phrases = (dictionary.listaDe("verbos.abrir") + dictionary.listaDe("apps")).toSet()
         ),
         KnowledgeRule(
             intent = Intent.SWITCH_TAB,

@@ -1,6 +1,6 @@
 package com.uriel.logpose.thamis.validation
 
-import com.uriel.logpose.thamis.intent.Intent
+import com.thamis.lab.core.contracts.intent.Intent
 
 /**
  * Analiza sesiones de validación para generar informes cuantitativos.

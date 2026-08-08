@@ -1,6 +1,6 @@
 package com.uriel.logpose.thamis.contracts
 
-import com.uriel.logpose.thamis.intent.Intent
+import com.thamis.lab.core.contracts.intent.Intent
 
 /**
  * Veredicto final del cerebro THAMIS.

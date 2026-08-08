@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.ui.Modifier
+import androidx.compose.runtime.LaunchedEffect
 import com.uriel.logpose.ui.screen.MainScreen
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -17,6 +18,7 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         installSplashScreen()
         super.onCreate(savedInstanceState)
+        
         setContent {
             MaterialTheme {
                 Surface(
@@ -27,5 +29,11 @@ class MainActivity : ComponentActivity() {
                 }
             }
         }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        // v8.5: Auto-Evolución Staff - Iniciar entrenamiento al abrir
+        com.uriel.logpose.core.intelligence.NeuroEvolutionSimulator.startInfiniteTraining()
     }
 }

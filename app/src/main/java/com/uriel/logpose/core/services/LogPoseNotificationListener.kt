@@ -116,6 +116,38 @@ class LogPoseNotificationListener : NotificationListenerService() {
         instance = this
         rebindRetryCount = 0
         Log.i("LogPose_NL", "¡LogPose Service CONECTADO Y LISTO! ✅")
+        
+        // v15.0: Escuchar todas las sesiones de medios (YouTube Music, Spotify, etc.)
+        setupMediaSessionListener()
+    }
+
+    private fun setupMediaSessionListener() {
+        val sm = getSystemService(Context.MEDIA_SESSION_SERVICE) as MediaSessionManager
+        val component = ComponentName(this, LogPoseNotificationListener::class.java)
+        
+        sm.addOnActiveSessionsChangedListener({ controllers ->
+            controllers?.forEach { controller ->
+                controller.registerCallback(object : android.media.session.MediaController.Callback() {
+                    override fun onMetadataChanged(metadata: android.media.MediaMetadata?) {
+                        metadata?.let { meta ->
+                            val artist = meta.getString(android.media.MediaMetadata.METADATA_KEY_ARTIST) ?: ""
+                            val title = meta.getString(android.media.MediaMetadata.METADATA_KEY_TITLE) ?: ""
+                            val album = meta.getString(android.media.MediaMetadata.METADATA_KEY_ALBUM) ?: ""
+
+                            if (artist.isNotBlank() || title.isNotBlank()) {
+                                LogPoseLogger.i("🧬 ADN Musical (Omnicanal): Aprendiendo de ${controller.packageName} -> $artist - $title")
+                                com.uriel.logpose.thamis.learning.LearningEngine.learnMusicEntity(artist)
+                                com.uriel.logpose.thamis.learning.LearningEngine.learnMusicEntity(title)
+                                if (artist.isNotBlank() && title.isNotBlank()) {
+                                    com.uriel.logpose.thamis.learning.LearningEngine.learnTrackArtistRelation(title, artist)
+                                    com.uriel.logpose.thamis.learning.LearningEngine.addFavoriteArtist(artist)
+                                }
+                            }
+                        }
+                    }
+                })
+            }
+        }, component)
     }
 
     override fun onListenerDisconnected() { 

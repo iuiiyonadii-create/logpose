@@ -112,38 +112,44 @@ class LogPoseApp:
         try:
             with open("logpose_glosario.json", "r", encoding="utf-8") as f:
                 return json.load(f)
-        except:
-            self.log("!!! ERROR: logpose_glosario.json no encontrado.", "red")
+        except Exception as e:
+            self.log(f"!!! ERROR: No se pudo cargar logpose_glosario.json: {e}", "red")
             return {}
 
     def log(self, msg, tag="white"):
-        t = datetime.now().strftime("%H:%M:%S")
-        self.console.insert(tk.END, f"[{t}] [SYS] {msg}\n", tag)
-        self.console.see(tk.END)
+        def _do_log():
+            t = datetime.now().strftime("%H:%M:%S")
+            self.console.insert(tk.END, f"[{t}] [SYS] {msg}\n", tag)
+            self.console.see(tk.END)
+
+        if threading.current_thread() is threading.main_thread():
+            _do_log()
+        else:
+            self.root.after(0, _do_log)
 
     def init_hardware(self):
-        from selenium.webdriver.chrome.options import Options
-        from selenium import webdriver
-        
-        opts = Options()
-        opts.add_argument(f"--user-data-dir={os.path.join(os.getcwd(), 'Thamis_Chrome_Profile')}")
-        opts.add_experimental_option("detach", True)
-        
         try:
+            from selenium.webdriver.chrome.options import Options
+            from selenium import webdriver
+
+            opts = Options()
+            opts.add_argument(f"--user-data-dir={os.path.join(os.getcwd(), 'Thamis_Chrome_Profile')}")
+            opts.add_experimental_option("detach", True)
+
             self.driver = webdriver.Chrome(options=opts)
             self.ctrls = {
                 "netflix": NetflixController(self.driver),
                 "youtube": YoutubeController(self.driver),
-                "volumen": VolumeController()
+                "volumen": VolumeController(),
             }
             self.log("Controladores Multimedia: OK", "green")
-        except:
-            self.log("WARN: Selenium no pudo iniciar. ¿Chrome abierto?", "yellow")
+        except Exception as e:
+            self.log(f"WARN: Selenium/Navegador no disponible ({e}). Modo audio/volumen únicamente.", "yellow")
             self.ctrls = {"volumen": VolumeController()}
 
         if VOICE_AVAILABLE:
             self.start_voice()
-        
+
         # Servidor UDP para el celular
         threading.Thread(target=self.udp_server, daemon=True).start()
 
@@ -160,25 +166,27 @@ class LogPoseApp:
             words = []
             for c in self.glosario.values():
                 if isinstance(c, dict):
-                    for v in c.values(): words.extend(v if isinstance(v, list) else [])
-            
+                    for v in c.values():
+                        words.extend(v if isinstance(v, list) else [])
+
             grammar = json.dumps(list(set(words + ["netflix", "youtube", "reproducir", "abrí", "activar", "desactivar"])))
             self.rec = KaldiRecognizer(model, 16000, grammar)
             self.log("¡CEREBRO THAMIS PC ONLINE!", "green")
-            
-            with sd.RawInputStream(samplerate=16000, blocksize=4000, dtype='int16', channels=1) as stream:
+
+            with sd.RawInputStream(samplerate=16000, blocksize=4000, dtype="int16", channels=1) as stream:
                 while True:
                     data, _ = stream.read(4000)
                     if self.rec.AcceptWaveform(bytes(data)):
                         res = json.loads(self.rec.Result())
                         txt = res.get("text", "")
-                        if txt: self.root.after(0, self.execute, txt, "VOZ")
+                        if txt:
+                            self.root.after(0, self.execute, txt, "VOZ")
         except Exception as e:
             self.log(f"Error Motor Voz: {e}", "red")
 
     def execute(self, text, source="RED"):
         intent, target = self.thamis.process(text)
-        
+
         if intent == "activar":
             self.is_active = True
             self.log("THAMIS: Despierta y escuchando.", "green")
@@ -187,9 +195,10 @@ class LogPoseApp:
             self.is_active = False
             self.log("THAMIS: En modo standby (Ignorando comandos).", "red")
             return
-            
+
         if not self.is_active:
-            if len(text) > 2: self.log(f"Ignorado (Standby): {text}", "cyan")
+            if len(text) > 2:
+                self.log(f"Ignorado (Standby): {text}", "cyan")
             return
 
         if not intent or intent == "unknown":
@@ -197,30 +206,47 @@ class LogPoseApp:
             return
 
         self.log(f"{source}: {text} -> {intent.upper()} ({target})", "cyan")
-        
+
         try:
             if intent == "abrir":
-                self.ctrls.get(target, self.ctrls["youtube"]).abrir()
+                ctrl = self.ctrls.get(target) or self.ctrls.get("youtube")
+                if ctrl and hasattr(ctrl, "abrir"):
+                    ctrl.abrir()
+                else:
+                    self.log(f"Controlador para '{target}' no está disponible.", "yellow")
             elif intent == "reproducir":
-                # Si Thamis PC detectó netflix en la frase, usamos ese controller
-                app = "youtube"
-                if "netflix" in text.lower(): app = "netflix"
-                self.ctrls[app].buscar_y_reproducir(target)
-            elif intent == "volumen_subir": self.ctrls["volumen"].subir()
-            elif intent == "volumen_bajar": self.ctrls["volumen"].bajar()
+                app = "netflix" if "netflix" in text.lower() else "youtube"
+                ctrl = self.ctrls.get(app)
+                if ctrl and hasattr(ctrl, "buscar_y_reproducir"):
+                    ctrl.buscar_y_reproducir(target)
+                else:
+                    self.log(f"Controlador multimedia '{app}' no está disponible.", "yellow")
+            elif intent == "volumen_subir":
+                vol_ctrl = self.ctrls.get("volumen")
+                if vol_ctrl:
+                    vol_ctrl.subir()
+            elif intent == "volumen_bajar":
+                vol_ctrl = self.ctrls.get("volumen")
+                if vol_ctrl:
+                    vol_ctrl.bajar()
         except Exception as e:
             self.log(f"Error ejecución: {e}", "red")
 
     def udp_server(self):
         sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        sock.bind(("0.0.0.0", 5050))
-        while True:
-            data, _ = sock.recvfrom(4096)
-            try:
-                cmd = json.loads(data.decode("utf-8"))
-                target = cmd.get("target", "")
-                if target: self.root.after(0, self.execute, target, "CELULAR")
-            except: pass
+        try:
+            sock.bind(("0.0.0.0", 5050))
+            while True:
+                data, _ = sock.recvfrom(4096)
+                try:
+                    cmd = json.loads(data.decode("utf-8"))
+                    target = cmd.get("target", "")
+                    if target:
+                        self.root.after(0, self.execute, target, "CELULAR")
+                except Exception as e:
+                    self.log(f"Error procesando paquete UDP: {e}", "yellow")
+        except Exception as e:
+            self.log(f"Error iniciando servidor UDP: {e}", "red")
 
 if __name__ == "__main__":
     root = tk.Tk()

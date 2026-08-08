@@ -1,7 +1,7 @@
 package com.thamis.lab.orchestrator.singularity
 
 import com.thamis.lab.core.common.logging.LabLogger
-import com.thamis.lab.intelligence.dna.RepositoryDnaEngine
+import com.thamis.lab.intelligence.evolution.RepositoryDnaEngine
 
 public data class EngineeringSingularityStatus(
     public val isSingularityAchieved: Boolean,

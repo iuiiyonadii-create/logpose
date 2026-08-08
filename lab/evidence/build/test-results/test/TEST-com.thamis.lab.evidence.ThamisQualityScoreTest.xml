@@ -1,8 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<testsuite name="com.thamis.lab.evidence.ThamisQualityScoreTest" tests="1" skipped="0" failures="0" errors="0" timestamp="2026-08-01T19:21:10.847Z" hostname="DESKTOP-A234HEL" time="0.003">
-  <properties/>
-  <testcase name="testThamisQualityScoreCalculator" classname="com.thamis.lab.evidence.ThamisQualityScoreTest" time="0.003"/>
-  <system-out><![CDATA[[INFO] [ThamisQualityScoreCalculator] Calculating composite quality score for THAMIS LAB OS...
-]]></system-out>
-  <system-err><![CDATA[]]></system-err>
-</testsuite>

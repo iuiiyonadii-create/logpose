@@ -1,7 +1,7 @@
 package com.thamis.lab.orchestrator.meta
 
 import com.thamis.lab.core.common.logging.LabLogger
-import com.thamis.lab.intelligence.constitution.EngineeringConstitutionEngine
+import com.thamis.lab.intelligence.security.EngineeringConstitutionEngine
 import com.thamis.lab.orchestrator.absolute.ThamisAbsoluteDirectiveEngine
 
 public data class MetaOsStatusReport(

@@ -1,9 +1,9 @@
 package com.uriel.logpose.core.learning
 
-import com.uriel.logpose.core.compat.core.Command
+import com.thamis.lab.core.contracts.command.LogPoseCommand
 
 data class CommandPattern(
-    val command: Command,
+    val command: LogPoseCommand,
     val executions: Int = 0,
     val lastUsed: Long = System.currentTimeMillis()
 )

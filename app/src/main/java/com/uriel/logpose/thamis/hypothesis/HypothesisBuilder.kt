@@ -1,7 +1,7 @@
 package com.uriel.logpose.thamis.hypothesis
 
 import com.uriel.logpose.thamis.evidence.Evidence
-import com.uriel.logpose.thamis.intent.Intent
+import com.thamis.lab.core.contracts.intent.Intent
 
 /**
  * Builder de hipótesis.

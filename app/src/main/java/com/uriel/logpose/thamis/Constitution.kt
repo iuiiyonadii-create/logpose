@@ -1,7 +1,7 @@
 package com.uriel.logpose.thamis
 
 import com.uriel.logpose.thamis.cognitive.model.WorldState
-import com.uriel.logpose.thamis.intent.Intent
+import com.thamis.lab.core.contracts.intent.Intent
 
 /**
  * La Constitución de THAMIS define las leyes fundamentales de comportamiento.

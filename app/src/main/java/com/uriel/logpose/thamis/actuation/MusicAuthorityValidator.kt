@@ -1,5 +1,6 @@
 package com.uriel.logpose.thamis.actuation
 
+import com.thamis.lab.core.contracts.intent.Intent
 import com.uriel.logpose.thamis.cognitive.model.ThamisDecision
 import com.uriel.logpose.thamis.cognitive.model.WorldState
 import com.uriel.logpose.thamis.cognitive.model.Goal
@@ -24,9 +25,9 @@ object MusicAuthorityValidator {
         // 3. Verificar umbrales de confianza específicos para música
         val confidence = winningEval.finalScore
         val requiredConfidence = when (decision.intent) {
-            com.uriel.logpose.thamis.intent.Intent.PLAY_MUSIC -> 0.65f
-            com.uriel.logpose.thamis.intent.Intent.NEXT_TRACK, com.uriel.logpose.thamis.intent.Intent.PREVIOUS_TRACK -> 0.60f
-            com.uriel.logpose.thamis.intent.Intent.SET_VOLUME -> 0.50f
+            Intent.PLAY_MUSIC -> 0.65f
+            Intent.NEXT_TRACK, Intent.PREVIOUS_TRACK -> 0.60f
+            Intent.SET_VOLUME -> 0.50f
             else -> 0.70f
         }
         

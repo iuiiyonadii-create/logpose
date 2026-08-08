@@ -2,52 +2,34 @@ package com.uriel.logpose.features.voice
 
 import androidx.collection.LruCache
 
+import com.uriel.logpose.core.app.LogPoseApplication
+import com.uriel.logpose.core.parser.PhoneticDictionary
+
 /**
- * MusicVocabulary V10: Fuente única de verdad con Weighted Levenshtein.
- * Las sibilancias (s, z, x, j) tienen costo reducido (0.3) por el ruido del viento.
+ * MusicVocabulary V11: Fuente única de verdad consumiendo el Unified Language Core (ULC).
  */
 object MusicVocabulary {
 
-    private val ARTISTS = listOf(
-        "duki", "ysy a", "trueno", "soda stereo", "tiago pzk", "rockstar",
-        "metallica", "ac dc", "charly garcia", "fito paez", "el kuelgue",
-        "wos", "nicki nicole", "maria becerra", "emilia", "bizarrap",
-        "quevedo", "bad bunny", "feid", "karol g", "anuel aa", "myke towers",
-        "ozuna", "daddy yankee", "callejeros", "la renga", "los enanitos verdes",
-        "patricio rey y sus redonditos de ricota", "sumo", "viejas locas"
-    )
+    private val dictionary: PhoneticDictionary by lazy {
+        PhoneticDictionary(LogPoseApplication.instance)
+    }
 
-    // --- Capa de Corrección Thamis (Thamis Normalizer) ---
-    // Mapea lo que Vosk "oye" (columna izquierda) a lo que Spotify entiende (columna derecha)
-    private val THAMIS_DICTIONARY = mapOf(
-        "duque" to "duki",
-        "doce" to "duki",
-        "donde" to "duki",
-        "y si" to "ysy a",
-        "isi" to "ysy a",
-        "voz" to "wos",
-        "vos" to "wos",
-        "biza" to "bizarrap",
-        "pisa" to "bizarrap",
-        "tiago" to "tiago pzk",
-        "estrella de rock" to "rockstar",
-        "rock" to "rockstar",
-        "conejo malo" to "bad bunny",
-        "conga" to "la konga",
-        "venga" to "la renga",
-        "cuelgue" to "el kuelgue"
-    )
-
-    private val PLAYLISTS = listOf(
-        "lista de viaje", "viaje", "ruta", "moto", "relax", "fiesta", "concentración", "rock", "trap", "pop"
-    )
+    private val ARTISTS: List<String> get() = dictionary.listaDe("musica.artistas")
+    private val SONGS: List<String> get() = dictionary.listaDe("musica.canciones")
+    private val LEARNED: Set<String> get() = com.uriel.logpose.thamis.learning.LearningEngine.getLearnedMusicEntities()
+    private val THAMIS_DICTIONARY: Map<String, String> get() = dictionary.mapaDe("musica.correcciones_foneticas")
+    private val PLAYLISTS: List<String> get() = dictionary.listaDe("musica.playlists")
 
     private val normalizedCache = LruCache<String, String>(256)
 
+    fun clearCache() {
+        normalizedCache.evictAll()
+    }
+
     fun normalize(input: String): String {
         if (input.isBlank()) return ""
-        normalizedCache.get(input)?.let { return it }
         
+        // v22.9: Limpieza previa de caracteres para asegurar que la llave de caché sea pura
         val cleanInput = input.lowercase()
             .replace(Regex("[áàäâã]"), "a")
             .replace(Regex("[éèëê]"), "e")
@@ -57,11 +39,21 @@ object MusicVocabulary {
             .replace(Regex("[^a-z0-9ñ ]"), " ")
             .replace(Regex("\\s+"), " ")
             .trim()
+
+        normalizedCache.get(cleanInput)?.let { return it }
         
-        // SINCRO: Reemplazo inteligente usando límites de palabra para no romper frases
         var result = cleanInput
+        
+        // v7.7/v22.9: ADN Musical Aprendido (Prioridad Staff Absoluta)
+        com.uriel.logpose.thamis.learning.LearningEngine.getPhoneticCorrection(result)?.let {
+            val corrected = it.trim()
+            normalizedCache.put(cleanInput, corrected)
+            return corrected
+        }
+
+        // Luego el diccionario estático
         for ((hears, targets) in THAMIS_DICTIONARY) {
-            val regex = Regex("\\b$hears\\b", RegexOption.IGNORE_CASE)
+            val regex = Regex("\\b${Regex.escape(hears)}\\b", RegexOption.IGNORE_CASE)
             if (result.contains(regex)) {
                 result = result.replace(regex, targets)
             }
@@ -72,10 +64,7 @@ object MusicVocabulary {
     }
 
     fun getGrammarPhases(): List<String> {
-        // IMPORTANTE: Solo enviamos a Vosk palabras que SI están en su diccionario.
-        // Incluimos ARTISTS que sean palabras "seguras" o alias.
-        val safeArtists = listOf("rockstar", "duki", "trueno", "wos", "emilia", "bizarrap")
-        return (PLAYLISTS + THAMIS_DICTIONARY.keys + safeArtists).distinct()
+        return (ARTISTS + SONGS + PLAYLISTS + LEARNED.toList() + THAMIS_DICTIONARY.keys).distinct()
     }
 
     data class ResolutionResult(
@@ -100,16 +89,28 @@ object MusicVocabulary {
         val normalizedQuery = normalize(query)
         var bestEntity: String? = null
         var bestScore = threshold
-        for (entity in (ARTISTS + PLAYLISTS)) {
+        
+        val stopwords = setOf("un", "una", "el", "la", "los", "las", "de", "con", "por", "en")
+        
+        for (entity in (ARTISTS + SONGS + PLAYLISTS + LEARNED)) {
             val entityNorm = normalize(entity)
             if (normalizedQuery == entityNorm) return entity to 1.0
-            val wScore = weightedLevenshteinRatio(normalizedQuery, entityNorm)
-            if (wScore > bestScore) { bestScore = wScore; bestEntity = entity }
-            val qTokens = normalizedQuery.split(" ").filter { it.length >= 2 }
-            val eTokens = entityNorm.split(" ").filter { it.length >= 2 }
+            
+            // v7.3: Aplicar peso de afinidad (User Preferences)
+            val affinityWeight = com.uriel.logpose.thamis.learning.LearningEngine.getAffinityWeight(entity)
+            val baseScore = weightedLevenshteinRatio(normalizedQuery, entityNorm)
+            val finalScore = baseScore * affinityWeight // Boost Staff para favoritos
+
+            if (finalScore > bestScore) {
+                bestScore = finalScore
+                bestEntity = entity
+            }
+            
+            val qTokens = normalizedQuery.split(" ").filter { it.length >= 3 && it !in stopwords }
+            val eTokens = entityNorm.split(" ").filter { it.length >= 3 && it !in stopwords }
             for (qt in qTokens) {
                 for (et in eTokens) {
-                    val tScore = weightedLevenshteinRatio(qt, et)
+                    val tScore = weightedLevenshteinRatio(qt, et) * affinityWeight
                     if (tScore > bestScore) { bestScore = tScore; bestEntity = entity }
                 }
             }
@@ -124,14 +125,16 @@ object MusicVocabulary {
         return if (candidates.size == 1) candidates[0] else candidates.minByOrNull { it.length }
     }
 
-    fun getAllNames(): List<String> = ARTISTS + PLAYLISTS
+    fun getAllNames(): List<String> = ARTISTS + SONGS + PLAYLISTS + LEARNED.toList()
 
     fun findExact(candidate: String): String? {
         val normCandidate = normalize(candidate)
-        return (ARTISTS + PLAYLISTS).find { normalize(it) == normCandidate }
+        return (ARTISTS + SONGS + PLAYLISTS + LEARNED).find { normalize(it) == normCandidate }
     }
 
     fun getAllArtists(): List<String> = ARTISTS
+    fun getAllSongs(): List<String> = SONGS
+    fun getAllPlaylists(): List<String> = PLAYLISTS
 
     private fun weightedLevenshteinRatio(s1: String, s2: String): Double {
         if (s1 == s2) return 1.0

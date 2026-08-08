@@ -202,16 +202,16 @@ class ThamisLabApp(tk.Tk):
         self.notebook = ttk.Notebook(container); self.notebook.pack(fill="both", expand=True)
 
         self.tabs = {
-            "DASHBOARD": self._make_tab(), "NEURAL FEED": self._make_tab(),
-            "MOTOR DE CAOS": self._make_tab(), "VOICE LAB": self._make_tab(), "AVANCES": self._make_tab()
+            "ANALÍTICAS": self._make_tab(), "NEURAL FEED": self._make_tab(),
+            "SIMULADOR": self._make_tab(), "CONOCIMIENTO": self._make_tab(), "SPRINTS": self._make_tab()
         }
         for name, frame in self.tabs.items(): self.notebook.add(frame, text=f"  {name}  ")
 
-        self._build_dashboard(self.tabs["DASHBOARD"])
+        self._build_dashboard(self.tabs["ANALÍTICAS"])
         self._build_neural_feed(self.tabs["NEURAL FEED"])
-        self._build_chaos_engine(self.tabs["MOTOR DE CAOS"])
-        self._build_voice_lab(self.tabs["VOICE LAB"])
-        self._build_progress(self.tabs["AVANCES"])
+        self._build_chaos_engine(self.tabs["SIMULADOR"])
+        self._build_voice_lab(self.tabs["CONOCIMIENTO"])
+        self._build_progress(self.tabs["SPRINTS"])
 
     def _make_tab(self): return tk.Frame(self.notebook, bg=BG_ROOT)
 

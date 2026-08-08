@@ -6,6 +6,7 @@ import android.media.ToneGenerator
 import android.os.Build
 import android.speech.tts.TextToSpeech
 import android.speech.tts.UtteranceProgressListener
+import com.uriel.logpose.core.app.LogPoseApplication
 import com.uriel.logpose.core.compat.core.LogPoseLogger
 import com.uriel.logpose.features.music.MusicManager
 import kotlinx.coroutines.*
@@ -102,7 +103,7 @@ object AlertManager : TextToSpeech.OnInitListener {
         // 1. Bajamos el ruido de fondo y la música, silenciamos el micro
         ComfortNoiseManager.duck()
         MusicManager.duck()
-        com.uriel.logpose.core.app.AppContainer.micGate.onTtsStarted()
+        LogPoseApplication.entryPoint.playbackAwareMicGate().onTtsStarted()
 
         LogPoseLogger.d("Sector 10: Hablando -> ${alert.text}")
 
@@ -132,7 +133,7 @@ object AlertManager : TextToSpeech.OnInitListener {
         delay(400)
         ComfortNoiseManager.restoreVolume()
         MusicManager.unduck()
-        com.uriel.logpose.core.app.AppContainer.micGate.onTtsEnded()
+        LogPoseApplication.entryPoint.playbackAwareMicGate().onTtsEnded()
     }
 
     fun shutdown() {

@@ -1,7 +1,7 @@
 package com.uriel.logpose.thamis.hypothesis
 
 import com.uriel.logpose.thamis.decision.Evidence
-import com.uriel.logpose.thamis.intent.Intent
+import com.thamis.lab.core.contracts.intent.Intent
 
 /**
  * Encargado de asignar puntajes a las hipótesis basadas en evidencias.

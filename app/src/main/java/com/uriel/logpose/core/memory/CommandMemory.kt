@@ -1,13 +1,13 @@
 package com.uriel.logpose.core.memory
 
-import com.uriel.logpose.core.compat.core.Command
+import com.thamis.lab.core.contracts.command.LogPoseCommand
 
 object CommandMemory {
 
     private val entries =
         mutableListOf<MemoryEntry>()
 
-    fun remember(command: Command) {
+    fun remember(command: LogPoseCommand) {
 
         entries.add(
             MemoryEntry(
@@ -24,7 +24,7 @@ object CommandMemory {
             .takeLast(limit)
             .reversed()
 
-    fun find(command: Command): List<MemoryEntry> =
+    fun find(command: LogPoseCommand): List<MemoryEntry> =
         entries.filter {
             it.command == command
         }

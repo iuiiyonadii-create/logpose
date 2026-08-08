@@ -1,6 +1,6 @@
 package com.uriel.logpose.core.commands
 
-import com.uriel.logpose.core.compat.core.Command
+import com.thamis.lab.core.contracts.command.LogPoseCommand
 import com.uriel.logpose.core.compat.core.LogPoseLogger
 import com.uriel.logpose.core.parser.ParseResult
 import com.uriel.logpose.core.parser.pipeline.CommandPipeline
@@ -11,7 +11,7 @@ object CommandProcessor {
 
     fun process(
         text: String
-    ): Command {
+    ): LogPoseCommand {
 
 
         LogPoseLogger.i(
@@ -49,7 +49,7 @@ object CommandProcessor {
                 )
 
 
-                Command.Multi
+                LogPoseCommand.Multi
 
             }
 
@@ -63,7 +63,7 @@ object CommandProcessor {
                 )
 
 
-                Command.Unknown
+                LogPoseCommand.Unknown
 
             }
 
@@ -73,7 +73,7 @@ object CommandProcessor {
                     "Frase ignorada (ruido/muletilla): $text"
                 )
 
-                Command.Ignore
+                LogPoseCommand.Ignore
             }
 
         }

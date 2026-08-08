@@ -5,6 +5,9 @@ import android.os.Bundle
 import android.speech.tts.TextToSpeech
 import android.speech.tts.UtteranceProgressListener
 import com.uriel.logpose.core.compat.core.LogPoseLogger
+import com.uriel.logpose.core.app.LogPoseApplication
+import kotlinx.coroutines.*
+import kotlinx.coroutines.flow.first
 import java.util.*
 import java.util.concurrent.PriorityBlockingQueue
 
@@ -33,6 +36,8 @@ object FeedbackManager : TextToSpeech.OnInitListener {
     private val eventQueue = PriorityBlockingQueue<FeedbackEvent>()
     private var isSpeaking = false
     private var currentCallback: (() -> Unit)? = null
+    
+    private val scope = CoroutineScope(Dispatchers.Main + SupervisorJob())
 
     fun initialize(context: Context) {
         tts = TextToSpeech(context, this)
@@ -40,10 +45,9 @@ object FeedbackManager : TextToSpeech.OnInitListener {
 
     override fun onInit(status: Int) {
         if (status == TextToSpeech.SUCCESS) {
-            // Personalización de la voz de Thamis (Argentina)
             tts?.language = Locale("es", "AR")
-            tts?.setPitch(1.1f) // Un tono un poco más agudo/femenino
-            tts?.setSpeechRate(1.05f) // Apenas más rápido para que sea natural en moto
+            tts?.setPitch(1.1f)
+            tts?.setSpeechRate(1.05f)
             
             isReady = true
             setupProgressListener()
@@ -51,9 +55,6 @@ object FeedbackManager : TextToSpeech.OnInitListener {
         }
     }
 
-    /**
-     * Permite ajustar la voz dinámicamente según el ruido del motor.
-     */
     fun updateVoiceSettings(pitch: Float, rate: Float) {
         tts?.setPitch(pitch)
         tts?.setSpeechRate(rate)
@@ -91,10 +92,29 @@ object FeedbackManager : TextToSpeech.OnInitListener {
         isSpeaking = true
         currentCallback = event.onComplete
         
-        val params = Bundle()
-        params.putString(TextToSpeech.Engine.KEY_PARAM_UTTERANCE_ID, "logpose_feedback")
-        
-        tts?.speak(event.text, TextToSpeech.QUEUE_FLUSH, params, "logpose_feedback")
+        // Misión #008: Audio Prewarm
+        // Si el SCO está activo pero no conectado físicamente, esperamos un poco.
+        scope.launch {
+            val commManager = LogPoseApplication.entryPoint.bluetoothCommunicationManager()
+            if (commManager.isScoActive.value) {
+                LogPoseLogger.d("FeedbackManager: Detectado ruteo SCO activo. Verificando enlace físico...")
+                try {
+                    withTimeout(2500) {
+                        commManager.isScoPhysicallyConnected.first { it }
+                    }
+                    LogPoseLogger.d("FeedbackManager: Enlace SCO listo. Emitiendo audio.")
+                } catch (e: Exception) {
+                    LogPoseLogger.w("FeedbackManager: Timeout esperando SCO (Handshake lento). Emitiendo de todas formas.")
+                }
+            }
+
+            // Misión #014: Blindaje de privacidad antes de hablar
+            com.uriel.logpose.core.services.AudioPathGuardian.checkAndEnforceRouting()
+
+            val params = Bundle()
+            params.putString(TextToSpeech.Engine.KEY_PARAM_UTTERANCE_ID, "logpose_feedback")
+            tts?.speak(event.text, TextToSpeech.QUEUE_FLUSH, params, "logpose_feedback")
+        }
     }
 
     fun stop() {

@@ -1,6 +1,6 @@
 package com.uriel.logpose.thamis.autonomy
 
-import com.uriel.logpose.core.compat.core.Command
+import com.thamis.lab.core.contracts.command.LogPoseCommand
 
 /**
  * FASE 25.19 — THAMIS AUTONOMOUS ASSISTANCE FRAMEWORK
@@ -11,11 +11,11 @@ object SafetyBoundaryManager {
     /**
      * Define si un comando es seguro para ser ejecutado autónomamente.
      */
-    fun isSafeForAutonomousExecution(command: Command): Boolean {
+    fun isSafeForAutonomousExecution(command: LogPoseCommand): Boolean {
         return when (command) {
-            is Command.PlayMusic, is Command.PauseMusic, is Command.NextTrack -> true
-            is Command.Call, is Command.SendMessage -> false // Requiere permiso explícito siempre
-            is Command.EndTrip -> false // Acción crítica
+            is LogPoseCommand.PlayMusic, LogPoseCommand.PauseMusic, LogPoseCommand.NextTrack -> true
+            is LogPoseCommand.Call, is LogPoseCommand.SendMessage -> false // Requiere permiso explícito siempre
+            LogPoseCommand.EndTrip -> false // Acción crítica
             else -> false
         }
     }

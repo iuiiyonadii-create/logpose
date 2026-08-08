@@ -22,9 +22,37 @@ object NotificationReader {
     fun processNotification(context: Context, sbn: StatusBarNotification) {
         val packageName = sbn.packageName
         
-        // Filtro de Apps Críticas (WhatsApp)
-        if (packageName == "com.whatsapp") {
-            handleWhatsApp(sbn)
+        // Filtro de Apps Críticas (WhatsApp & Instagram)
+        when (packageName) {
+            "com.whatsapp" -> handleWhatsApp(sbn)
+            "com.instagram.android" -> handleInstagram(sbn)
+        }
+    }
+
+    private fun handleInstagram(sbn: StatusBarNotification) {
+        val extras = sbn.notification.extras
+        val title = extras.getString("android.title") ?: "Alguien"
+        val text = extras.getCharSequence("android.text")?.toString() ?: ""
+        
+        if (text.isBlank() || text.contains("solicitud de mensaje")) return
+        
+        val msgId = "ig_$title$text"
+        if (msgId == lastMessageId) return
+        lastMessageId = msgId
+        lastSenderName = title
+
+        LogPoseLogger.i("📸 Thamis detectó Instagram de: $title")
+        
+        val phrase = "Che, tenés un mensaje directo en Instagram de $title. Dice: $text"
+
+        synchronized(recentMessages) {
+            recentMessages.add(0, phrase)
+            if (recentMessages.size > 5) recentMessages.removeAt(5)
+        }
+
+        MusicManager.duck()
+        FeedbackManager.speak(phrase, FeedbackPriority.SYSTEM) {
+            MusicManager.unduck()
         }
     }
 

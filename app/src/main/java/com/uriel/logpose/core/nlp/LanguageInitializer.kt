@@ -6,19 +6,14 @@ object LanguageInitializer {
 
     private var initialized = false
 
-    fun initialize(
-
+    suspend fun initialize(
         context: Context
-
     ) {
-
         if (initialized) {
             return
         }
 
-        LanguageRepository.initialize(
-            context
-        )
+        LanguageRepository.initialize(context)
 
         initialized = true
     }

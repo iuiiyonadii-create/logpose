@@ -1,27 +1,14 @@
 package com.uriel.logpose.features.settings
 
 import com.uriel.logpose.domain.settings.SettingsStore
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.launch
 
 /**
- * Fachada oficial de Settings Core (Sprint 06). Es el unico punto de
- * entrada que ViewModels/Compose deberian usar. Por debajo coordina
- * [SettingsSession] (estado en memoria) y [SettingsRepository]
- * (persistencia + estado/eventos), respetando el flujo oficial de
- * PROJECT_CONTEXT.md:
- *
- * Compose -> ViewModel -> SettingsManager -> SettingsRepository ->
- * SettingsStore -> Android SharedPreferences
- *
- * Igual que `NotificationCoreManager`, no depende de Bluetooth, Voice,
- * Music, Calls, THAMIS ni LogPoseEngine (fuera de alcance de este Sprint,
- * ver Sprint 06 / NO MODIFICAR); expone [state] y [events] para que esos
- * modulos se integren a futuro sin que Settings Core dependa de ellos.
- *
- * Este Sprint construye unicamente la infraestructura: [SettingsManager]
- * expone lectura/escritura generica por clave (String/Boolean/Int), sin
- * ninguna clave de ajuste especifica de negocio.
+ * Fachada oficial de Settings Core.
  */
 class SettingsManager(
     store: SettingsStore,
@@ -33,9 +20,14 @@ class SettingsManager(
 
     val events: SharedFlow<SettingsCoreEvent> = repository.events
 
-    /** Hidrata la sesion desde el almacenamiento persistente. Llamar una vez, desde AppContainer. */
+    /** 
+     * Hidrata la sesion desde el almacenamiento persistente. 
+     * Mejorado: Se ejecuta en segundo plano para no bloquear el arranque.
+     */
     fun start() {
-        repository.hydrate()
+        CoroutineScope(Dispatchers.IO).launch {
+            repository.hydrate()
+        }
     }
 
     fun getString(key: String, default: String? = null): String? =

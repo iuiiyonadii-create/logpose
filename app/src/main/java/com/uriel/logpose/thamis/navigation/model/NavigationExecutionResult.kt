@@ -1,7 +1,7 @@
 package com.uriel.logpose.thamis.navigation.model
 
 import com.uriel.logpose.thamis.navigation.provider.NavigationProviderType
-import com.uriel.logpose.thamis.intent.Intent
+import com.thamis.lab.core.contracts.intent.Intent
 
 /**
  * Resultado de una ejecución de comando de navegación.

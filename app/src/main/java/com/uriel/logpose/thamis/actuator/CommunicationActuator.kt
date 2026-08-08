@@ -1,7 +1,7 @@
 package com.uriel.logpose.thamis.actuator
 
 import com.uriel.logpose.thamis.cognitive.model.ThamisDecision
-import com.uriel.logpose.thamis.intent.Intent
+import com.thamis.lab.core.contracts.intent.Intent
 import com.uriel.logpose.thamis.communication.provider.CommunicationProviderFactory
 import com.uriel.logpose.thamis.communication.provider.CommunicationResult
 import com.uriel.logpose.thamis.communication.provider.CommunicationProviderType

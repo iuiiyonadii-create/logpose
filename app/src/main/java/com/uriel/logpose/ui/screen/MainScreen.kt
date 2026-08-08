@@ -19,7 +19,6 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.uriel.logpose.ui.Screen
-import com.uriel.logpose.core.app.AppContainer
 import com.uriel.logpose.features.settings.SettingsScreen
 import com.uriel.logpose.features.music.MusicScreen
 import com.uriel.logpose.features.profile.ProfileScreen
@@ -33,19 +32,22 @@ import com.uriel.logpose.features.dashboard.TripDashboardScreen
 import com.uriel.logpose.features.dashboard.VoiceSlotsScreen
 import com.uriel.logpose.features.voice.VoiceSlotManager
 import com.uriel.logpose.features.dashboard.DashboardViewModel
-import com.uriel.logpose.features.dashboard.DashboardViewModelFactory
 import com.uriel.logpose.features.dashboard.TripUiState
 import com.uriel.logpose.features.dashboard.TripStatus
+import com.uriel.logpose.features.settings.SettingsViewModel
 import com.uriel.logpose.ui.theme.LogPoseTheme
 import kotlinx.coroutines.launch
 import androidx.activity.compose.BackHandler
 import androidx.compose.ui.platform.LocalContext
+import androidx.hilt.navigation.compose.hiltViewModel
 
 @Composable
-fun MainScreen() {
+fun MainScreen(
+    settingsViewModel: SettingsViewModel = hiltViewModel(),
+    dashboardViewModel: DashboardViewModel = hiltViewModel()
+) {
     val context = LocalContext.current.applicationContext
-    val settings = AppContainer.settingsManager
-    val settingsState by settings.state.collectAsStateWithLifecycle()
+    val settingsState by settingsViewModel.state.collectAsStateWithLifecycle()
     
     val isSystemDark = isSystemInDarkTheme()
     val isDarkOverride = settingsState.booleans["dark_mode"] ?: isSystemDark
@@ -54,9 +56,6 @@ fun MainScreen() {
     val scope = rememberCoroutineScope()
     var currentScreen by remember { mutableStateOf<Screen>(Screen.Dashboard) }
 
-    val dashboardViewModel: DashboardViewModel = viewModel(
-        factory = DashboardViewModelFactory(context, AppContainer.telecom)
-    )
     val uiState by dashboardViewModel.uiState.collectAsStateWithLifecycle()
 
     val effectiveScreen = if (uiState.isTripActive) Screen.TripActive else currentScreen

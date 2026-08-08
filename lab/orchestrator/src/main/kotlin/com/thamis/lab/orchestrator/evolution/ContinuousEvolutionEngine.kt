@@ -1,7 +1,7 @@
 package com.thamis.lab.orchestrator.evolution
 
 import com.thamis.lab.core.common.logging.LabLogger
-import com.thamis.lab.intelligence.quality.CodeQualityEngine
+import com.thamis.lab.intelligence.engineering.CodeQualityEngine
 import com.thamis.lab.orchestrator.observability.ObservabilityPlatformEngine
 
 public data class ContinuousEvolutionCycleReport(

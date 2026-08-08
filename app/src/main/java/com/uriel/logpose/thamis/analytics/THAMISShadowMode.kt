@@ -1,7 +1,7 @@
 package com.uriel.logpose.thamis.analytics
 
 import android.util.Log
-import com.uriel.logpose.thamis.intent.Intent
+import com.thamis.lab.core.contracts.intent.Intent
 import com.uriel.logpose.thamis.decision.ThamisDecision
 import com.uriel.logpose.thamis.decision.DecisionType
 import java.util.concurrent.atomic.AtomicInteger

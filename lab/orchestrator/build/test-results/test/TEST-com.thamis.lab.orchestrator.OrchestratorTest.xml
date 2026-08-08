@@ -1,8 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<testsuite name="com.thamis.lab.orchestrator.OrchestratorTest" tests="1" skipped="0" failures="0" errors="0" timestamp="2026-08-01T19:21:11.492Z" hostname="DESKTOP-A234HEL" time="0.016">
-  <properties/>
-  <testcase name="testEndToEndUnifiedOrchestratorFlow" classname="com.thamis.lab.orchestrator.OrchestratorTest" time="0.016"/>
-  <system-out><![CDATA[[INFO] [AdbManager] Executing targeted command: adb -s emulator-5554 install -r /tmp/logpose.apk
-]]></system-out>
-  <system-err><![CDATA[]]></system-err>
-</testsuite>

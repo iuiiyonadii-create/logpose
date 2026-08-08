@@ -6,6 +6,7 @@ import com.uriel.logpose.core.engine.CommandDispatcher
 import com.uriel.logpose.core.parser.FastParser
 import com.uriel.logpose.core.parser.ParseResult
 import com.uriel.logpose.thamis.language.PhoneticEngine
+import com.thamis.lab.core.contracts.command.LogPoseCommand
 import kotlinx.coroutines.*
 
 /**
@@ -40,7 +41,7 @@ class VoicePipelineOrchestrator(private val context: Context) {
      */
     fun processMusicQuery(query: String) {
         LogPoseLogger.i("Orchestrator: Ejecutando query directa -> '$query'")
-        CommandDispatcher.execute(com.uriel.logpose.core.compat.core.Command.PlayMusic(query))
+        CommandDispatcher.execute(LogPoseCommand.PlayMusic(query))
     }
 
     fun cancel() {

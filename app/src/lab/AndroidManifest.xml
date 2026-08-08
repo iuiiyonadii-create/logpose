@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <application>
+        <receiver
+            android:name=".core.services.TrainingReceiver"
+            android:exported="true"
+            android:permission="com.uriel.logpose.permission.INJECT_TEST">
+            <intent-filter>
+                <action android:name="com.uriel.logpose.INJECT_COGNITIVE_TEST" />
+                <action android:name="com.uriel.logpose.SYNC_PSP" />
+                <action android:name="com.uriel.logpose.TRIGGER_EVOLUTION" />
+                <action android:name="com.uriel.logpose.INJECT_ANOMALY" />
+                <action android:name="com.uriel.logpose.INJECT_BT_ANOMALY" />
+            </intent-filter>
+        </receiver>
+    </application>
+</manifest>

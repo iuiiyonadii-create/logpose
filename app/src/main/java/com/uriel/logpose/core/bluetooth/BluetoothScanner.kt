@@ -18,6 +18,7 @@ class BluetoothScanner(private val context: Context) {
     private val bluetoothAdapter: BluetoothAdapter? = BluetoothAdapter.getDefaultAdapter()
     private val _discoveredDevices = MutableStateFlow<Set<BluetoothDevice>>(emptySet())
     val discoveredDevices = _discoveredDevices.asStateFlow()
+    private var isReceiverRegistered = false
 
     private val receiver = object : BroadcastReceiver() {
         @SuppressLint("MissingPermission")
@@ -40,7 +41,10 @@ class BluetoothScanner(private val context: Context) {
             bluetoothAdapter.cancelDiscovery()
         }
         _discoveredDevices.value = emptySet()
-        context.registerReceiver(receiver, IntentFilter(BluetoothDevice.ACTION_FOUND))
+        if (!isReceiverRegistered) {
+            context.registerReceiver(receiver, IntentFilter(BluetoothDevice.ACTION_FOUND))
+            isReceiverRegistered = true
+        }
         return bluetoothAdapter?.startDiscovery() ?: false
     }
 
@@ -49,10 +53,13 @@ class BluetoothScanner(private val context: Context) {
         if (bluetoothAdapter?.isDiscovering == true) {
             bluetoothAdapter.cancelDiscovery()
         }
-        try {
-            context.unregisterReceiver(receiver)
-        } catch (e: Exception) {
-            // Already unregistered
+        if (isReceiverRegistered) {
+            try {
+                context.unregisterReceiver(receiver)
+                isReceiverRegistered = false
+            } catch (e: Exception) {
+                // Already unregistered
+            }
         }
     }
 

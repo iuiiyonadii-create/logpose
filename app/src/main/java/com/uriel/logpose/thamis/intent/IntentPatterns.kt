@@ -1,5 +1,7 @@
 package com.uriel.logpose.thamis.intent
 
+import com.thamis.lab.core.contracts.intent.Intent
+
 /**
  * Base de conocimiento de THAMIS.
  */

@@ -16,17 +16,22 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.uriel.logpose.core.app.AppContainer
+import androidx.hilt.navigation.compose.hiltViewModel
+import com.uriel.logpose.features.settings.SettingsViewModel
 
 @Composable
-fun VoiceScreen(onOpenDrawer: () -> Unit, isDark: Boolean) {
+fun VoiceScreen(
+    onOpenDrawer: () -> Unit, 
+    isDark: Boolean,
+    viewModel: SettingsViewModel = hiltViewModel()
+) {
     val bg = if (isDark) Color.Black else Color.White
     val text = if (isDark) Color.White else Color.Black
     val variant = Color(0xFFB2BEC3)
     val accent = if (isDark) Color(0xFF00CEC9) else Color.Black
 
-    val settings = AppContainer.settingsManager
-    val settingsState by settings.state.collectAsState()
+    val settings = viewModel.settingsManager
+    val settingsState by viewModel.state.collectAsState()
 
     // Estados reales desde Settings
     val assistantName = settingsState.strings["assistant_name"] ?: "LogPose"

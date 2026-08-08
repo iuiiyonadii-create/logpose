@@ -1,6 +1,6 @@
 package com.uriel.logpose.thamis.cognitive.model
 
-import com.uriel.logpose.thamis.intent.Intent
+import com.thamis.lab.core.contracts.intent.Intent
 
 /**
  * El veredicto final. THAMIS termina aquí.

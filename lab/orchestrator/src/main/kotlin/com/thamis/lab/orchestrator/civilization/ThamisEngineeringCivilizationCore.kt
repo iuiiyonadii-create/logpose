@@ -1,7 +1,7 @@
 package com.thamis.lab.orchestrator.civilization
 
 import com.thamis.lab.core.common.logging.LabLogger
-import com.thamis.lab.intelligence.civilization.EngineeringCivilizationEngine
+import com.thamis.lab.intelligence.evolution.EngineeringCivilizationEngine
 import com.thamis.lab.orchestrator.charter.ThamisEternalEngineeringCharterEngine
 
 public data class CivilizationCoreStatusReport(

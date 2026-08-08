@@ -1,0 +1,8 @@
+- [ ] Refactor `LabDiscoveryService.kt`
+    - [ ] Add `StateFlow<String?>` for PC IP
+    - [ ] Implement robust UDP Broadcast listener
+    - [ ] Add heartbeat validation
+- [ ] Initialize service in `LogPoseApplication.kt`
+- [ ] Update `CognitivePipeline.kt` to use dynamic IP
+- [ ] Create `simulate_pc_bridge.py` for verification
+- [ ] Manual verification and Logcat check

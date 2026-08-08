@@ -1,37 +1,40 @@
 package com.uriel.logpose.thamis.language
 
-import com.uriel.logpose.thamis.ThamisConfiguration
-import com.uriel.logpose.thamis.language.advanced.AdvancedLanguageEngine
 import org.apache.commons.text.similarity.JaroWinklerSimilarity
 import kotlin.math.sqrt
 
 /**
- * Motor de similitud avanzado para THAMIS.
- * Utiliza algoritmos de la industria (Jaro-Winkler) y Coseno para máxima comprensión.
+ * Motor de similitud base para THAMIS.
+ * Provee algoritmos puros de comparación de texto sin lógica de negocio ni recursión.
  */
 object SimilarityEngine {
 
     private val jaroWinkler = JaroWinklerSimilarity()
 
+    /**
+     * Punto de entrada estándar para similitud de texto.
+     */
     fun score(a: String, b: String): Float {
-        // --- REDIRECCIÓN PRO (Fase 16) ---
-        if (ThamisConfiguration.useAdvancedLanguageEngine) {
-            return AdvancedLanguageEngine.getSimilarity(a, b)
-        }
+        return calculate(a, b)
+    }
 
+    /**
+     * Calcula una puntuación de similitud combinando Jaro-Winkler y Coseno.
+     * @param a Texto A (normalizado)
+     * @param b Texto B (normalizado)
+     * @return Puntuación entre 0.0 y 1.0
+     */
+    fun calculate(a: String, b: String): Float {
         val normA = a.lowercase().trim()
         val normB = b.lowercase().trim()
         
         if (normA == normB) return 1f
         if (normA.isEmpty() || normB.isEmpty()) return 0f
 
-        // 1. Similitud Jaro-Winkler sobre Llaves Fonéticas (60%)
-        val keyA = PhoneticEngine.getPhoneticKey(normA)
-        val keyB = PhoneticEngine.getPhoneticKey(normB)
-        
-        val jaroWinklerScore = jaroWinkler.apply(keyA, keyB).toFloat()
+        // 1. Similitud Jaro-Winkler (Estructural/Secuencial)
+        val jaroWinklerScore = jaroWinkler.apply(normA, normB).toFloat()
 
-        // 2. Similitud de Coseno para estructura (40%)
+        // 2. Similitud de Coseno (Bolsa de palabras/Frecuencia)
         val wordsA = normA.split(Regex("\\s+")).filter { it.length > 1 }
         val wordsB = normB.split(Regex("\\s+")).filter { it.length > 1 }
         
@@ -39,30 +42,31 @@ object SimilarityEngine {
             cosineSimilarity(wordsA, wordsB)
         } else 0f
 
-        // 3. Resultado base
-        var finalScore = (jaroWinklerScore * 0.6f) + (cosineScore * 0.4f)
+        // 3. Resultado combinado (50/50 para base)
+        var finalScore = (jaroWinklerScore * 0.5f) + (cosineScore * 0.5f)
 
-        // --- OPTIMIZACIÓN DE ENTENDIMIENTO ---
+        // --- Ajustes de Confianza ---
         
-        // Bonus por coincidencia de primer verbo (Fundamental en comandos)
+        // Bonus por coincidencia de primer término (Acción/Verbo)
         if (wordsA.isNotEmpty() && wordsB.isNotEmpty() && wordsA.first() == wordsB.first()) {
-            finalScore += 0.15f
+            finalScore += 0.1f
         }
 
-        // Penalización por diferencia excesiva de longitud
+        // Penalización por disparidad de longitud
         val lenDiff = Math.abs(wordsA.size - wordsB.size)
         if (lenDiff > 2) {
             finalScore -= 0.1f
         }
 
-        // Bonus por Jaccard (Intersección de palabras)
-        val intersectCount = wordsA.intersect(wordsB).size
-        val jaccard = intersectCount.toFloat() / (wordsA.size + wordsB.size - intersectCount).toFloat()
-        if (jaccard > 0.5f) {
-            finalScore += 0.05f
-        }
-
         return finalScore.coerceIn(0.0f, 1.0f)
+    }
+
+    /**
+     * Expone Jaro-Winkler puro para otros motores.
+     */
+    fun jaroWinkler(a: String, b: String): Float {
+        if (a.isEmpty() || b.isEmpty()) return 0f
+        return jaroWinkler.apply(a, b).toFloat()
     }
 
     private fun cosineSimilarity(listA: List<String>, listB: List<String>): Float {

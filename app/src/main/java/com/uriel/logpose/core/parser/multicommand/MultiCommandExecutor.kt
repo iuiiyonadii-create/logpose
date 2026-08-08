@@ -1,5 +1,6 @@
 package com.uriel.logpose.core.parser.multicommand
 
+import com.thamis.lab.core.contracts.command.LogPoseCommand
 import com.uriel.logpose.core.engine.CommandDispatcher
 import com.uriel.logpose.core.parser.ParseResult
 import com.uriel.logpose.core.parser.pipeline.CommandPipeline

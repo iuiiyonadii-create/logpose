@@ -1,7 +1,7 @@
 package com.uriel.logpose.thamis.navigation.provider
 
 import android.content.Intent
-import com.uriel.logpose.core.app.AppContainer
+import com.uriel.logpose.core.app.LogPoseApplication
 import androidx.core.net.toUri
 
 /**
@@ -16,7 +16,7 @@ class GoogleMapsProvider : NavigationProvider {
             val intent = Intent(Intent.ACTION_VIEW, "geo:0,0".toUri())
             intent.setPackage(packageName)
             intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-            AppContainer.appContext.startActivity(intent)
+            LogPoseApplication.instance.startActivity(intent)
             NavigationProviderResult(success = true, provider = NavigationProviderType.GOOGLE_MAPS, reason = "Maps Opened")
         } catch (e: Exception) {
             NavigationProviderResult(success = false, provider = NavigationProviderType.GOOGLE_MAPS, reason = "Error: ${e.message}")
@@ -32,7 +32,7 @@ class GoogleMapsProvider : NavigationProvider {
             val mapIntent = Intent(Intent.ACTION_VIEW, gmmIntentUri)
             mapIntent.setPackage(packageName)
             mapIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-            AppContainer.appContext.startActivity(mapIntent)
+            LogPoseApplication.instance.startActivity(mapIntent)
             NavigationProviderResult(success = true, provider = NavigationProviderType.GOOGLE_MAPS, reason = "Navigating to $destination")
         } catch (e: Exception) {
             NavigationProviderResult(success = false, provider = NavigationProviderType.GOOGLE_MAPS, reason = "Error: ${e.message}")
@@ -50,7 +50,7 @@ class GoogleMapsProvider : NavigationProvider {
 
     override fun isInstalled(): Boolean {
         return try {
-            AppContainer.appContext.packageManager.getPackageInfo(packageName, 0)
+            LogPoseApplication.instance.packageManager.getPackageInfo(packageName, 0)
             true
         } catch (e: Exception) {
             false

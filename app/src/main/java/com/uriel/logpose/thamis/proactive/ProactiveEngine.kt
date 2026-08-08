@@ -3,7 +3,7 @@ package com.uriel.logpose.thamis.proactive
 import com.uriel.logpose.core.Action
 import com.uriel.logpose.core.compat.core.LogPoseLogger
 import com.uriel.logpose.thamis.context.ContextEngine
-import com.uriel.logpose.core.app.AppContainer
+import com.uriel.logpose.core.app.LogPoseApplication
 
 /**
  * FASE 26.14 — THAMIS LAB PROACTIVE INTELLIGENCE
@@ -56,6 +56,6 @@ object ProactiveEngine {
         LogPoseLogger.i("ProactiveEngine: 🚨 ALERTA DISPARADA -> $message")
         // Creamos una respuesta de voz que el ActionManager procesará con prioridad crítica
         val action = Action.VoiceResponse(message)
-        AppContainer.actionManager.execute(action)
+        LogPoseApplication.entryPoint.actionManager().execute(action)
     }
 }

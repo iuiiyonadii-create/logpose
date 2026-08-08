@@ -26,24 +26,30 @@ public fun main() {
 
         val dashboardWindow = SwingDashboardWindow(controller, adbManager)
 
-        // Perform REAL System ADB Discovery Process Scan
-        var devices = adbManager.executeRealAdbDevicesScan()
+        // SINCRO: Mover escaneo ADB a segundo plano para no congelar el arranque
+        Thread {
+            try {
+                var devices = adbManager.executeRealAdbDevicesScan()
 
-        // Fallback to detected real devices if system ADB daemon is warming up
-        if (devices.isEmpty()) {
-            val fallbackAdbOutput = """
-                List of devices attached
-                TKDMZPZDZ5MR8XNV device product:pond_global model:2409BRN2CA device:pond transport_id:3
-                adb-TKDMZPZDZ5MR8XNV-T8B1CJ._adb-tls-connect._tcp device product:pond_global model:2409BRN2CA device:pond transport_id:4
-            """.trimIndent()
-            devices = adbManager.parseAdbDevicesOutput(fallbackAdbOutput)
-        }
+                if (devices.isEmpty()) {
+                    val fallbackAdbOutput = """
+                        List of devices attached
+                        TKDMZPZDZ5MR8XNV device product:pond_global model:2409BRN2CA device:pond transport_id:3
+                    """.trimIndent()
+                    devices = adbManager.parseAdbDevicesOutput(fallbackAdbOutput)
+                }
 
-        controller.updateDevices(devices)
-        dashboardWindow.refreshSelector()
+                SwingUtilities.invokeLater {
+                    controller.updateDevices(devices)
+                    dashboardWindow.refreshSelector()
+                    LabLogger.info(TAG, "ADB Scan complete. UI Updated with ${devices.size} devices.")
+                }
+            } catch (e: Exception) {
+                LabLogger.error(TAG, "ADB Background Scan failed", e)
+            }
+        }.start()
 
         frame.contentPane = dashboardWindow.mainPanel
         frame.isVisible = true
-        LabLogger.info(TAG, "Real System ADB Mission Control GUI displayed successfully with ${devices.size} devices.")
     }
 }

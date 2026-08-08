@@ -1,10 +1,10 @@
 package com.uriel.logpose.core.context
 
-import com.uriel.logpose.core.compat.core.Command
+import com.thamis.lab.core.contracts.command.LogPoseCommand
 
 data class CommandContext(
 
-    val command: Command? = null,
+    val command: LogPoseCommand? = null,
 
     val originalText: String = "",
 

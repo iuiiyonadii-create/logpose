@@ -14,18 +14,23 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.uriel.logpose.core.app.AppContainer
+import androidx.hilt.navigation.compose.hiltViewModel
+import com.uriel.logpose.features.settings.SettingsViewModel
 
 @Composable
-fun NavigationScreen(onOpenDrawer: () -> Unit, isDark: Boolean) {
+fun NavigationScreen(
+    onOpenDrawer: () -> Unit, 
+    isDark: Boolean,
+    viewModel: SettingsViewModel = hiltViewModel()
+) {
     val bg = if (isDark) Color.Black else Color.White
     val text = if (isDark) Color.White else Color.Black
     val variant = Color(0xFFB2BEC3)
     val accent = if (isDark) Color(0xFF00CEC9) else Color.Black
     val cardBg = if (isDark) Color(0xFF1E1E1E) else Color(0xFFF1F2F6)
 
-    val settings = AppContainer.settingsManager
-    val settingsState by settings.state.collectAsState()
+    val settings = viewModel.settingsManager
+    val settingsState by viewModel.state.collectAsState()
 
     // Ajustes reales
     val voiceEnabled = settingsState.booleans["nav_voice_instructions"] ?: true

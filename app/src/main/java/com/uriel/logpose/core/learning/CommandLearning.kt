@@ -1,6 +1,6 @@
 package com.uriel.logpose.core.learning
 
-import com.uriel.logpose.core.compat.core.Command
+import com.thamis.lab.core.contracts.command.LogPoseCommand
 import com.uriel.logpose.core.memory.CommandMemory
 
 object CommandLearning {

@@ -1,7 +1,7 @@
 package com.uriel.logpose.thamis.hypothesis
 
 import com.uriel.logpose.thamis.decision.Hypothesis
-import com.uriel.logpose.thamis.intent.Intent
+import com.thamis.lab.core.contracts.intent.Intent
 import com.uriel.logpose.thamis.intent.IntentDetector
 import com.uriel.logpose.thamis.entity.EntityExtractor
 import com.uriel.logpose.thamis.decision.Evidence

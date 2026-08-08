@@ -1,7 +1,7 @@
 package com.thamis.lab.orchestrator.evolution
 
 import com.thamis.lab.core.common.logging.LabLogger
-import com.thamis.lab.intelligence.guardian.RepositoryGuardianEngine
+import com.thamis.lab.intelligence.security.RepositoryGuardianEngine
 
 public data class MasterEvolutionCycleReport(
     public val cycleId: String,

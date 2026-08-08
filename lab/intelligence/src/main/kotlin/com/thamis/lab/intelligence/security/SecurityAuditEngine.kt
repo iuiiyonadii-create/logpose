@@ -16,8 +16,18 @@ public data class SecurityAuditReport(
 public class SecurityAuditEngine {
     private val TAG = "SecurityAuditEngine"
 
-    public fun executeSecurityAudit(): SecurityAuditReport {
+    public fun executeSecurityAudit(isSimulationDirty: Boolean = false): SecurityAuditReport {
         LabLogger.info(TAG, "Executing repository security audit...")
+
+        if (isSimulationDirty) {
+            return SecurityAuditReport(
+                isSecretsSafe = false,
+                unsafeOperationsCount = 2,
+                dependencyVulnerabilitiesCount = 1,
+                securityScore = 45.0,
+                auditSummary = "VULNERABILITY DETECTED: AI-generated patch attempted to export sensitive logs to unauthenticated endpoint."
+            )
+        }
 
         return SecurityAuditReport(
             isSecretsSafe = true,

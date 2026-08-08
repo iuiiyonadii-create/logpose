@@ -1,6 +1,9 @@
 package com.uriel.logpose.core.services
 
+import android.content.BroadcastReceiver
 import android.content.Context
+import android.content.Intent
+import android.content.IntentFilter
 import android.media.AudioDeviceInfo
 import android.media.AudioManager
 import android.os.Build
@@ -12,6 +15,7 @@ import kotlinx.coroutines.flow.asStateFlow
 /**
  * BluetoothCommunicationManager: El nuevo corazón de audio de LogPose.
  * Abandona la semántica de "Llamada" para usar "Comunicación Directa".
+ * Mejorado (Misión #008): Detección física de enlace SCO para evitar clipping.
  */
 class BluetoothCommunicationManager(private var context: Context) {
 
@@ -30,7 +34,30 @@ class BluetoothCommunicationManager(private var context: Context) {
     private val _isScoActive = MutableStateFlow(false)
     val isScoActive = _isScoActive.asStateFlow()
 
+    private val _isScoPhysicallyConnected = MutableStateFlow(false)
+    val isScoPhysicallyConnected = _isScoPhysicallyConnected.asStateFlow()
+
     private var communicationJob: Job? = null
+
+    private val scoReceiver = object : BroadcastReceiver() {
+        override fun onReceive(context: Context?, intent: Intent?) {
+            val state = intent?.getIntExtra(AudioManager.EXTRA_SCO_AUDIO_STATE, -1)
+            when (state) {
+                AudioManager.SCO_AUDIO_STATE_CONNECTED -> {
+                    LogPoseLogger.i("AudioEngine: SCO Enlace Físico ESTABLECIDO.")
+                    _isScoPhysicallyConnected.value = true
+                }
+                AudioManager.SCO_AUDIO_STATE_DISCONNECTED -> {
+                    LogPoseLogger.d("AudioEngine: SCO Enlace Físico CERRADO.")
+                    _isScoPhysicallyConnected.value = false
+                }
+            }
+        }
+    }
+
+    init {
+        context.registerReceiver(scoReceiver, IntentFilter(AudioManager.ACTION_SCO_AUDIO_STATE_UPDATED))
+    }
 
     /**
      * Activa el canal SCO de forma inteligente.
@@ -38,6 +65,9 @@ class BluetoothCommunicationManager(private var context: Context) {
      */
     fun startCommunication() {
         LogPoseLogger.i("AudioEngine: Solicitando ruteo SCO Dinámico.")
+        com.uriel.logpose.thamis.evolution.BluetoothIntelligence.recordEvent(
+            com.uriel.logpose.thamis.evolution.BluetoothEventType.SCO_START_REQUEST
+        )
         
         communicationJob?.cancel()
         
@@ -51,8 +81,6 @@ class BluetoothCommunicationManager(private var context: Context) {
             routeToBluetoothLegacy()
         }
 
-        // FASE DE ESTABILIZACIÓN: Algunos intercoms (V6 Pro+) requieren que el SCO esté
-        // abierto por un tiempo antes de que el micrófono capture audio útil.
         LogPoseLogger.d("AudioEngine: Ruteo SCO preparado. Esperando estabilidad de hardware...")
     }
 
@@ -63,11 +91,9 @@ class BluetoothCommunicationManager(private var context: Context) {
     fun enterFullCommunicationMode() {
         LogPoseLogger.d("AudioEngine: Entrando en Modo Comunicación Total.")
         
-        // Algunos intercomunicadores de gama baja se desconectan si pasamos a 
-        // MODE_IN_COMMUNICATION demasiado rápido tras el A2DP.
         scope.launch {
             if (Build.VERSION.SDK_INT < Build.VERSION_CODES.S) {
-                delay(150) // Pequeño respiro para el firmware del casco
+                delay(150) 
             }
             audioManager.mode = AudioManager.MODE_IN_COMMUNICATION
             LogPoseLogger.i("AudioEngine: Hardware LOCK - Micrófono del casco EN VIVO.")
@@ -88,7 +114,12 @@ class BluetoothCommunicationManager(private var context: Context) {
             val result = audioManager.setCommunicationDevice(scoDevice)
             if (result) {
                 LogPoseLogger.i("AudioEngine: Hardware LOCK en dispositivo SCO (API 31+).")
+                com.uriel.logpose.thamis.evolution.BluetoothIntelligence.recordEvent(
+                    com.uriel.logpose.thamis.evolution.BluetoothEventType.SCO_CONNECTED,
+                    "API_31"
+                )
                 _isScoActive.value = true
+                // En API 31+, el setCommunicationDevice es casi inmediato, pero el broadcast sigue siendo la verdad
             } else {
                 LogPoseLogger.e("AudioEngine: Falló setCommunicationDevice.")
             }
@@ -103,12 +134,13 @@ class BluetoothCommunicationManager(private var context: Context) {
         audioManager.startBluetoothSco()
         audioManager.isBluetoothScoOn = true
         LogPoseLogger.i("AudioEngine: Solicitado SCO vía API Legacy.")
+        com.uriel.logpose.thamis.evolution.BluetoothIntelligence.recordEvent(
+            com.uriel.logpose.thamis.evolution.BluetoothEventType.SCO_CONNECTED,
+            "LEGACY"
+        )
         _isScoActive.value = true
     }
 
-    /**
-     * SINCRO CLAUDE: Baja el modo a NORMAL para que Spotify tome el foco sin conflicto.
-     */
     fun prepareForMusic() {
         if (audioManager.mode != AudioManager.MODE_NORMAL) {
             LogPoseLogger.i("AudioEngine: Bajando a MODE_NORMAL para dar paso a Spotify.")
@@ -116,9 +148,6 @@ class BluetoothCommunicationManager(private var context: Context) {
         }
     }
 
-    /**
-     * Restaura el modo de comunicación si SCO está activo.
-     */
     fun restoreCommunication() {
         if (_isScoActive.value && audioManager.mode != AudioManager.MODE_IN_COMMUNICATION) {
             LogPoseLogger.i("AudioEngine: Restaurando MODE_IN_COMMUNICATION.")
@@ -126,10 +155,6 @@ class BluetoothCommunicationManager(private var context: Context) {
         }
     }
 
-    /**
-     * Libera el canal y vuelve al audio normal (A2DP o Speaker).
-     * Hardened: Asegura que el hardware libere el micrófono para restaurar A2DP.
-     */
     fun stopCommunication() {
         LogPoseLogger.i("AudioEngine: Cerrando canal de comunicación.")
         
@@ -142,7 +167,6 @@ class BluetoothCommunicationManager(private var context: Context) {
         audioManager.stopBluetoothSco()
         audioManager.isBluetoothScoOn = false
         
-        // SINCRO: Pequeño delay antes de volver a MODE_NORMAL para evitar "pops" en el casco
         scope.launch {
             delay(100)
             audioManager.mode = AudioManager.MODE_NORMAL
@@ -150,12 +174,9 @@ class BluetoothCommunicationManager(private var context: Context) {
         }
         
         _isScoActive.value = false
+        _isScoPhysicallyConnected.value = false
     }
 
-    /**
-     * El "Martillo" para intercomunicadores rebeldes.
-     * Si el SCO no levanta, forzamos un ciclo de reinicio de ruteo.
-     */
     fun hammerScoConnection() {
         LogPoseLogger.w("AudioEngine: Ejecutando Martillo de ruteo SCO.")
         stopCommunication()

@@ -2,7 +2,7 @@ package com.uriel.logpose.thamis.activation
 
 import com.uriel.logpose.thamis.cognitive.CognitiveOrchestrator
 import com.uriel.logpose.thamis.cognitive.model.WorldState
-import com.uriel.logpose.thamis.intent.Intent
+import com.thamis.lab.core.contracts.intent.Intent
 import com.uriel.logpose.thamis.ThamisConfiguration
 import com.uriel.logpose.thamis.security.ThamisAuthorityGate
 import org.junit.Test

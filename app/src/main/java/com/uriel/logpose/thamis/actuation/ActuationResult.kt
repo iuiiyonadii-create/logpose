@@ -1,6 +1,6 @@
 package com.uriel.logpose.thamis.actuation
 
-import com.uriel.logpose.thamis.intent.Intent
+import com.thamis.lab.core.contracts.intent.Intent
 
 /**
  * Representa el resultado de un intento de actuación de THAMIS.

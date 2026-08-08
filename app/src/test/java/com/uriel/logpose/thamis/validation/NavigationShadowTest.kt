@@ -2,7 +2,7 @@ package com.uriel.logpose.thamis.validation
 
 import com.uriel.logpose.thamis.cognitive.CognitiveOrchestrator
 import com.uriel.logpose.thamis.cognitive.model.WorldState
-import com.uriel.logpose.thamis.intent.Intent
+import com.thamis.lab.core.contracts.intent.Intent
 import org.junit.Test
 import org.junit.Assert.*
 

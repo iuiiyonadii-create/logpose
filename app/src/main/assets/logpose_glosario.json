@@ -1,33 +1,101 @@
 {
+  "info": {
+    "nombre": "ARGENTUM Unified Language Core",
+    "version": "1.3",
+    "descripcion": "Constitución Lingüística unificada. Optimizada para Vosk Offline y Acento Rioplatense."
+  },
   "verbos": {
-    "abrir": ["abrí", "abri", "abrir", "poner app", "pone app", "entrar a"],
-    "reproducir": ["reproducí", "repro", "mandale play", "dale play", "play", "pone", "poné", "tira", "tirá", "ponete algo de", "ponete", "pasame", "pasa"],
-    "bucle": ["bucle", "loop", "repetir", "de nuevo", "otra vez"],
-    "pausar": ["parar", "pausa", "pausar", "detener", "para"],
-    "volumen_subir": ["subí el volumen", "subir volumen", "más fuerte", "mas fuerte", "mas alto"],
-    "volumen_bajar": ["baja el volumen", "bajá volumen", "más bajo", "mas bajito"],
-    "mute": ["mute", "silencio", "callate", "sin sonido"]
+    "abrir": ["abrí", "abri", "abrir", "poner app", "pone app", "entrar a", "abre", "abrime", "metete", "entrá", "largame", "poneme", "poné", "tirame", "tirá", "arrancá", "arranca", "abrite", "abríte"],
+    "reproducir": ["reproducí", "repro", "mandale play", "dale play", "play", "pone", "poné", "tira", "tirá", "ponete algo de", "ponete", "pasame", "pasa", "reproduce", "inicia musica", "mandale musica", "reproducime", "poneme", "buscame", "buscar", "escuchar", "escucha", "sonar", "hace sonar", "pon", "ponéme", "ponemela", "ponemelo", "busca", "tirame", "temón", "temon", "temazo"],
+    "bucle": ["bucle", "loop", "repetir", "de nuevo", "otra vez", "en bucle", "repetir este tema", "pone en bucle", "poné en bucle", "en loop", "dale de nuevo", "otra vez este", "de nuevo este tema", "repetime este", "quedate en este", "que no cambie mas", "trabalo en este tema"],
+    "pausar": ["detener", "detené", "detener musica", "pausa", "pausar", "parar", "frenar", "para", "detene musica", "parar musica", "shh", "callate", "cállate", "detene", "calla", "pará", "deténe"],
+    "volumen_subir": ["subí el volumen", "subir volumen", "más fuerte", "mas fuerte", "mas alto", "subi", "subime", "aumenta", "aumentar", "incrementa", "mas", "más", "subilo", "esta bajo", "está bajo", "ponele mas", "ponele más", "fuerte", "mas volumen", "más volumen", "subilo a full", "que reviente", "metele todo", "metele para arriba", "dale con todo", "subilo mas che", "mas caña"],
+    "volumen_bajar": ["baja el volumen", "bajá volumen", "más bajo", "mas bajito", "bajame", "disminui", "disminuir", "menos", "bajalo", "esta alto", "está alto", "bajale", "bajale un poco", "reduci el volumen", "reducí el volumen", "menos volumen", "no tan fuerte", "bajale un cacho", "bajale un toque", "esta re fuerte", "me quedo sordo", "bajalo posta", "bajale a eso", "medio bajo eso", "bajale un toque"],
+    "mute": ["mute", "silencio", "sin sonido", "callate", "no se escucha nada", "shh", "mudo"],
+    "enviar_mensaje": ["mensaje", "mandale", "mándale", "mandá", "manda", "envía", "enviá", "escribile", "contestale", "mandale un wasap", "escribile che"],
+    "navegar": ["ir", "anda", "andá", "ve", "llevame", "llevame a", "llevame", "encara", "encará", "rumbear", "rumbeá", "ir a", "navegar a", "ruta a", "como vamos", "cómo vamos", "como llego a", "cómo llego a", "donde queda", "dónde queda", "guiame a", "poné el gps a", "encara para", "rumbear para", "rumbo a", "quiero ir a", "derecho viejo", "cuantas manzanas"],
+    "leer": ["leer", "leé", "ver", "leeme", "quien escribio", "que puso", "que mando", "quien mando", "leeme los mensajes", "hay algo nuevo", "que dice"],
+    "responder": ["respondé", "responde", "contestale", "decile que", "escribile que", "ponele que", "mandale que", "avisale que", "tirale que"],
+    "alerta_seguridad": ["ojo", "guarda", "cuidado", "cana", "cobani", "ratis", "chorros", "afano", "trucho", "peligro", "atenti", "vigilante", "yuta", "gorra", "mechero", "punguista", "asalto", "están ahí", "estan ahi"],
+    "trafico": ["quilombo", "embotellamiento", "como viene", "hay gente", "muchos autos", "corte", "manifestación", "tacheros", "bondis", "piquete", "demora", "esta trabado", "trancado"],
+    "comida": ["morfar", "morfi", "lastre", "hambre", "bajón", "restaurante", "parrilla", "pizzeria", "donde como", "algun bodegón", "minutas", "rotiseria", "tenes hambre", "algo para picar"],
+    "redes_sociales": ["buscá en instagram a", "busca en instagram a", "quien es", "perfil de", "mira el perfil de", "camara de instagram", "sacá una foto con instagram"],
+    "transporte": ["bondi", "remis", "colectivo", "subte", "tren", "parada"],
+    "moto_diagnostico": ["como esta la moto", "estado de la moto", "chequeo", "diagnostico", "revisá la moto"],
+    "moto_nafta": ["cuanta nafta", "cuanto combustible", "llego a cargar", "autonomia", "nafta"],
+    "moto_mantenimiento": ["cuando toca service", "proximo service", "aceite", "cubiertas", "frenos", "pastillas"],
+    "moto_temperatura": ["temperatura motor", "esta caliente", "se calento", "calentamiento"],
+    "grabacion_emergencia": ["grabá esto", "graba esto", "grabar incidente", "registrá esto", "guarda los ultimos segundos", "emergencia grabar", "filmá", "filma"],
+    "hud_control": ["mostrá el hud", "mostrar hud", "ocultar hud", "sacá el hud", "activar hud", "panel flotante"],
+    "vamos": ["vamos", "andá", "anda", "rumbear", "encará"],
+    "sistema": ["finalizar viaje", "donde estoy", "estado de bateria", "cambiar", "sacá", "sacar", "dejá", "dejar", "siguiente", "anterior", "atendé", "atendeme", "rechazá", "rechazalo", "cortá", "llamá", "llamalo", "llamala", "decime", "explicame", "despertá", "buscá", "tenés", "querés", "podés", "hacé", "haceme", "fijate", "pará", "soltá", "cerrá", "armá", "mi velocidad", "velocidad", "a cuanto vamos", "a cuánto vamos"]
+  },
+  "navegacion": {
+    "destinos_comunes": ["casa", "trabajo", "laburo", "rancho", "choza", "mcdonalds", "burguer", "estación", "oficina", "chamba", "gasolinera", "nafta", "cajero", "estacionamiento", "gomeria", "bondi", "parada", "remis"],
+    "favoritos": ["mcdonalds", "burguer", "estación"],
+    "arterias": [
+      "9 de julio", "corrientes", "santa fe", "cordoba", "córdoba", "cabildo", "rivadavia", "belgrano", "san martin", "san martín", "directorio", "alberdi", "juan b justo", "alicia moreau de justo", "del libertador", "libertador", "callao", "montes de oca", "regimiento de patricios", "patricios", "paseo colon", "paseo colón", "independencia", "san juan", "boedo", "entre rios", "entre ríos", "jujuy", "triunvirato", "monroe", "congreso", "alvarez thomas", "álvarez thomas", "elcano", "juramento", "la pampa", "scalabrini ortiz", "coronel diaz", "coronel díaz", "pueyrredon", "pueyrredón", "las heras", "sarmiento", "caseros", "la plata", "carabobo", "nazca", "beiro", "beiró", "mosconi", "san pedrito", "olivera", "larrazabal", "larrazábal", "general paz", "eva peron", "eva perón", "chiclana", "brasil", "garay", "juan bautista alberdi", "scalabrini ortiz", "honorio pueyrredon", "honorio pueyrredón", "incas", "los incas", "de los incas", "dorrego", "lacroze", "federico lacroze", "coronel roca", "roca", "cazadores", "peron", "perón", "mayo", "avenida de mayo", "cordoba", "callao", "quintana", "alvear", "figueroa alcorta", "bullrich", "intendente cantilo", "lugones", "leandro n alem", "alem", "ingeniero huergo", "huergo", "madero", "eduardo madero", "antartida argentina", "ramon castillo", "costanera rafael obligado", "dellepiane", "luis dellepiane", "richieri", "general paz", "cantilo", "constituyentes", "alvarez tegte", "san martin", "gaona", "segurola", "lope de vega", "general paz", "donato alvarez", "san martin", "warnes", "angel gallardo", "estado de israel", "diaz velez", "avellaneda", "alvarez jonte", "asuncion", "salvador maria del carril", "general mosconi", "albarellos", "francisco beiro", "lastra", "lope de vega"
+    ]
+  },
+  "musica": {
+    "artistas": [
+      "duki", "ysy a", "trueno", "soda stereo", "tiago pzk", "rockstar",
+      "metallica", "ac dc", "charly garcia", "fito paez", "el kuelgue",
+      "wos", "nicki nicole", "maria becerra", "emilia", "bizarrap",
+      "quevedo", "bad bunny", "feid", "karol g", "anuel aa", "myke towers",
+      "ozuna", "daddy yankee", "callejeros", "la renga", "los enanitos verdes",
+      "patricio rey y sus redonditos de ricota", "sumo", "viejas locas", "milo j", "dillom", "cazzu", "divididos", "babasonicos", "spinetta", "la konga", "luck ra", "khea", "lit killah"
+    ],
+    "canciones": [
+      "uzbekistan", "hiriaki", "goteo", "she don't give a fo", "tumbando el club", "entre nosotros", "la cadena", "dispara", "hola perdida", "hijo de la noche", "platino y oro", "un poco loco", "morocha", "dance criollo",
+      "givenchy", "malbec", "top 5", "si te sentis sola", "hello cotto", "quaper", "lost tape", "tamo loco", "pasto", "casi un g", "todo de oro", "vuelta a la luna", "full ice", "trap de verdad", "vuerich", "hidro", "la primera vez", "relajado"
+    ],
+    "playlists": [
+      "lista de viaje", "viaje", "ruta", "moto", "relax", "fiesta", "concentración", "rock", "trap", "pop"
+    ],
+    "correcciones_foneticas": {
+      "uzbekistan": "uzbekistan",
+      "ubecristal": "uzbekistan",
+      "ubekistan": "uzbekistan",
+      "uzbe": "uzbekistan",
+      "ube": "uzbekistan",
+      "ubk": "uzbekistan",
+      "uzk": "uzbekistan",
+      "vegetal": "uzbekistan",
+      "pakistan": "uzbekistan",
+      "uzen": "uzbekistan",
+      "uzenk": "uzbekistan",
+      "pakist": "uzbekistan",
+      "duque": "duki", "doce": "duki", "donde": "duki", "y si": "ysy a", "isi": "ysy a", "izi": "ysy a", "y si a": "ysy a", "y cia": "ysy a", "isia": "ysy a", "isya": "ysy a", "issia": "ysy a", "voz": "wos", "vos": "wos", "vo": "wos", "biza": "bizarrap", "pisa": "bizarrap", "viza": "bizarrap", "visrap": "bizarrap", "vicerap": "bizarrap", "tiago": "tiago pzk", "estrella de rock": "rockstar", "rock": "rockstar", "conejo malo": "bad bunny", "conga": "la konga", "venga": "la renga", "cuelgue": "el kuelgue", "la nena de argentina": "maria becerra", "la aplanadora": "divididos", "indio solari": "patricio rey y sus redonditos de ricota", "redonditos": "patricio rey y sus redonditos de ricota", "claclis": "Blacklist", "mental lista": "The Mentalist", "espotifai": "Spotify", "wasap": "whatsapp", "guasap": "whatsapp", "iutub": "youtube", "yutu": "youtube", "netfli": "netflix", "netflixe": "netflix", "casa": "casa", "kasa": "casa", "caza": "casa", "laburo": "trabajo", "chamba": "trabajo", "insta": "instagram", "ig": "instagram", "wasapp": "whatsapp", "guasa": "whatsapp", "wasa": "whatsapp", "uno": "1", "dos": "2", "tres": "3", "cuatro": "4", "cinco": "5"
+    }
   },
   "apps": {
-    "netflix": ["netflix", "netflis", "netfli", "netfliz"],
-    "youtube": ["youtube", "you tube", "yutu", "yutub"],
-    "whatsapp": ["wasa", "whatsapp", "guasa"],
-    "instagram": ["insta", "ig", "instagram"],
-    "discord": ["discor", "discord"],
-    "spotify": ["spoti", "spotify"]
+    "netflix": ["netflix", "netflis", "netfli", "netfliz", "nefli", "nesfli", "netflixe", "peli", "película", "series"],
+    "youtube": ["youtube", "you tube", "yutu", "yutub", "iutub", "yu tub", "videos", "videitos"],
+    "whatsapp": ["wasa", "whatsapp", "guasa", "guasap", "abrigos sapo", "sapo", "wasap", "whats up", "watsapp", "mensajes", "mensajito"],
+    "instagram": ["insta", "ig", "instagram", "instagran", "ynstagram", "fotos"],
+    "discord": ["discor", "discord", "diskort", "des cor", "escort", "comunidad"],
+    "spotify": ["spoti", "spotify", "spoty", "espotifai", "espotify", "música", "musica", "playlist", "lista", "musiquita"],
+    "maps": ["google maps", "maps", "mapas", "waze", "gps", "navegador", "ruta", "camino"]
   },
-  "control": {
-    "logpose_alias": ["ojo", "loco", "reloj", "telo", "debate look", "logpose", "log pose"],
-    "activar": ["activate", "activar", "despertate", "prendete", "escuchame"],
-    "desactivar": ["desactivate", "desactivar", "dormite", "apagate", "quedate quieto"]
+  "contactos": {
+    "apodos": {
+      "el viejo": "Papá", "la vieja": "Mamá", "el nene": "Hijo", "la nena": "Hija", "mi jermu": "Esposa", "mi mujer": "Esposa", "el gordo": "Amigo", "la flaca": "Amiga"
+    }
   },
-  "muletillas_a_ignorar": ["che", "boludo", "boluda", "posta", "dale", "eh", "este", "viste", "por favor", "porfa", "gracias", "loco", "loca", "flaco", "flaca"],
-  "titulos_netflix": {
-    "The Mentalist": ["mental lista", "el mentalista", "mentalist"],
-    "Blacklist": ["la clic", "blacklist", "black list"]
+  "fonetica": {
+    "numeros": ["uno", "dos", "tres", "cuatro", "cinco", "seis", "siete", "ocho", "nueve", "diez", "once", "doce", "trece", "catorce", "quince", "dieciseis", "diecisiete", "dieciocho", "diecinueve", "veinte"],
+    "wake_words": ["log", "pose", "lock", "lon", "los", "ojo", "loco", "reloj", "telo", "debate look", "oye log pose", "hola log pose", "hey log pose", "activate", "activar", "despertate", "prendete", "escuchame", "tiffany", "tifani", "asistente", "che", "boludo", "bola"]
   },
-  "artistas": {
-    "Ysy A": ["isya", "y si a", "y cia", "isia"],
-    "Bizarrap": ["viza", "visrap", "vicerap"]
-  }
+  "alucinaciones": {
+    "one thought": "duki", "adult": "duki", "one duck": "duki", "one x t": "ysy a", "obe quitan": "ysy a", "esaoy": "estoy", "conquistan": "estoy", "donde": "duki", "vende": "pone", "pobre": "pone", "bajar": "baja", "vajar": "baja", "subir": "subi", "suspir": "subi", "ir a": "ir a", "ira": "ir a", "y da": "ir a", "que": "que", "duque": "duki", "voz": "wos", "pisa": "bizarrap", "atiende": "atende", "llama": "llama", "mujer": "jermu", "policia": "cana", "gasolina": "nafta", "autobus": "bondi",
+    "nino": "niño", "ninio": "niño", "ninho": "niño", "musica": "música", "muzica": "música", "musika": "música", "volumen maximo": "volumen máximo", "volumen masimo": "volumen máximo", "honorio pueyredon": "honorio pueyrredón", "honorio pueyrredon": "honorio pueyrredón", "los incas": "de los incas"
+  },
+  "modismos": {
+    "a todo lo que da": "volumen máximo", "al palo": "volumen máximo", "a pleno": "máximo", "a full": "máximo", "un toque": "un poco", "un cacho": "un poco", "un chiquito": "un poco", "al toque": "inmediatamente", "de una": "inmediatamente", "re fuerte": "muy fuerte", "re bajo": "muy bajo", "piola": "tranquilo", "joya": "bien", "de diez": "excellent", "bancame": "esperar", "bancá": "esperar", "laburo": "trabajo", "chamba": "trabajo", "rancho": "casa", "choza": "casa", "jermu": "esposa", "viejo": "papa", "vieja": "mama", "temon": "cancion", "temazo": "cancion", "morfar": "comer", "morfi": "comida", "cuadra": "manzana", "bondi": "autobus", "tachero": "taxista", "cana": "policia", "cobani": "policia", "yuta": "policia", "afano": "robo", "chorro": "ladron", "pestaña": "tab", "niño": "niño", "música": "música", "volumen máximo": "volumen máximo"
+  },
+  "muletillas_a_ignorar": ["che", "boludo", "boluda", "posta", "dale", "eh", "este", "viste", "por favor", "porfa", "gracias", "loco", "loca", "flaco", "flaca", "okay", "ok", "amigo", "amigazo", "hermano", "hno", "capo", "crack", "ndeah", "onda", "buenardo", "buenisimo", "genial", "listo", "bueno", "eeeh", "mmm"],
+  "stopwords": ["fue", "es", "eso", "de", "del", "que", "el", "la", "los", "las", "un", "una", "esa", "ese", "nomas", "nomás", "medio", "un poco"],
+  "separadores": [" y despues ", " y después ", " y luego ", " y dsp ", " y dps ", " y dpu ", " y ", " luego "],
+  "separadores_simples": [" y ", " luego ", " despues ", " después "]
 }

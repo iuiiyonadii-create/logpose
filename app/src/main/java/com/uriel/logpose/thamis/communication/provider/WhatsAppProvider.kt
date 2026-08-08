@@ -2,7 +2,7 @@ package com.uriel.logpose.thamis.communication.provider
 
 import android.content.Intent
 import android.net.Uri
-import com.uriel.logpose.core.app.AppContainer
+import com.uriel.logpose.core.app.LogPoseApplication
 
 /**
  * Proveedor de comunicación para WhatsApp.
@@ -19,7 +19,7 @@ class WhatsAppProvider : CommunicationProvider {
             intent.data = Uri.parse("whatsapp://send?text=Hola") // Placeholder
             intent.setPackage(PACKAGE_NAME)
             intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-            AppContainer.appContext.startActivity(intent)
+            LogPoseApplication.instance.startActivity(intent)
             CommunicationResult(true, CommunicationProviderType.WHATSAPP, "WhatsApp chat opened for $contactName")
         } catch (e: Exception) {
             CommunicationResult(false, CommunicationProviderType.WHATSAPP, "Error: ${e.message}")
@@ -41,7 +41,7 @@ class WhatsAppProvider : CommunicationProvider {
             intent.data = Uri.parse("https://api.whatsapp.com/send?phone=$contactName&text=${Uri.encode(message)}")
             intent.setPackage(PACKAGE_NAME)
             intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-            AppContainer.appContext.startActivity(intent)
+            LogPoseApplication.instance.startActivity(intent)
             CommunicationResult(true, CommunicationProviderType.WHATSAPP, "WhatsApp message sent to $contactName")
         } catch (e: Exception) {
             CommunicationResult(false, CommunicationProviderType.WHATSAPP, "Error: ${e.message}")
@@ -50,7 +50,7 @@ class WhatsAppProvider : CommunicationProvider {
 
     override fun isAvailable(): Boolean {
         return try {
-            AppContainer.appContext.packageManager.getPackageInfo(PACKAGE_NAME, 0)
+            LogPoseApplication.instance.packageManager.getPackageInfo(PACKAGE_NAME, 0)
             true
         } catch (e: Exception) {
             false

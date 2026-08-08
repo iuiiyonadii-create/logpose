@@ -3,7 +3,7 @@ package com.uriel.logpose.thamis.actuator
 import com.uriel.logpose.thamis.cognitive.model.ThamisDecision
 import com.uriel.logpose.thamis.navigation.provider.NavigationProviderFactory
 import com.uriel.logpose.thamis.navigation.provider.NavigationProviderResult
-import com.uriel.logpose.thamis.intent.Intent
+import com.thamis.lab.core.contracts.intent.Intent
 
 import com.uriel.logpose.thamis.capabilities.CapabilityRegistry
 import com.uriel.logpose.thamis.capabilities.CapabilityType

@@ -1,6 +1,6 @@
 package com.uriel.logpose.thamis.decision
 
-import com.uriel.logpose.core.Command
+import com.thamis.lab.core.contracts.command.LogPoseCommand
 import com.uriel.logpose.core.Action
 
 /**
@@ -9,14 +9,14 @@ import com.uriel.logpose.core.Action
  */
 object ActionSelector {
 
-    fun selectAction(command: Command): Action {
+    fun selectAction(command: LogPoseCommand): Action {
         return when (command) {
-            Command.PLAY_MUSIC, Command.PAUSE_MUSIC, 
-            Command.NEXT_TRACK, Command.PREVIOUS_TRACK -> Action.MediaAction(command)
+            is LogPoseCommand.PlayMusic, LogPoseCommand.PauseMusic, 
+            LogPoseCommand.NextTrack, LogPoseCommand.PreviousTrack -> Action.MediaAction(command)
             
-            Command.CALL_CONTACT -> Action.CallAction("Pendiente")
+            is LogPoseCommand.Call -> Action.CallAction(command.contact)
             
-            Command.STOP_LOGPOSE -> Action.StopService
+            LogPoseCommand.StopListening -> Action.StopService
             
             else -> Action.VoiceResponse("Comando no implementado aún.")
         }

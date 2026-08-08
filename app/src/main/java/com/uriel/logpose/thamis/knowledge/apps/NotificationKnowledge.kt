@@ -1,6 +1,6 @@
 package com.uriel.logpose.thamis.knowledge.apps
 
-import com.uriel.logpose.thamis.intent.Intent
+import com.thamis.lab.core.contracts.intent.Intent
 import com.uriel.logpose.thamis.knowledge.KnowledgeRule
 
 object NotificationKnowledge {
@@ -49,8 +49,15 @@ object NotificationKnowledge {
                 "decile a",
                 "mensaje a",
                 "mandá",
+                "manda",
+                "mandame",
                 "escribile",
-                "mandale"
+                "mandale",
+                "mandale un mensaje a",
+                "mandale mensaje a",
+                "avisale a",
+                "avisale que",
+                "mandale que"
             )
         )
     )

@@ -6,6 +6,7 @@ import com.thamis.lab.performance.device.ConnectionType
 import com.thamis.lab.performance.device.DeviceInfo
 import com.thamis.lab.performance.device.DeviceState
 import com.thamis.lab.performance.logpose.RealLogposeController
+import java.util.concurrent.TimeUnit
 
 /**
  * Robust ADB Manager executing real 'adb devices -l' system process commands,
@@ -22,9 +23,12 @@ public class AdbManager(
     public fun executeRealAdbDevicesScan(): List<DeviceInfo> {
         return try {
             val process = ProcessBuilder("adb", "devices", "-l").start()
-            val rawOutput = process.inputStream.bufferedReader().readText()
-            process.waitFor()
-            parseAdbDevicesOutput(rawOutput)
+            val output = process.inputStream.bufferedReader().readText()
+            if (!process.waitFor(3, TimeUnit.SECONDS)) {
+                process.destroyForcibly()
+                return emptyList()
+            }
+            parseAdbDevicesOutput(output)
         } catch (e: Exception) {
             LabLogger.error(TAG, "Failed to run 'adb devices -l' process", e)
             emptyList()

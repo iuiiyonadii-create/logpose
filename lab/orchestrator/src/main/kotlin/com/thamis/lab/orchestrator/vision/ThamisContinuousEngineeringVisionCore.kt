@@ -1,7 +1,7 @@
 package com.thamis.lab.orchestrator.vision
 
 import com.thamis.lab.core.common.logging.LabLogger
-import com.thamis.lab.intelligence.genome.SystemGenomeEngine
+import com.thamis.lab.intelligence.evolution.SystemGenomeEngine
 import com.thamis.lab.orchestrator.charter.ThamisInfiniteEngineeringCharterEngine
 
 public data class ContinuousVisionStatusReport(

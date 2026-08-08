@@ -13,7 +13,7 @@ import kotlinx.coroutines.launch
 object SelfImprovementEngine {
 
     private val scope = CoroutineScope(Dispatchers.IO)
-    private val dao = LogPoseApplication.instance.container.memoryDatabase.agentMemoryDao()
+    private val dao by lazy { LogPoseApplication.entryPoint.agentMemoryDao() }
 
     /**
      * Ejecuta una auditoría de rendimiento basada en la memoria persistente.
@@ -44,6 +44,6 @@ object SelfImprovementEngine {
     private fun proposeOptimization(strategy: String) {
         LogPoseLogger.i("SelfImprovement: Proponiendo nueva estrategia: $strategy")
         CollaborationBus.postMessage("SelfImprovement", "OPTIMIZATION_PROPOSAL: $strategy")
-        com.uriel.logpose.core.network.PCBridge.sendCommand("AI_STRATEGY:$strategy")
+        LogPoseApplication.entryPoint.pcBridge().sendCommand("AI_STRATEGY:$strategy")
     }
 }

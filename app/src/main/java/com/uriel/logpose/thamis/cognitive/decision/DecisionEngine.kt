@@ -1,7 +1,7 @@
 package com.uriel.logpose.thamis.cognitive.decision
 
 import com.uriel.logpose.thamis.cognitive.model.*
-import com.uriel.logpose.thamis.intent.Intent
+import com.thamis.lab.core.contracts.intent.Intent
 import java.util.UUID
 
 import com.uriel.logpose.thamis.Constitution

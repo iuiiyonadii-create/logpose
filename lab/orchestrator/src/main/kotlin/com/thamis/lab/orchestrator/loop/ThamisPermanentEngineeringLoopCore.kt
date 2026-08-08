@@ -1,7 +1,7 @@
 package com.thamis.lab.orchestrator.loop
 
 import com.thamis.lab.core.common.logging.LabLogger
-import com.thamis.lab.intelligence.architect.MetaEngineeringArchitectEngine
+import com.thamis.lab.intelligence.engineering.MetaEngineeringArchitectEngine
 import com.thamis.lab.orchestrator.charter.ThamisMasterEvolutionCharterEngine
 
 public data class PermanentLoopStatusReport(

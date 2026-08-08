@@ -1,6 +1,6 @@
 package com.uriel.logpose.thamis.decision
 
-import com.uriel.logpose.core.Command
+import com.thamis.lab.core.contracts.command.LogPoseCommand
 import com.uriel.logpose.core.Action
 import com.uriel.logpose.core.compat.core.LogPoseLogger
 import com.uriel.logpose.thamis.context.ContextEngine
@@ -15,12 +15,12 @@ object DecisionEngine {
     /**
      * Evalúa un comando basándose en el contexto actual y las reglas de seguridad.
      */
-    fun evaluate(command: Command): Action {
+    fun evaluate(command: LogPoseCommand): Action {
         LogPoseLogger.d("DecisionEngine: Evaluando comando $command")
         
         // 1. Validación Multi-Agente (FASE 27.2)
         val agents = listOf("MotoSafety", "SecurityGuard")
-        val isApprovedByAgents = ConsensusEngine.reachConsensus(command.name, agents)
+        val isApprovedByAgents = ConsensusEngine.reachConsensus(command::class.simpleName ?: "Unknown", agents)
         
         if (!isApprovedByAgents) {
             LogPoseLogger.w("DecisionEngine: Comando rechazado por falta de consenso multi-agente.")

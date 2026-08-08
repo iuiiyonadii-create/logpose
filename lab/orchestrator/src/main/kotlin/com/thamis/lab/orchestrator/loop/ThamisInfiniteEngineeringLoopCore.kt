@@ -1,7 +1,7 @@
 package com.thamis.lab.orchestrator.loop
 
 import com.thamis.lab.core.common.logging.LabLogger
-import com.thamis.lab.intelligence.entropy.SoftwareEntropyEngine
+import com.thamis.lab.intelligence.evolution.SoftwareEntropyEngine
 import com.thamis.lab.orchestrator.meta.ThamisFinalMetaDirectiveEngine
 
 public data class InfiniteLoopStatusReport(

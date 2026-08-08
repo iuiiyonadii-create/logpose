@@ -20,16 +20,16 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.uriel.logpose.core.app.AppContainer
 import com.uriel.logpose.core.compat.core.AppState
 import com.uriel.logpose.core.engine.LogPoseEngine
 import com.uriel.logpose.domain.models.DeviceType
 import com.uriel.logpose.domain.models.LogPoseDevice
+import com.uriel.logpose.features.settings.SettingsViewModel
 import com.uriel.logpose.ui.theme.LogPoseTheme
 import com.uriel.logpose.ui.viewmodel.BluetoothUiState
 import com.uriel.logpose.ui.viewmodel.BluetoothViewModel
-import com.uriel.logpose.ui.viewmodel.BluetoothViewModelFactory
 import com.uriel.logpose.core.compat.PermissionManager
 
 @Composable
@@ -39,19 +39,31 @@ fun LogPoseScreen(
     onOpenDrawer: () -> Unit = {},
     onNavigateToMusic: () -> Unit = {},
     onNavigateToBluetooth: () -> Unit = {},
-    onStartTrip: () -> Unit = {}
+    onStartTrip: () -> Unit = {},
+    viewModel: BluetoothViewModel = hiltViewModel(),
+    settingsViewModel: SettingsViewModel = hiltViewModel()
 ) {
     val context = LocalContext.current
-    val factory = remember { BluetoothViewModelFactory(AppContainer.bluetoothRepository) }
-    val viewModel: BluetoothViewModel = viewModel(factory = factory)
     
     val uiState by viewModel.state.collectAsState()
     val engineState by LogPoseEngine.state.collectAsState()
     var isPrivacyMode by remember { mutableStateOf(false) }
 
+    val permissionLauncher = androidx.activity.compose.rememberLauncherForActivityResult(
+        androidx.activity.result.contract.ActivityResultContracts.RequestMultiplePermissions()
+    ) { _ ->
+        viewModel.refresh()
+    }
+
     val allPermissionsGranted = remember(uiState.serviceRunning) {
         PermissionManager.requiredPermissions().all {
             androidx.core.content.ContextCompat.checkSelfPermission(context, it) == android.content.pm.PackageManager.PERMISSION_GRANTED
+        }
+    }
+
+    LaunchedEffect(Unit) {
+        if (!allPermissionsGranted) {
+            permissionLauncher.launch(PermissionManager.requiredPermissions())
         }
     }
 
@@ -85,7 +97,7 @@ fun LogPoseScreen(
             isDark = isDarkTheme,
             onTogglePrivacy = { isPrivacyMode = !isPrivacyMode },
             onToggleTheme = {
-                AppContainer.settingsManager.setBoolean("dark_mode", !isDarkTheme)
+                settingsViewModel.settingsManager.setBoolean("dark_mode", !isDarkTheme)
             },
             onToggleService = {
                 if (uiState.serviceRunning) viewModel.stopLogPose(context)

@@ -6,7 +6,7 @@ import android.bluetooth.BluetoothProfile
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
-import com.uriel.logpose.core.app.AppContainer
+import com.uriel.logpose.core.app.LogPoseApplication
 import com.uriel.logpose.core.compat.core.LogPoseLogger
 
 /**
@@ -38,7 +38,7 @@ object BluetoothHfpMonitor {
     fun isHfpConnected(): Boolean {
         try {
             if (androidx.core.content.ContextCompat.checkSelfPermission(
-                    AppContainer.appContext,
+                    LogPoseApplication.instance,
                     android.Manifest.permission.BLUETOOTH_CONNECT
                 ) != android.content.pm.PackageManager.PERMISSION_GRANTED
             ) {

@@ -1,7 +1,7 @@
 package com.uriel.logpose.feature.service
 
 import com.uriel.logpose.core.Action
-import com.uriel.logpose.core.Command
+import com.thamis.lab.core.contracts.command.LogPoseCommand
 import com.uriel.logpose.core.music.MusicController
 import android.util.Log
 
@@ -15,13 +15,7 @@ class ActionManager(
         Log.d("ActionManager", "Executing: $action")
         when (action) {
             is Action.MediaAction -> {
-                when (action.command) {
-                    Command.PLAY_MUSIC -> musicController.execute(com.uriel.logpose.domain.models.LogPoseCommand.PLAY)
-                    Command.PAUSE_MUSIC -> musicController.execute(com.uriel.logpose.domain.models.LogPoseCommand.PAUSE)
-                    Command.NEXT_TRACK -> musicController.execute(com.uriel.logpose.domain.models.LogPoseCommand.NEXT)
-                    Command.PREVIOUS_TRACK -> musicController.execute(com.uriel.logpose.domain.models.LogPoseCommand.PREVIOUS)
-                    else -> Log.w("ActionManager", "Media command ${action.command} not yet implemented")
-                }
+                musicController.execute(action.command)
             }
             is Action.VoiceResponse -> {
                 // TODO: FeedbackManager.speak(action.message)

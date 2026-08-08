@@ -1,9 +1,11 @@
 package com.uriel.logpose.thamis
 
+import com.thamis.lab.core.contracts.intent.Intent
 import com.uriel.logpose.core.compat.core.LogPoseLogger
 import com.uriel.logpose.thamis.context.THAMISContext
 import com.uriel.logpose.thamis.decision.Decision
 import com.uriel.logpose.thamis.entity.EntityExtractor
+import com.uriel.logpose.thamis.intent.ComplexIntentDetector
 import com.uriel.logpose.thamis.intent.IntentDetector
 import com.uriel.logpose.thamis.policy.THAMISPolicy
 import com.uriel.logpose.thamis.request.THAMISRequest
@@ -13,40 +15,54 @@ import com.uriel.logpose.thamis.request.THAMISRequest
  */
 object THAMIS {
 
-    fun process(request: THAMISRequest): Decision {
+    /**
+     * Procesa una solicitud y devuelve una lista de decisiones (soporte multi-paso).
+     */
+    fun processSequence(request: THAMISRequest): List<Decision> {
+        // 1. Detección de secuencia de intenciones
+        val detections = ComplexIntentDetector.detectSequence(request.text)
+        
+        return detections.map { detection ->
+            // 2. Cálculo de confianza base
+            val combinedConfidence = request.overrideConfidence ?: ((detection.score + request.speechConfidence) / 2f)
 
-        // 1. Detección de intención
-        val detection = IntentDetector.detect(request.text)
+            // 3. Resolución contextual
+            val finalIntent = if (detection.intent == Intent.UNKNOWN || detection.score < 0.5f) {
+                resolveContextualIntent(request.text, THAMISContext.getActiveIntent())
+            } else {
+                detection.intent
+            }
 
-        // 2. Cálculo de confianza base con soporte para Override
-        val combinedConfidence = request.overrideConfidence ?: ((detection.score + request.speechConfidence) / 2f)
+            // 4. Extracción de Entidades
+            val entities = EntityExtractor.extract(finalIntent, request.text)
 
-        // 3. Resolución contextual (Si la intención es vaga, miramos la memoria)
-        val finalIntent = if (detection.intent == com.uriel.logpose.thamis.intent.Intent.UNKNOWN || detection.score < 0.5f) {
-            resolveContextualIntent(request.text, THAMISContext.getActiveIntent())
-        } else {
-            detection.intent
+            // 5. Actualización de contexto
+            THAMISContext.update(finalIntent, request.text)
+
+            // 6. Creación de decisión
+            val preliminaryDecision = Decision(
+                intent = finalIntent,
+                confidence = combinedConfidence,
+                entities = entities,
+                requiresConfirmation = combinedConfidence < 0.75f && 
+                                       finalIntent != Intent.UNKNOWN &&
+                                       !entities.containsKey("prompt")
+            )
+
+            // 7. Evaluación de política
+            THAMISPolicy.evaluate(preliminaryDecision)
         }
-
-        // 4. Extracción de Entidades (Parámetros)
-        val entities = EntityExtractor.extract(finalIntent, request.text)
-
-        // 5. Actualizamos la memoria (Intención + Entidades)
-        THAMISContext.update(finalIntent, request.text)
-
-        // 6. Creación de decisión preliminar
-        val preliminaryDecision = Decision(
-            intent = finalIntent,
-            confidence = combinedConfidence,
-            entities = entities,
-            requiresConfirmation = combinedConfidence < 0.75f && finalIntent != com.uriel.logpose.thamis.intent.Intent.UNKNOWN
-        )
-
-        // 7. Aplicación de políticas y constitución
-        return THAMISPolicy.evaluate(preliminaryDecision)
     }
 
-    private fun resolveContextualIntent(text: String, activeIntent: com.uriel.logpose.thamis.intent.Intent): com.uriel.logpose.thamis.intent.Intent {
+    /**
+     * Procesa una solicitud de forma tradicional (una única intención).
+     * Mantenido para compatibilidad con VoiceManager v1.0.
+     */
+    fun process(request: THAMISRequest): Decision {
+        return processSequence(request).firstOrNull() ?: Decision(Intent.UNKNOWN, 0f)
+    }
+
+    private fun resolveContextualIntent(text: String, activeIntent: Intent): Intent {
         val lowerText = text.lowercase().trim()
         
         // --- APRENDIZAJE NEGATIVO / CORRECCIÓN ---
@@ -60,25 +76,25 @@ object THAMIS {
         }
 
         // Manejo de confirmación (Sí / No)
-        if (activeIntent != com.uriel.logpose.thamis.intent.Intent.UNKNOWN) {
+        if (activeIntent != Intent.UNKNOWN) {
             if (lowerText == "si" || lowerText == "sí" || lowerText == "dale" || lowerText == "bueno" || lowerText == "ok") {
                 return activeIntent
             }
             if (lowerText == "no" || lowerText == "nones" || lowerText == "cancelar") {
                 THAMISContext.clear()
-                return com.uriel.logpose.thamis.intent.Intent.UNKNOWN
+                return Intent.UNKNOWN
             }
         }
 
         // Si el usuario dice "cancela", "para", "no" y hay algo activo
         if (lowerText.contains("cancela") || lowerText.contains("para") || lowerText.contains("no")) {
             return when (activeIntent) {
-                com.uriel.logpose.thamis.intent.Intent.CALL_CONTACT -> com.uriel.logpose.thamis.intent.Intent.REJECT_CALL
-                com.uriel.logpose.thamis.intent.Intent.PLAY_MUSIC -> com.uriel.logpose.thamis.intent.Intent.PAUSE_MUSIC
-                else -> com.uriel.logpose.thamis.intent.Intent.UNKNOWN
+                Intent.CALL_CONTACT -> Intent.REJECT_CALL
+                Intent.PLAY_MUSIC -> Intent.PAUSE_MUSIC
+                else -> Intent.UNKNOWN
             }
         }
         
-        return com.uriel.logpose.thamis.intent.Intent.UNKNOWN
+        return Intent.UNKNOWN
     }
 }

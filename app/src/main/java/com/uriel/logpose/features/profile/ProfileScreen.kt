@@ -17,15 +17,18 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.uriel.logpose.core.app.AppContainer
 import com.uriel.logpose.core.compat.PermissionManager
 import com.uriel.logpose.core.engine.LogPoseEngine
 import com.uriel.logpose.ui.viewmodel.BluetoothViewModel
-import com.uriel.logpose.ui.viewmodel.BluetoothViewModelFactory
 
 @Composable
-fun ProfileScreen(onOpenDrawer: () -> Unit, isDark: Boolean) {
+fun ProfileScreen(
+    onOpenDrawer: () -> Unit, 
+    isDark: Boolean,
+    viewModel: BluetoothViewModel = hiltViewModel()
+) {
     val context = LocalContext.current
     val backgroundColor = if (isDark) Color.Black else Color.White
     val onSurfaceColor = if (isDark) Color.White else Color.Black
@@ -33,8 +36,6 @@ fun ProfileScreen(onOpenDrawer: () -> Unit, isDark: Boolean) {
     val accentColor = if (isDark) Color(0xFF00CEC9) else Color.Black // Negro puro en modo claro
     val cardBg = if (isDark) Color(0xFF1E1E1E) else Color(0xFFF1F2F6)
 
-    val factory = remember { BluetoothViewModelFactory(AppContainer.bluetoothRepository) }
-    val viewModel: BluetoothViewModel = viewModel(factory = factory)
     val uiState by viewModel.state.collectAsState()
     val engineState by LogPoseEngine.state.collectAsState()
 

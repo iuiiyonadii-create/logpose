@@ -1,6 +1,10 @@
 package com.uriel.logpose.features.navigation
 
+import com.uriel.logpose.core.app.LogPoseApplication
 import com.uriel.logpose.core.compat.core.LogPoseLogger
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 
@@ -19,9 +23,35 @@ object NavigationManager {
     val currentDestination = _currentDestination.asStateFlow()
 
     fun startNavigation(destination: String) {
+        if (destination.isBlank()) {
+            LogPoseLogger.w("NavigationManager: Solicitud de navegación sin destino. Abriendo mapas...")
+        } else {
+            LogPoseLogger.i("NavigationManager: Iniciando navegación a $destination")
+        }
+
         isNavigationActive = true
-        _currentDestination.value = destination
-        LogPoseLogger.i("NavigationManager: Iniciando navegación a $destination")
+        _currentDestination.value = if (destination.isBlank()) "Explorar" else destination
+
+        val provider = com.uriel.logpose.thamis.navigation.provider.NavigationProviderFactory.getBestAvailableProvider()
+        val result = if (destination.isBlank()) provider.open() else provider.navigate(destination)
+
+        if (result.success) {
+            LogPoseLogger.i("NavigationManager: Acción ejecutada con éxito vía ${result.provider}")
+            // FASE 3: Reportar a través del EventBus en el scope principal
+            CoroutineScope(Dispatchers.Main).launch {
+                LogPoseApplication.entryPoint.eventBus().emit(
+                    com.uriel.logpose.core.thamis.Event(
+                        id = "nav_${System.currentTimeMillis()}",
+                        type = com.uriel.logpose.core.thamis.EventType.NAVIGATION_UPDATE,
+                        source = "NavigationManager",
+                        data = mapOf("dest" to destination, "provider" to result.provider.name)
+                    )
+                )
+            }
+        } else {
+            LogPoseLogger.e("NavigationManager: Falló acción de navegación: ${result.reason}")
+            isNavigationActive = false
+        }
     }
 
     fun navigateTo(destination: String) {

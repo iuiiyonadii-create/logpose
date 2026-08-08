@@ -1,6 +1,7 @@
 package com.uriel.logpose.thamis.lab.simulation
 
-import com.uriel.logpose.core.Command
+import com.thamis.lab.core.contracts.command.LogPoseCommand
+import com.thamis.lab.core.contracts.intent.Intent
 import com.uriel.logpose.core.compat.core.LogPoseLogger
 import com.uriel.logpose.thamis.context.ContextEngine
 import com.uriel.logpose.thamis.context.ContextSnapshot
@@ -33,7 +34,7 @@ object ThamisLabSimulator {
 
             // 2. Intentar comando prohibido
             LogPoseLogger.i("SIMULATOR: Intentando llamar a un contacto a $customSpeed km/h...")
-            SystemOrchestrator.dispatchCommand(Command.CALL_CONTACT)
+            SystemOrchestrator.dispatchCompatCommand(LogPoseCommand.Call("Test Contact"))
         }
     }
 
@@ -55,7 +56,7 @@ object ThamisLabSimulator {
             LogPoseLogger.i("SIMULATOR: Iniciando escenario de MÚSICA...")
             injectState(speed = 50f, battery = 90)
             delay(1000)
-            SystemOrchestrator.dispatchCommand(Command.PLAY_MUSIC)
+            SystemOrchestrator.dispatchCompatCommand(LogPoseCommand.PlayMusic("Test Song"))
         }
     }
 
@@ -73,7 +74,7 @@ object ThamisLabSimulator {
             
             LogPoseLogger.i("SIMULATOR: IA Remota respondió: ${decision.intent} (Conf: ${decision.confidence})")
             
-            if (decision.intent != com.uriel.logpose.thamis.intent.Intent.UNKNOWN) {
+            if (decision.intent != Intent.UNKNOWN) {
                 com.uriel.logpose.features.voice.FeedbackManager.speak("La IA de tu PC dice que quieres: ${decision.intent}")
             } else {
                 com.uriel.logpose.features.voice.FeedbackManager.speak("No pude conectar con el cerebro de tu PC.")

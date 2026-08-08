@@ -88,8 +88,13 @@
         "apagate",
         "detene",
         "detener",
-        "deten",
-        "detente",
+        "detene musica",
+        "detené",
+        "detener musica",
+        "parar",
+        "frenar",
+        "para",
+        "detene",
         "para de escuchar",
         "pará de escuchar",
         "basta",
@@ -304,6 +309,18 @@
         "que no cambie mas",
         "trabalo en este tema"
       ]
+    },
+    "safety_alert": {
+      "description": "Alerta de seguridad o policía",
+      "patterns": ["ojo", "guarda", "cuidado", "cana", "cobani", "ratis", "chorros", "afano", "trucho", "peligro", "atenti", "vigilante"]
+    },
+    "traffic_status": {
+      "description": "Estado del tráfico",
+      "patterns": ["quilombo", "embotellamiento", "como viene", "hay gente", "muchos autos", "corte", "manifestación", "tacheros", "bondis"]
+    },
+    "restaurant_search": {
+      "description": "Búsqueda de comida",
+      "patterns": ["morfar", "morfi", "lastre", "hambre", "bajón", "restaurante", "parrilla", "pizzeria", "donde como", "algun bodegón"]
     }
   },
   "muletillas_a_ignorar": {
@@ -363,26 +380,61 @@
     ]
   },
   "apps": {
-    "_notas": "Apps que se abren directo, sin query de búsqueda posterior (a diferencia de Netflix/Spotify/YouTube que sí llevan un término).",
     "discord": [
       "discord",
       "discor",
       "diskort",
       "des cor",
-      "escort"
+      "escort",
+      "comunidad"
     ],
     "instagram": [
       "instagram",
       "insta",
       "instagran",
-      "ynstagram"
+      "ynstagram",
+      "fotos"
     ],
     "whatsapp": [
       "whatsapp",
       "wasap",
       "guasap",
       "whats up",
-      "watsapp"
+      "watsapp",
+      "mensajes",
+      "mensajito"
+    ],
+    "spotify": [
+      "spotify",
+      "spoti",
+      "spoty",
+      "espotifai",
+      "música",
+      "musica",
+      "playlist",
+      "lista"
+    ],
+    "maps": [
+      "google maps",
+      "maps",
+      "mapas",
+      "waze",
+      "gps",
+      "navegador",
+      "ruta"
+    ],
+    "netflix": [
+      "netflix",
+      "netflis",
+      "peli",
+      "película",
+      "series"
+    ],
+    "youtube": [
+      "youtube",
+      "yutu",
+      "videos",
+      "videitos"
     ]
   },
   "open_app_stems": {
@@ -435,7 +487,6 @@
     }
   },
   "phonetic_corrections": {
-    "_notas": "Clave = nombre correcto. Valor = lista de variantes mal transcriptas por Vosk.",
     "Blacklist": [
       "la clic",
       "claclis",
@@ -456,20 +507,24 @@
       "spoty",
       "espotifai",
       "espotify",
-      "spotifai"
+      "spotifai",
+      "spoti"
     ],
     "YouTube": [
       "iutub",
       "tu",
       "yutu",
       "yutub",
-      "yu tub"
+      "yu tub",
+      "youtube",
+      "you tube"
     ],
     "Netflix": [
       "netfli",
       "netflis",
       "netflix",
-      "net flix"
+      "net flix",
+      "netflixe"
     ],
     "Ysy A": [
       "isya",
@@ -477,6 +532,20 @@
       "issia",
       "isia",
       "isi a"
+    ],
+    "WhatsApp": [
+      "wasap",
+      "guasap",
+      "watsapp",
+      "whats up"
+    ],
+    "casa": [
+      "kasa",
+      "caza"
+    ],
+    "trabajo": [
+      "laburo",
+      "chamba"
     ]
   },
   "stopwords": {

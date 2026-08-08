@@ -1,15 +1,15 @@
 package com.uriel.logpose.core.engine.registry
 
-import com.uriel.logpose.core.compat.core.Command
+import com.thamis.lab.core.contracts.command.LogPoseCommand
 import kotlin.reflect.KClass
 
 interface CommandRegistry {
 
-    fun <T : Command> register(
+    fun <T : LogPoseCommand> register(
         type: KClass<T>,
         handler: CommandHandler
     )
 
-    fun execute(command: Command): Boolean
+    fun execute(command: LogPoseCommand): Boolean
 
 }

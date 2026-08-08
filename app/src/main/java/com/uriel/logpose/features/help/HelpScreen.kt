@@ -16,24 +16,24 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.uriel.logpose.core.app.AppContainer
+import androidx.hilt.navigation.compose.hiltViewModel
 import com.uriel.logpose.core.compat.PermissionManager
-import com.uriel.logpose.core.engine.LogPoseEngine
 import com.uriel.logpose.ui.viewmodel.BluetoothViewModel
-import com.uriel.logpose.ui.viewmodel.BluetoothViewModelFactory
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.compose.ui.platform.LocalContext
 
 @Composable
-fun HelpScreen(onOpenDrawer: () -> Unit, isDark: Boolean) {
+fun HelpScreen(
+    onOpenDrawer: () -> Unit, 
+    isDark: Boolean,
+    btViewModel: BluetoothViewModel = hiltViewModel()
+) {
     val context = LocalContext.current
     val bg = if (isDark) Color.Black else Color.White
     val text = if (isDark) Color.White else Color.Black
     val variant = Color(0xFFB2BEC3)
     val accent = if (isDark) Color(0xFF00CEC9) else Color.Black // Negro puro en modo claro
 
-    val factory = remember { BluetoothViewModelFactory(AppContainer.bluetoothRepository) }
-    val btViewModel: BluetoothViewModel = viewModel(factory = factory)
     val uiState by btViewModel.state.collectAsState()
 
     Column(

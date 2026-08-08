@@ -1,5 +1,6 @@
 package com.uriel.logpose.thamis.validation
 
+import com.thamis.lab.core.contracts.intent.Intent
 import android.util.Log
 import com.uriel.logpose.core.compat.core.LogPoseLogger
 
@@ -22,7 +23,7 @@ object DrivingTestLogger {
         Log.d(TAG, "   Legacy: ${event.legacyIntent}")
         Log.d(TAG, "   RESULT: $result")
         
-        if (!event.shadowResult.isMatch && event.legacyIntent == com.uriel.logpose.thamis.intent.Intent.UNKNOWN) {
+        if (!event.shadowResult.isMatch && event.legacyIntent == Intent.UNKNOWN) {
             Log.i(TAG, "   [THAMIS_BETTER] El sistema cognitivo detectó una intención que el legado ignoró.")
         }
     }

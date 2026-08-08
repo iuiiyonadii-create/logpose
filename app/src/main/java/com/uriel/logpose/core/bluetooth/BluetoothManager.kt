@@ -56,10 +56,20 @@ class BluetoothManager(private val context: Context) {
     }
 
     fun getPairedDevices(): List<BluetoothDevice> {
-        return adapter?.bondedDevices?.toList() ?: emptyList()
+        if (!permissionManager.hasRequiredPermissions()) return emptyList()
+        return try {
+            adapter?.bondedDevices?.toList() ?: emptyList()
+        } catch (e: SecurityException) {
+            emptyList()
+        }
     }
 
     fun updateState(state: BluetoothState) {
         // Method for manual state updates if needed
+    }
+
+    fun cleanup() {
+        scanner.stopScan()
+        connectionManager.release()
     }
 }

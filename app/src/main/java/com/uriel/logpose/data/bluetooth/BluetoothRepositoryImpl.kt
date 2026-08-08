@@ -1,12 +1,14 @@
 package com.uriel.logpose.data.bluetooth
 
 import android.content.Context
+import android.bluetooth.BluetoothManager as AndroidBluetoothManager
 import com.uriel.logpose.core.bluetooth.BluetoothDeviceMapper
 import com.uriel.logpose.core.bluetooth.BluetoothManager
 import com.uriel.logpose.domain.models.BluetoothState as DomainBluetoothState
 import com.uriel.logpose.domain.models.BluetoothStatus
 import com.uriel.logpose.domain.models.LogPoseDevice
 import com.uriel.logpose.domain.repositories.BluetoothRepository
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -15,18 +17,19 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import com.uriel.logpose.core.bluetooth.BluetoothState as CoreBluetoothState
+import javax.inject.Inject
 
-class BluetoothRepositoryImpl(
-    private val context: Context
+class BluetoothRepositoryImpl @Inject constructor(
+    @ApplicationContext private val context: Context,
+    private val bluetoothManager: BluetoothManager
 ) : BluetoothRepository {
 
-    private val bluetoothManager = BluetoothManager(context)
     private val scope = CoroutineScope(Dispatchers.IO)
 
     private val _connectionState = MutableStateFlow(BluetoothStatus(DomainBluetoothState.DISCONNECTED))
     override val connectionState: StateFlow<BluetoothStatus> = _connectionState.asStateFlow()
 
-    private val _isEnabled = MutableStateFlow(bluetoothManager.isBluetoothEnabled())
+    private val _isEnabled = MutableStateFlow(false) // Lazy init handling
     override val isEnabled: StateFlow<Boolean> = _isEnabled.asStateFlow()
 
     private val _discoveredDevices = MutableStateFlow<List<LogPoseDevice>>(emptyList())
@@ -34,6 +37,9 @@ class BluetoothRepositoryImpl(
 
     init {
         scope.launch {
+            // SINCRO: Solo iniciamos el flujo cuando se necesita o tras un delay para no bloquear el startup
+            _isEnabled.value = isBluetoothEnabled()
+            
             bluetoothManager.connectionState.collectLatest { coreState ->
                 _connectionState.value = BluetoothStatus(mapCoreToDomainState(coreState))
             }
@@ -59,7 +65,8 @@ class BluetoothRepositoryImpl(
     }
 
     override suspend fun connect(device: LogPoseDevice): Boolean {
-        val adapter = android.bluetooth.BluetoothAdapter.getDefaultAdapter()
+        val btManager = context.getSystemService(Context.BLUETOOTH_SERVICE) as AndroidBluetoothManager
+        val adapter = btManager.adapter
         val bluetoothDevice = adapter.getRemoteDevice(device.mac)
         return bluetoothManager.connect(bluetoothDevice)
     }
@@ -73,11 +80,15 @@ class BluetoothRepositoryImpl(
     }
 
     override fun hasRequiredPermissions(): Boolean {
-        return true
+        return com.uriel.logpose.core.permissions.BluetoothPermissionManager(context).hasRequiredPermissions()
     }
 
     // UI compatibility methods
-    override fun isBluetoothEnabled(): Boolean = bluetoothManager.isBluetoothEnabled()
+    override fun isBluetoothEnabled(): Boolean {
+        val btManager = context.getSystemService(Context.BLUETOOTH_SERVICE) as AndroidBluetoothManager
+        return btManager.adapter?.isEnabled ?: false
+    }
+
     override fun saveSelectedDevice(mac: String) {}
     override fun getSelectedDeviceMac(): String? = null
     override fun getSavedDevice(): LogPoseDevice? = null

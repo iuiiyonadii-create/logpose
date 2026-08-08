@@ -44,7 +44,10 @@ data class ContactCandidate(
     val phoneNumber: String,
     val alias: List<String> = emptyList(),
     val priority: Int = 0,
-    val isFavorite: Boolean = false
+    val isFavorite: Boolean = false,
+    val lastUsedTimestamp: Long = 0L,
+    val callFrequency: Int = 0,
+    var score: Float = 0f // Puntuación dinámica de match
 )
 
 /**

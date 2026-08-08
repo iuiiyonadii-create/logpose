@@ -1,7 +1,7 @@
 package com.thamis.lab.orchestrator.os
 
 import com.thamis.lab.core.common.logging.LabLogger
-import com.thamis.lab.intelligence.constitution.EngineeringExcellenceConstitution
+import com.thamis.lab.intelligence.security.EngineeringExcellenceConstitution
 import com.thamis.lab.orchestrator.supreme.ThamisSupremeEngineeringDirectiveEngine
 
 public data class IntelligenceOsStatusReport(

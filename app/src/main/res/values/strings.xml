@@ -7,4 +7,8 @@
         LogProbe Accessibility Service
     </string>
 
+    <string name="accessibility_description">
+        LogPose Core: Habilita el envío automático de mensajes en apps de comunicación para un manejo 100% manos libres.
+    </string>
+
 </resources>

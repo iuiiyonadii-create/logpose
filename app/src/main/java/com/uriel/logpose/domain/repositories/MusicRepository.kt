@@ -1,6 +1,6 @@
 package com.uriel.logpose.domain.repositories
 
-import com.uriel.logpose.domain.models.LogPoseCommand
+import com.thamis.lab.core.contracts.command.LogPoseCommand
 
 /**
  * Contract for Music and Media operations.
