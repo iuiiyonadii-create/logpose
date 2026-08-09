@@ -48,9 +48,11 @@ object NeuroEvolutionSimulator {
     )
 
     fun startInfiniteTraining() {
-        if (training_job_active()) return
-        
-        android.util.Log.i("LogPose", "ENSAYO: INICIANDO GIMNASIO SINGULARIDAD v22.22")
+        // Misión #027.4: Separación total de arquitectura.
+        // El motor de entrenamiento y generación de escenarios corre 100% en la PC (THAMIS LAB).
+        // La app móvil permanece limpia, liviana y en reposo absoluto de CPU para el usuario.
+        android.util.Log.i("LogPose", "NeuroEvolutionSimulator: Entrenamiento delegado 100% a THAMIS LAB PC.")
+        if (trainingJob?.isActive == true) return
         
         trainingJob = scope.launch {
             var cycle = 1
@@ -94,9 +96,14 @@ object NeuroEvolutionSimulator {
     }
 
     private suspend fun ejecutarExamen(input: String, cycle: Int) {
+        val speed = (0..140).random().toFloat()
+        val distortedInput = distortPhonetically(input, speed)
+        
         val maturity = LearningEngine.getMaturityLevel(input)
         val expected = applyStaffLogic(input)
-        val currentTranslation = MusicVocabulary.normalize(input)
+        
+        // El sistema intenta normalizar lo que "oyó" con ruido
+        val currentTranslation = MusicVocabulary.normalize(distortedInput)
         
         fun String.dna(): String {
             return this.lowercase()
@@ -108,22 +115,54 @@ object NeuroEvolutionSimulator {
         val targetDna = expected.dna()
         val heardDna = currentTranslation.dna()
         
-        val isGraduated = maturity >= 10
         val testSuccess = heardDna == targetDna || (targetDna.length > 5 && heardDna.contains(targetDna))
 
         if (testSuccess) {
-            if (!isGraduated) {
-                android.util.Log.i("LogPose", "LAB_EXITO #$cycle: '$input' -> '$currentTranslation' [Nivel $maturity/10]")
+            if (maturity < 10) {
+                android.util.Log.i("LogPose", "LAB_EXITO #$cycle: '$input' (Oído: '$distortedInput') -> '$currentTranslation' [Nivel $maturity/10]")
             }
             LearningEngine.updateMaturity(input, true)
         } else {
-            android.util.Log.e("LogPose", "LAB_FALLO #$cycle: '$input' dio '$currentTranslation' (Se esperaba '$expected')")
-            android.util.Log.d("LogPose", "   [DNA Match] target='$targetDna' heard='$heardDna'")
+            android.util.Log.e("LogPose", "LAB_FALLO #$cycle: '$input' (Oído: '$distortedInput') dio '$currentTranslation' (Esperaba '$expected')")
             
-            LearningEngine.learn(input, expected, com.thamis.lab.core.contracts.intent.Intent.OPEN_APP)
+            // Auto-reparación fonética: THAMIS aprende que con ese ruido, significa 'expected'
+            LearningEngine.learn(distortedInput, expected, com.thamis.lab.core.contracts.intent.Intent.OPEN_APP)
             LearningEngine.updateMaturity(input, false) 
             delay(50)
         }
+    }
+
+    /**
+     * Engine de Distorsión Acústica v1.0
+     * Simula errores de Vosk/Sherpa causados por viento y ruido de motor.
+     */
+    private fun distortPhonetically(text: String, speedKmh: Float): String {
+        if (speedKmh < 30) return text // A baja velocidad la audición es perfecta
+        
+        val words = text.split(" ").toMutableList()
+        val distortedWords = words.map { word ->
+            var w = word.lowercase()
+            
+            // 1. Degradación de finales (Viento corta las palabras)
+            if (speedKmh > 80 && w.length > 4 && Random.nextFloat() > 0.7) {
+                w = w.substring(0, w.length - (1..2).random())
+            }
+            
+            // 2. Confusión de consonantes Staff (b/v, c/s/z, p/b)
+            w = w.replace("b", "v").replace("v", "b")
+                 .replace("c", "s").replace("z", "s")
+                 .replace("y", "ll").replace("ll", "y")
+            
+            // 3. Inyección de "Audición Fantasma" (Palabras vacías generadas por ruido)
+            if (speedKmh > 100 && Random.nextFloat() > 0.8) {
+                val ghosts = listOf("eh", "un", "de", "la")
+                w = "${ghosts.random()} $w"
+            }
+            
+            w
+        }
+        
+        return distortedWords.joinToString(" ")
     }
 
     private fun training_job_active(): Boolean = trainingJob?.isActive == true

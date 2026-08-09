@@ -220,11 +220,15 @@ object VoiceManager {
         } else if (isQuickWindowActive) {
             executeMainCommand(cleanText)
         } else {
-            // Intentar match directo para comandos directos conocidos (Navegación / Staff) sin requerir wake word explícita si la confianza fonética es alta
+            // Intentar match directo para comandos conocidos (Música, Navegación, Llamadas, Apps, Volumen)
             val directMatch = PhoneticEngine.normalizeWithTrace(cleanText)
-            if (directMatch.pspCorrected != null || directMatch.glosarioCorrected != null) {
+            val targetText = directMatch.finalResult
+            val commandVerbs = setOf("pone", "poné", "poneme", "reproduce", "reproducí", "reproducir", "llama", "llamá", "llamar", "manda", "mandá", "envia", "enviá", "escribi", "escribí", "abre", "abrí", "abrir", "ir", "llevame", "lleváme", "anda", "andá", "guiame", "guiáme", "subi", "subí", "baja", "bajá", "volumen", "mutear")
+            val startsWithVerb = commandVerbs.any { targetText.startsWith(it) }
+
+            if (directMatch.pspCorrected != null || directMatch.glosarioCorrected != null || startsWithVerb) {
                 LogPoseHudService.updateStatus("THAMIS: MATCH DIRECTO...")
-                executeMainCommand(directMatch.finalResult)
+                executeMainCommand(targetText)
             } else {
                 handler.postDelayed(autoSleepRunnable, 5000)
             }

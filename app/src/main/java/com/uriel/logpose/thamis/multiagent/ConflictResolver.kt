@@ -25,4 +25,14 @@ object ConflictResolver {
             Strategy.CONSENSUS_VOTE -> "Solución democrática del ecosistema."
         }
     }
+
+    /**
+     * Medación de propuesta en zona gris para ConsensusEngine.
+     */
+    fun resolveProposal(proposal: String, reviewers: List<String>): Boolean {
+        val secAgent = AgentRegistry.getAgent("SecurityGuard")
+        val isSecure = secAgent?.vote(proposal) ?: true
+        LogPoseLogger.i("ConflictResolver: Mediando propuesta '$proposal' -> Aprobado por Seguridad: $isSecure")
+        return isSecure
+    }
 }

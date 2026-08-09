@@ -109,6 +109,31 @@ class LogPoseNotificationListener : NotificationListenerService() {
 
     override fun onNotificationPosted(sbn: StatusBarNotification) {
         updateHeartbeat()
+        com.uriel.logpose.features.notifications.NotificationReader.processNotification(this, sbn)
+    }
+
+    /**
+     * Envía una respuesta directa mediante RemoteInput (Respuesta sin manos a WhatsApp/Instagram)
+     */
+    fun replyToNotification(packageName: String, message: String): Boolean {
+        val actions = activeNotifications.find { it.packageName == packageName }?.notification?.actions ?: return false
+        for (action in actions) {
+            val remoteInputs = action.remoteInputs ?: continue
+            for (remoteInput in remoteInputs) {
+                val intent = android.content.Intent()
+                val bundle = android.os.Bundle()
+                bundle.putCharSequence(remoteInput.resultKey, message)
+                android.app.RemoteInput.addResultsToIntent(arrayOf(remoteInput), intent, bundle)
+                try {
+                    action.actionIntent.send(this, 0, intent)
+                    LogPoseLogger.i("NotificationListener: Respuesta de voz directa (RemoteInput) enviada a $packageName -> '$message'")
+                    return true
+                } catch (e: Exception) {
+                    LogPoseLogger.e("NotificationListener: Error en envío RemoteInput: ${e.message}")
+                }
+            }
+        }
+        return false
     }
 
     override fun onListenerConnected() {

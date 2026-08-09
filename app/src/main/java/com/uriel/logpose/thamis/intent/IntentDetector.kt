@@ -33,7 +33,7 @@ object IntentDetector {
 
         // Misión #022.3: Bloqueo de Dominio por Verbo (v4.6)
         val lowerText = processedText.lowercase()
-        val musicTriggers = setOf("pone", "poneme", "poné", "poner", "reproduce", "reproduci", "reproducir", "play", "pasame", "escuchar", "sonar", "tira", "tirame")
+        val musicTriggers = setOf("pone", "poneme", "poné", "ponéme", "poner", "reproduce", "reproduci", "reproducí", "reproducir", "play", "pasame", "pasá", "escuchar", "escuchá", "sonar", "tira", "tirá", "tirame", "ponete", "musica", "música", "repro")
         val isMusicVerb = musicTriggers.any { lowerText.startsWith(it) }
         
         if (conversationState == "WAITING_CONFIRMATION") {
@@ -137,6 +137,11 @@ object IntentDetector {
         if (finalIntent == Intent.SEND_MESSAGE || finalIntent == Intent.CALL_CONTACT) {
              entities["contact"] = processedText
                 .replace(Regex("(?i)^llamar a |^llamá a |^llama a |^mensaje a |^mandale un mensaje a |^mandale mensaje a |^mandale a |^decile a "), "")
+                .trim()
+        } else if (finalIntent == Intent.NAVIGATE) {
+             entities["destination"] = processedText
+                .replace(Regex("(?i)^(ir a|ir|llevame a|lleváme a|andá a|anda a|guiame a|guiáme a|navegar a|navegá a|navega a|ruta a|poner gps a|gps a|encara para|encará para|vamos a|buscá|buscar|donde queda|dónde queda|llegar a|quiero ir a)\\s+"), "")
+                .replace(Regex("(?i)^a\\s+"), "")
                 .trim()
         }
 

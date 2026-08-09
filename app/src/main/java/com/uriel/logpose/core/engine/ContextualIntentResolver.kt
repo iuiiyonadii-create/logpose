@@ -16,10 +16,10 @@ data class DisambiguationResult(
  */
 class ContextualIntentResolver(private val anchorRepository: AnchorRepository) {
 
-    private val musicVerbs = setOf("pone", "poneme", "reproduce", "reproducir", "escuchar", "sonar", "mandale play", "pasame")
-    private val commsVerbs = setOf("llama", "llamar", "manda", "mandale", "envia", "escribile", "wasap", "decile")
-    private val appVerbs = setOf("abre", "abrir", "abri", "entra", "entrar")
-    private val navigationVerbs = setOf("ir", "anda", "andá", "llevame", "lleváme", "navegar", "encara", "encará", "rumbear", "rumbeá", "ruta", "gps")
+    private val musicVerbs = setOf("pone", "poné", "poneme", "ponéme", "reproduce", "reproducí", "reproducir", "escuchar", "escuchá", "sonar", "mandale play", "pasame", "pasá", "tira", "tirá", "tirame", "ponete", "musica", "música", "repro", "temon", "temazo")
+    private val commsVerbs = setOf("llama", "llamá", "llamar", "llamame", "manda", "mandá", "mandale", "envia", "enviá", "escribile", "escribí", "wasap", "decile", "decí", "contestale", "avisale", "mensaje")
+    private val appVerbs = setOf("abre", "abrí", "abrir", "abri", "entra", "entrá", "entrar", "metete", "largame", "prendete", "encende", "encendé", "abrite")
+    private val navigationVerbs = setOf("ir", "anda", "andá", "llevame", "lleváme", "navegar", "encara", "encará", "rumbear", "rumbeá", "ruta", "gps", "guiame", "guiáme", "donde queda", "dónde queda", "llegar a", "rumbo a")
 
     fun resolve(tokens: List<String>): DisambiguationResult? {
         val detectedVerbs = tokens.map { it.lowercase() }
@@ -80,9 +80,9 @@ class ContextualIntentResolver(private val anchorRepository: AnchorRepository) {
 
     private fun cleanPayload(tokens: List<String>, anchorText: String): String {
         val fullPhrase = tokens.joinToString(" ")
-        // Sanitización Quirúrgica Pre-API
+        // Sanitización Quirúrgica Pre-API para Voseo Rioplatense
         return fullPhrase
-            .replace("(?i)^(pone|poneme|reproduce|reproducir|llama|llamar|manda|mandale|abre|abrir|abri|escribile|decile|ir a|llevame a|navegar a|anda a|andá a|encara para|ruta a|gps a)\\s+".toRegex(), "")
+            .replace("(?i)^(pone|poné|poneme|ponéme|reproduce|reproducí|reproducir|llama|llamá|llamar|llamame|manda|mandá|mandale|abre|abrí|abrir|abri|escribile|escribí|decile|decí|ir a|llevame a|lleváme a|navegar a|anda a|andá a|guiame a|guiáme a|encara para|encará para|ruta a|gps a)\\s+".toRegex(), "")
             .replace("(?i)\\s+(de|con|en|por|a)$".toRegex(), "")
             .trim()
     }

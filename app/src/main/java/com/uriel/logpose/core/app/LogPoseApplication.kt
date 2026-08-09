@@ -49,6 +49,9 @@ class LogPoseApplication : Application() {
                 com.uriel.logpose.features.voice.CallManager.initialize(this@LogPoseApplication)
                 
                 com.uriel.logpose.thamis.learning.LearningEngine.initialize(this@LogPoseApplication)
+                com.uriel.logpose.thamis.hydration.ZeroDayHydrator.hydrateIfFirstLaunch(this@LogPoseApplication)
+                com.uriel.logpose.thamis.knowledge.KnowledgeBase.initializeStaffSeed(this@LogPoseApplication)
+                com.uriel.logpose.thamis.learning.LearningEngine.cleanOldCache()
                 
                 // v1.1: Limpieza de Misión #026 (Fix Secuestro Uzbekistan)
                 com.uriel.logpose.thamis.learning.LearningEngine.forget("con ubekistan ponle ube")

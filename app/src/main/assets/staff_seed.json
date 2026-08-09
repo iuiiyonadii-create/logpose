@@ -1,0 +1,16 @@
+{
+  "version": "22.23.1",
+  "urban_matrix": [
+    {"name": "avenida rivadavia", "priority": 10},
+    {"name": "avenida corrientes", "priority": 10},
+    {"name": "avenida 9 de julio", "priority": 10},
+    {"name": "avenida cabildo", "priority": 9},
+    {"name": "avenida lacroze", "priority": 9}
+  ],
+  "music_dna": [
+    {"name": "duki", "aliases": ["duko", "el duque"]},
+    {"name": "bizarrap", "aliases": ["biza", "bzrp"]},
+    {"name": "ysy a", "aliases": ["ysy", "el varon del trap"]},
+    {"name": "uzbekistan", "aliases": ["un tan", "pakistan"]}
+  ]
+}

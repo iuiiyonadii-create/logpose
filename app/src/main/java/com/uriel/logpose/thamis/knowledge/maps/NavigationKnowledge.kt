@@ -14,7 +14,7 @@ object NavigationKnowledge {
     val rules: List<KnowledgeRule> get() = listOf(
         KnowledgeRule(
             intent = Intent.NAVIGATE,
-            phrases = (dictionary.listaDe("verbos.navegar") + dictionary.listaDe("navegacion.destinos_comunes")).toSet()
+            phrases = (dictionary.listaDe("verbos.navegar") + dictionary.listaDe("navegacion.destinos_comunes") + dictionary.listaDe("navegacion.arterias") + dictionary.listaDe("navegacion.favoritos")).filter { it.isNotBlank() }.toSet()
         ),
         KnowledgeRule(
             intent = Intent.STOP_NAVIGATION,

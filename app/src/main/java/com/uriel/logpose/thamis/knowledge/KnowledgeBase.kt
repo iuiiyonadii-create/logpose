@@ -42,6 +42,19 @@ object KnowledgeBase {
             addAll(LegalKnowledge.rules)
             addAll(FutureVision.rules)
             addAll(RegionalKnowledge.rules)
+            
+            // Ingesta dinámica de modismos y alucinaciones corregidas del glosario
+            val modismosMap = dictionary.mapaDe("modismos")
+            val volumeModismos = modismosMap.filterValues { it.contains("volumen") || it.contains("máximo") || it.contains("fuerte") }.keys
+            if (volumeModismos.isNotEmpty()) {
+                add(KnowledgeRule(Intent.SET_VOLUME, volumeModismos.toSet()))
+            }
+            
+            val navModismos = modismosMap.filterValues { it.contains("ir") || it.contains("navegar") || it.contains("casa") || it.contains("trabajo") }.keys
+            if (navModismos.isNotEmpty()) {
+                add(KnowledgeRule(Intent.NAVIGATE, navModismos.toSet()))
+            }
+
             add(KnowledgeRule(Intent.OPEN_APP, setOf("logpose privacidad", "logpose volver", "logpose estado", "logpose apagar", "logpose desactivar")))
         }
     }
@@ -58,5 +71,36 @@ object KnowledgeBase {
             }
         }
         index
+    }
+
+    /**
+     * Carga e hidrata la Semilla Staff (staff_seed.json) automáticamente al iniciar.
+     */
+    fun initializeStaffSeed(context: android.content.Context) {
+        try {
+            val jsonString = context.assets.open("staff_seed.json").bufferedReader().use { it.readText() }
+            val seed = org.json.JSONObject(jsonString)
+
+            if (seed.has("urban_matrix")) {
+                val urbanArray = seed.getJSONArray("urban_matrix")
+                for (i in 0 until urbanArray.length()) {
+                    val item = urbanArray.getJSONObject(i)
+                    val name = item.getString("name")
+                    com.uriel.logpose.thamis.learning.LearningEngine.learn(name, name, Intent.NAVIGATE)
+                }
+            }
+
+            if (seed.has("music_dna")) {
+                val musicArray = seed.getJSONArray("music_dna")
+                for (i in 0 until musicArray.length()) {
+                    val item = musicArray.getJSONObject(i)
+                    val name = item.getString("name")
+                    com.uriel.logpose.thamis.learning.LearningEngine.registerMusicTrack(name, name)
+                }
+            }
+            com.uriel.logpose.core.compat.core.LogPoseLogger.i("KnowledgeBase: Semilla Staff hidratada exitosamente desde assets.")
+        } catch (e: Exception) {
+            com.uriel.logpose.core.compat.core.LogPoseLogger.w("KnowledgeBase: Error hidratando staff_seed.json: ${e.message}")
+        }
     }
 }

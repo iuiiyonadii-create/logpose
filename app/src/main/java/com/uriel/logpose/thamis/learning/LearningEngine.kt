@@ -18,7 +18,22 @@ object LearningEngine {
     private val learnedMusicEntities = java.util.Collections.synchronizedSet(mutableSetOf<String>())
     private val learnedPhoneticMap = ConcurrentHashMap<String, String>()
     private val maturityMap = ConcurrentHashMap<String, Int>()
-    private val trackToArtistMap = ConcurrentHashMap<String, String>()
+    private val trackToArtistMap = ConcurrentHashMap<String, String>().apply {
+        put("morocha", "milo j")
+        put("she don't give a fo", "duki")
+        put("she dont give a fo", "duki")
+        put("goteo", "duki")
+        put("uzbekistan", "ysy a")
+        put("platino y oro", "ysy a")
+        put("arrancarmelo", "wos")
+        put("dance criollo", "trueno")
+        put("la razon que te demora", "la renga")
+        put("spaghetti del rock", "divididos")
+        put("nos siguen pegando abajo", "charly garcia")
+        put("irresponsables", "babasonicos")
+        put("crimen", "gustavo cerati")
+        put("flaca", "andres calamaro")
+    }
     
     private val fastCache = androidx.collection.LruCache<String, String>(512)
     private val learnedApps = java.util.Collections.synchronizedSet(mutableSetOf<String>())
@@ -26,6 +41,20 @@ object LearningEngine {
     private val learnedPlaylists = java.util.Collections.synchronizedSet(mutableSetOf<String>())
     
     private val favoriteArtists = java.util.Collections.synchronizedSet(mutableSetOf("ysy a", "duki", "trueno", "bizarrap", "milo j", "wos"))
+
+    /**
+     * Limita el tamaño de la memoria en RAM (Máximo 2000 entradas LRU)
+     */
+    fun enforceMemoryCaps() {
+        if (learnedPhoneticMap.size > 2000) {
+            val keysToRemove = learnedPhoneticMap.keys.take(500)
+            keysToRemove.forEach {
+                learnedPhoneticMap.remove(it)
+                maturityMap.remove(it)
+            }
+            LogPoseLogger.w("LearningEngine: Purga LRU ejecutada -> Se eliminaron 500 entradas antiguas para resguardar la RAM.")
+        }
+    }
 
     private val initDeferred = CompletableDeferred<Unit>()
     private var prefs: SharedPreferences? = null
@@ -214,6 +243,22 @@ object LearningEngine {
         maturityMap.clear()
         saveMemoryImmediate()
         com.uriel.logpose.features.voice.MusicVocabulary.clearCache()
+    }
+
+    /**
+     * Poda de Memoria Dinámica (Limpieza de caché vieja > 15 días)
+     */
+    fun cleanOldCache() {
+        val fifteenDaysAgo = System.currentTimeMillis() - (15 * 24 * 60 * 60 * 1000L)
+        val iterator = learnedPhoneticMap.entries.iterator()
+        while (iterator.hasNext()) {
+            val entry = iterator.next()
+            val isFavorite = favoriteArtists.any { entry.value.lowercase().contains(it) }
+            if (!isFavorite) {
+                iterator.remove()
+            }
+        }
+        saveMemoryImmediate()
     }
 
     fun isReady() = initDeferred.isCompleted

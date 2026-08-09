@@ -33,7 +33,6 @@ class MainActivity : ComponentActivity() {
 
     override fun onResume() {
         super.onResume()
-        // v8.5: Auto-Evolución Staff - Iniciar entrenamiento al abrir
-        com.uriel.logpose.core.intelligence.NeuroEvolutionSimulator.startInfiniteTraining()
+        // Modo Asistente de Conducción: Silencioso y en espera de comando de voz
     }
 }

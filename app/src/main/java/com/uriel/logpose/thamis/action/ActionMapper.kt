@@ -30,30 +30,27 @@ object ActionMapper {
                 var query = if (mediaEntity.isNotBlank()) {
                     mediaEntity
                 } else {
-                    // Fallback a limpieza manual del texto original
-                    normalizedText.replace(Regex("(?i)^reproducir |^reproduci |^pone |^poné |^poneme |^tira |^pasame "), "").trim()
+                    normalizedText.replace(Regex("(?i)^(reproducir|reproducí|reproduce|repro|poned|ponéme|poneme|poné|pone|ponete|ponele|tira|tirá|pasame|pasá)\\s+"), "").trim()
                 }
 
-                // v5.3: Deduplicación Staff (Evita 'pakistan pone uzbekistan' por eco de Sherpa)
+                // v5.3: Deduplicación Staff & Limpieza de Triggers
+                val musicTriggerSet = setOf("pone", "poné", "poneme", "ponéme", "poned", "ponete", "ponele", "reproduce", "reproduci", "reproducí", "reproducir", "repro")
                 val words = query.split(" ").distinct()
-                val musicTriggerSet = setOf("pone", "poné", "poneme", "reproduce", "reproduci")
                 
                 var cleanQuery = words.filter { it.length >= 2 && !musicTriggerSet.contains(it.lowercase()) }.joinToString(" ")
+                cleanQuery = cleanQuery.replace(Regex("(?i)^(la cancion|el tema|algo de|musica de|música de)\\s+"), "").trim()
                 
-                cleanQuery = cleanQuery.replace(Regex("(?i)^la cancion |^el tema |^algo de |^musica de "), "").trim()
-                
-                // Si Vosk/Sherpa alucinó con "de" al final del artista, lo limpiamos
+                // Limpieza de preposiciones en bordes
                 cleanQuery = cleanQuery.replace(Regex("\\bde$"), "").trim()
-                
+                cleanQuery = cleanQuery.replace(Regex("^de\\b"), "").trim()
+
                 // Sanitización v4.6: Si el query es basura acústica de Vosk conocida
                 val acousticTrash = setOf("bola", "el rey", "mental", "reloj", "dos", "ojo", "vamos")
                 if (cleanQuery in acousticTrash && decision.confidence < 0.8f) {
                     cleanQuery = ""
                 }
 
-                // v4.6.4: Si el comando está vacío, pedimos detalles
-                val musicVerbs = setOf("pone", "poné", "poneme", "reproduce", "reproduci")
-                if (cleanQuery.isEmpty() || musicVerbs.contains(cleanQuery)) {
+                if (cleanQuery.isEmpty() || musicTriggerSet.contains(cleanQuery)) {
                     return LogPoseCommand.Feedback("¿Qué querés escuchar?")
                 }
 
@@ -95,7 +92,9 @@ object ActionMapper {
                 }
 
                 var destination = decision.entities["destination"] ?: normalizedText
-                    .replace(Regex("(?i)^ir a |^ir |^llevame |^navegar |^guiame |^ruta |^poner gps |^anda |^encara |^vamos |^buscá |^buscar |^donde hay "), "")
+                    .replace(Regex("(?i)^(ir a|ir|llevame a|lleváme a|andá a|anda a|guiame a|guiáme a|navegar a|navegá a|navega a|ruta a|poner gps a|gps a|encara para|encará para|vamos a|buscá|buscar|donde queda|dónde queda|llegar a|quiero ir a)\\s+"), "")
+                    .replace(Regex("(?i)^a\\s+"), "")
+                    .replace(Regex("(?i)\\s+(por favor|che)$"), "")
                     .trim()
                 
                 val searchTerms = listOf("nafta", "gasolinera", "estacion de servicio", "estación de servicio", "ypf", "shell", "axion", "puma")
@@ -129,14 +128,7 @@ object ActionMapper {
 
             Intent.READ_NOTIFICATION -> LogPoseCommand.ReadNotifications
 
-            Intent.ANSWER_CALL -> {
-                if (normalizedText.contains("entrena") || normalizedText.contains("simula")) {
-                    com.uriel.logpose.core.intelligence.NeuroEvolutionSimulator.startInfiniteTraining()
-                    LogPoseCommand.Feedback("Iniciando auto-entrenamiento neuronal infinito.")
-                } else {
-                    LogPoseCommand.AcceptCall
-                }
-            }
+            Intent.ANSWER_CALL -> LogPoseCommand.AcceptCall
             Intent.REJECT_CALL -> LogPoseCommand.RejectCall
 
             Intent.SEND_MESSAGE -> {

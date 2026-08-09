@@ -124,11 +124,22 @@ object CommandDispatcher {
                 return@register
             }
 
-            if (contact != null && msg != null) {
-                LogPoseLogger.i("Dispatcher: Activando automatización para WhatsApp a $contact")
-                LogPoseAccessibilityService.isPendingAutomation = true
-                whatsAppProvider.sendMessage(contact, msg)
-                FeedbackManager.speak("Listo, enviado.")
+            if (msg != null) {
+                val listener = LogPoseNotificationListener.getInstance()
+                val sentWhatsApp = listener?.replyToNotification("com.whatsapp", msg) ?: false
+                val sentInstagram = listener?.replyToNotification("com.instagram.android", msg) ?: false
+
+                if (sentWhatsApp || sentInstagram) {
+                    LogPoseLogger.i("Dispatcher: Mensaje enviado exitosamente vía RemoteInput (Sin manos)")
+                    FeedbackManager.speak("Listo, mensaje enviado.")
+                } else if (contact != null) {
+                    LogPoseLogger.i("Dispatcher: Notificación no encontrada. Activando automatización accesibilidad para $contact")
+                    LogPoseAccessibilityService.isPendingAutomation = true
+                    whatsAppProvider.sendMessage(contact, msg)
+                    FeedbackManager.speak("Listo, enviado.")
+                } else {
+                    FeedbackManager.speak("No pude enviar el mensaje.")
+                }
             }
             resetMessagingState()
         }
