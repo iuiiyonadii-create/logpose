@@ -8,21 +8,21 @@ import com.uriel.logpose.thamis.performance.report.PerformanceReportGenerator
  */
 class PerformanceStressTest {
 
-    fun runScenario() {
+    suspend fun runScenario() {
         val modules = listOf("Navigation", "Multimedia", "Planning", "Communication", "Dialog")
         
         repeat(20) {
             modules.forEach { module ->
                 PerformanceProfiler.startOperation(module, "CognitiveProcess")
                 // Simulación de carga
-                Thread.sleep((10..100).random().toLong())
+                kotlinx.coroutines.delay((10..100).random().toLong())
                 PerformanceProfiler.finishOperation(module, "CognitiveProcess")
             }
         }
         
         // Simular algunos errores y latencia alta
         PerformanceProfiler.startOperation("Navigation", "GPS_Handshake")
-        Thread.sleep(600)
+        kotlinx.coroutines.delay(600)
         PerformanceProfiler.finishOperation("Navigation", "GPS_Handshake", "TIMEOUT")
         PerformanceProfiler.recordError("Communication", "Provider connection lost")
         

@@ -56,6 +56,8 @@ object TimeTools {
      */
     fun sleep(millis: Long) {
         if (millis <= 0) return
-        Thread.sleep(millis)
+        try {
+            java.util.concurrent.TimeUnit.MILLISECONDS.sleep(millis)
+        } catch (e: Exception) { LogPoseLogger.w("Suppressed: ${e.message}") }
     }
 }
