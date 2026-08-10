@@ -1,6 +1,6 @@
 package com.uriel.logpose.thamis_ai.proactive
 
-import android.util.Log
+import com.uriel.logpose.core.compat.core.LogPoseLogger
 
 /**
  * High-level coordinator for anticipatory assistance.
@@ -13,7 +13,7 @@ class ProactiveAssistant {
     fun analyzeSituation(context: Map<String, Any>): String? {
         val opportunity = detector.detect(context) ?: return null
         val suggestion = engine.generate(opportunity)
-        Log.d("Proactive", "Created suggestion: $suggestion")
+        LogPoseLogger.d("Proactive", "Created suggestion: $suggestion")
         return suggestion
     }
 }

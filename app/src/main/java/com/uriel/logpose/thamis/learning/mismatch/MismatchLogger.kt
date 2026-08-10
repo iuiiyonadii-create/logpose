@@ -1,6 +1,6 @@
 package com.uriel.logpose.thamis.learning.mismatch
 
-import android.util.Log
+import com.uriel.logpose.core.compat.core.LogPoseLogger
 import com.uriel.logpose.core.compat.core.LogPoseLogger
 
 /**
@@ -11,12 +11,12 @@ object MismatchLogger {
 
     fun log(mismatch: VoiceMismatch, phoneticDistance: Float, correctionSource: String) {
         LogPoseLogger.w("$TAG --- DIVERGENCIA DETECTADA ---")
-        Log.d(TAG, "   INPUT_EXPECTED: ${mismatch.expectedText}")
-        Log.d(TAG, "   VOSK_OUTPUT:    ${mismatch.voskText}")
-        Log.d(TAG, "   DISTANCE:       $phoneticDistance")
-        Log.i(TAG, "   CORRECTION:     ${mismatch.normalizedText}")
-        Log.d(TAG, "   CONFIDENCE:     ${mismatch.confidence}")
-        Log.d(TAG, "   SOURCE:         $correctionSource")
-        Log.d(TAG, "   TYPE:           ${mismatch.type}")
+        LogPoseLogger.d(TAG, "   INPUT_EXPECTED: ${mismatch.expectedText}")
+        LogPoseLogger.d(TAG, "   VOSK_OUTPUT:    ${mismatch.voskText}")
+        LogPoseLogger.d(TAG, "   DISTANCE:       $phoneticDistance")
+        LogPoseLogger.i(TAG, "   CORRECTION:     ${mismatch.normalizedText}")
+        LogPoseLogger.d(TAG, "   CONFIDENCE:     ${mismatch.confidence}")
+        LogPoseLogger.d(TAG, "   SOURCE:         $correctionSource")
+        LogPoseLogger.d(TAG, "   TYPE:           ${mismatch.type}")
     }
 }

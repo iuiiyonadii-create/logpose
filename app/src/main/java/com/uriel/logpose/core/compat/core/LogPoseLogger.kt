@@ -88,7 +88,9 @@ object LogPoseLogger {
                     val line = "[$timestamp] [$level] $msg\n"
                     FileOutputStream(file, true).use { it.write(line.toByteArray()) }
                 }
-            } catch (e: Exception) {}
+            } catch (e: Exception) {
+                Log.e(TAG, "File log error: ${e.message}")
+            }
         }
     }
 }

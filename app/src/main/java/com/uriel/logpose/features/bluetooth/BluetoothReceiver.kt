@@ -8,7 +8,7 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.os.Build
-import android.util.Log
+import com.uriel.logpose.core.compat.core.LogPoseLogger
 import androidx.annotation.RequiresPermission
 import com.uriel.logpose.core.compat.core.DeviceClassifier
 import com.uriel.logpose.domain.models.LogPoseDevice
@@ -35,7 +35,7 @@ class BluetoothReceiver(
 
 
 
-        Log.d(
+        LogPoseLogger.d(
             "LOGPOSE_BT",
             "RECEIVER ACTION = $action"
         )
@@ -51,7 +51,7 @@ class BluetoothReceiver(
             BluetoothDevice.ACTION_FOUND -> {
 
 
-                Log.d(
+                LogPoseLogger.d(
                     "LOGPOSE_BT",
                     "ACTION_FOUND RECEIVED"
                 )
@@ -73,7 +73,7 @@ class BluetoothReceiver(
             BluetoothDevice.ACTION_NAME_CHANGED -> {
 
 
-                Log.d(
+                LogPoseLogger.d(
                     "LOGPOSE_BT",
                     "ACTION_NAME_CHANGED RECEIVED"
                 )
@@ -98,7 +98,7 @@ class BluetoothReceiver(
 
 
 
-                Log.d(
+                LogPoseLogger.d(
                     "LOGPOSE_BT",
                     "DISCOVERY STARTED EVENT"
                 )
@@ -117,7 +117,7 @@ class BluetoothReceiver(
 
 
 
-                Log.d(
+                LogPoseLogger.d(
                     "LOGPOSE_BT",
                     "DISCOVERY FINISHED"
                 )
@@ -158,7 +158,7 @@ class BluetoothReceiver(
 
 
 
-                Log.d(
+                LogPoseLogger.d(
                     "LOGPOSE_BT",
                     "ACL CONNECTED: ${logPoseDevice.name}"
                 )
@@ -204,7 +204,7 @@ class BluetoothReceiver(
 
 
 
-                Log.d(
+                LogPoseLogger.d(
                     "LOGPOSE_BT",
                     "ACL DISCONNECTED: ${logPoseDevice.name}"
                 )
@@ -261,7 +261,7 @@ class BluetoothReceiver(
 
 
 
-        Log.d(
+        LogPoseLogger.d(
             "LOGPOSE_BT",
             "FOUND DEVICE: ${logPoseDevice.name} (${logPoseDevice.mac})"
         )

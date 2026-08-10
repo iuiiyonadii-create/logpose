@@ -6,7 +6,7 @@ import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothDevice
 import android.bluetooth.BluetoothProfile
 import android.content.Context
-import android.util.Log
+import com.uriel.logpose.core.compat.core.LogPoseLogger
 import androidx.annotation.RequiresPermission
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
@@ -71,7 +71,7 @@ class BluetoothConnectionManager(
 
 
 
-            Log.d(
+            LogPoseLogger.d(
                 "LOGPOSE_BT",
                 "CHECK CONNECTION ${device.name}"
             )
@@ -122,7 +122,7 @@ class BluetoothConnectionManager(
 
 
 
-                                Log.d(
+                                LogPoseLogger.d(
                                     "LOGPOSE_BT",
                                     "A2DP=$connected"
                                 )
@@ -142,7 +142,7 @@ class BluetoothConnectionManager(
 
 
 
-                                Log.d(
+                                LogPoseLogger.d(
                                     "LOGPOSE_BT",
                                     "HEADSET=$connected"
                                 )
@@ -245,7 +245,7 @@ class BluetoothConnectionManager(
 
 
 
-                        Log.d(
+                        LogPoseLogger.d(
                             "LOGPOSE_BT",
                             "HEADSET=$headsetConnected"
                         )
@@ -306,7 +306,7 @@ class BluetoothConnectionManager(
 
 
 
-            Log.d(
+            LogPoseLogger.d(
                 "LOGPOSE_BT",
                 "FINAL RESULT=$result"
             )

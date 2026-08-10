@@ -1,6 +1,6 @@
 package com.uriel.logpose.core.safety
 
-import android.util.Log
+import com.uriel.logpose.core.compat.core.LogPoseLogger
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 
@@ -13,7 +13,7 @@ class SafetyEngine {
     val state = _state.asStateFlow()
 
     fun evaluate(priority: PriorityLevel): Boolean {
-        Log.d("SafetyEngine", "Evaluating priority: $priority in current state: ${_state.value}")
+        LogPoseLogger.d("SafetyEngine", "Evaluating priority: $priority in current state: ${_state.value}")
         
         return when (_state.value) {
             SafetyState.SAFE -> true

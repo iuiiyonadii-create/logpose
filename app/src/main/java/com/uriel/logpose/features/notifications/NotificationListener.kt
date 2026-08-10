@@ -2,7 +2,7 @@ package com.uriel.logpose.features.notifications
 
 import android.service.notification.NotificationListenerService
 import android.service.notification.StatusBarNotification
-import android.util.Log
+import com.uriel.logpose.core.compat.core.LogPoseLogger
 import com.uriel.logpose.core.thamis.Event
 import com.uriel.logpose.core.thamis.EventBus
 import com.uriel.logpose.core.thamis.EventType
@@ -26,7 +26,7 @@ class NotificationListener : NotificationListenerService() {
 
     override fun onNotificationPosted(sbn: StatusBarNotification) {
         val event = parser.parse(sbn)
-        Log.d("NotificationListener", "New notification from: ${event.application}")
+        LogPoseLogger.d("NotificationListener", "New notification from: ${event.application}")
         
         scope.launch {
             eventBus.emit(

@@ -1,6 +1,6 @@
 package com.uriel.logpose.core.engine
 
-import android.util.Log
+import com.uriel.logpose.core.compat.core.LogPoseLogger
 import com.thamis.lab.core.contracts.intent.Intent
 
 data class DisambiguationResult(
@@ -51,7 +51,7 @@ class ContextualIntentResolver(private val anchorRepository: AnchorRepository) {
         val intent = mapAnchorToIntent(winningAnchor.domain, verbDomain)
         val payload = cleanPayload(tokens, winningAnchor.rawText)
 
-        Log.d("THAMIS_RESOLVER", "Winner: ${winningAnchor.rawText} (Domain: ${winningAnchor.domain}, Score: $finalScore)")
+        LogPoseLogger.d("THAMIS_RESOLVER", "Winner: ${winningAnchor.rawText} (Domain: ${winningAnchor.domain}, Score: $finalScore)")
 
         return DisambiguationResult(
             intent = intent,

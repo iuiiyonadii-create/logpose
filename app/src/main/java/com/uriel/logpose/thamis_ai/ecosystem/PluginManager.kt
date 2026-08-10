@@ -1,6 +1,6 @@
 package com.uriel.logpose.thamis_ai.ecosystem
 
-import android.util.Log
+import com.uriel.logpose.core.compat.core.LogPoseLogger
 
 /**
  * Lifecycle manager for THAMIS plugins.
@@ -10,7 +10,7 @@ class PluginManager {
     private val plugins = mutableMapOf<String, Plugin>()
 
     fun register(plugin: Plugin) {
-        Log.d("PluginManager", "Registering plugin: ${plugin.name}")
+        LogPoseLogger.d("PluginManager", "Registering plugin: ${plugin.name}")
         plugins[plugin.id] = plugin
         plugin.onInitialize()
     }

@@ -1,6 +1,6 @@
 package com.uriel.logpose.thamis_ai.safety
 
-import android.util.Log
+import com.uriel.logpose.core.compat.core.LogPoseLogger
 
 /**
  * Advanced safety engine that guards all THAMIS actions.
@@ -11,7 +11,7 @@ class SafetyEngine {
 
     fun validateAction(actionName: String, context: Map<String, Any>): Boolean {
         val currentRisk = riskAnalyzer.evaluate(context)
-        Log.d("SafetyEngine", "Validating $actionName at risk level: $currentRisk")
+        LogPoseLogger.d("SafetyEngine", "Validating $actionName at risk level: $currentRisk")
 
         return when (currentRisk) {
             SafetyLevel.CRITICAL -> false // Block all non-emergency actions

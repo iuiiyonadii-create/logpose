@@ -1,6 +1,6 @@
 package com.uriel.logpose.thamis_ai.connectivity
 
-import android.util.Log
+import com.uriel.logpose.core.compat.core.LogPoseLogger
 
 /**
  * Orchestrates external service connections.
@@ -8,10 +8,10 @@ import android.util.Log
 class ConnectivityManager {
 
     fun connect(serviceId: String) {
-        Log.d("Connectivity", "Connecting to: $serviceId")
+        LogPoseLogger.d("Connectivity", "Connecting to: $serviceId")
     }
 
     fun disconnect(serviceId: String) {
-        Log.d("Connectivity", "Disconnecting: $serviceId")
+        LogPoseLogger.d("Connectivity", "Disconnecting: $serviceId")
     }
 }

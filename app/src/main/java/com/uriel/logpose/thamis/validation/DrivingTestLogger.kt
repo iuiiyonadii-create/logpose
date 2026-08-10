@@ -1,7 +1,7 @@
 package com.uriel.logpose.thamis.validation
 
 import com.thamis.lab.core.contracts.intent.Intent
-import android.util.Log
+import com.uriel.logpose.core.compat.core.LogPoseLogger
 import com.uriel.logpose.core.compat.core.LogPoseLogger
 
 /**
@@ -17,14 +17,14 @@ object DrivingTestLogger {
     fun logEvent(event: ValidationEvent) {
         val result = if (event.shadowResult.isMatch) "MATCH" else "DIVERGENCE"
         
-        Log.d(TAG, "EVENT:")
-        Log.d(TAG, "   Input: '${event.rawInput}'")
-        Log.d(TAG, "   THAMIS: ${event.thamisDecision.winningEvaluation?.hypothesis?.candidateGoal?.category} (Conf: ${event.thamisDecision.winningEvaluation?.finalScore})")
-        Log.d(TAG, "   Legacy: ${event.legacyIntent}")
-        Log.d(TAG, "   RESULT: $result")
+        LogPoseLogger.d(TAG, "EVENT:")
+        LogPoseLogger.d(TAG, "   Input: '${event.rawInput}'")
+        LogPoseLogger.d(TAG, "   THAMIS: ${event.thamisDecision.winningEvaluation?.hypothesis?.candidateGoal?.category} (Conf: ${event.thamisDecision.winningEvaluation?.finalScore})")
+        LogPoseLogger.d(TAG, "   Legacy: ${event.legacyIntent}")
+        LogPoseLogger.d(TAG, "   RESULT: $result")
         
         if (!event.shadowResult.isMatch && event.legacyIntent == Intent.UNKNOWN) {
-            Log.i(TAG, "   [THAMIS_BETTER] El sistema cognitivo detectó una intención que el legado ignoró.")
+            LogPoseLogger.i(TAG, "   [THAMIS_BETTER] El sistema cognitivo detectó una intención que el legado ignoró.")
         }
     }
 }

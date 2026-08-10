@@ -1,7 +1,7 @@
 package com.uriel.logpose.features.bluetooth
 
 
-import android.util.Log
+import com.uriel.logpose.core.compat.core.LogPoseLogger
 import com.uriel.logpose.domain.repositories.BluetoothRepository
 import com.uriel.logpose.domain.models.LogPoseDevice
 
@@ -34,7 +34,7 @@ class BluetoothSessionManager(
             .disconnectDevice()
 
 
-        Log.d(
+        LogPoseLogger.d(
             "LOGPOSE_BT",
             "SESSION DISCONNECTED"
         )
@@ -52,7 +52,7 @@ class BluetoothSessionManager(
     ): Boolean {
 
 
-        Log.d(
+        LogPoseLogger.d(
             "LOGPOSE_BT",
             "SESSION CONNECT ${device.name}"
         )

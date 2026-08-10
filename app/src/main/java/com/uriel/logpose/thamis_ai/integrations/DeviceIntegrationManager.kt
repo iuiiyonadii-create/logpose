@@ -1,13 +1,13 @@
 package com.uriel.logpose.thamis_ai.integrations
 
-import android.util.Log
+import com.uriel.logpose.core.compat.core.LogPoseLogger
 
 /**
  * High-level coordinator for external device communication.
  */
 class DeviceIntegrationManager {
     fun connectDevice(id: String) {
-        Log.d("Integrations", "Attempting connection to device: $id")
+        LogPoseLogger.d("Integrations", "Attempting connection to device: $id")
     }
 
     fun validateDevice(id: String): Boolean {
