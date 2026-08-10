@@ -2,7 +2,7 @@ package com.uriel.logpose.ui.viewmodel
 
 import android.content.Intent
 import android.os.Build
-import android.util.Log
+import com.uriel.logpose.core.compat.core.LogPoseLogger
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.uriel.logpose.core.services.LogPoseCallService
@@ -132,7 +132,7 @@ class BluetoothViewModel @Inject constructor(
     fun refresh(){
         viewModelScope.launch {
             if (!repository.hasPermission()) {
-                Log.w("LOGPOSE_BT", "BluetoothViewModel: Postponing refresh due to lack of permissions")
+                LogPoseLogger.w("LOGPOSE_BT", "BluetoothViewModel: Postponing refresh due to lack of permissions")
                 _state.update { it.copy(loading = false) }
                 return@launch
             }

@@ -1,6 +1,6 @@
 package com.uriel.logpose.logprobe.common
 
-import android.util.Log
+import com.uriel.logpose.core.compat.core.LogPoseLogger
 
 /**
  * Logging interno de LogProbe (para depurar la propia herramienta).
@@ -13,14 +13,14 @@ object ProbeLogger {
     var enabled: Boolean = true
 
     fun d(message: String) {
-        if (enabled) Log.d(TAG, message)
+        if (enabled) LogPoseLogger.d(TAG, message)
     }
 
     fun w(message: String) {
-        if (enabled) Log.w(TAG, message)
+        if (enabled) LogPoseLogger.w(TAG, message)
     }
 
     fun e(message: String, throwable: Throwable? = null) {
-        if (enabled) Log.e(TAG, message, throwable)
+        if (enabled) LogPoseLogger.e(TAG, message, throwable)
     }
 }

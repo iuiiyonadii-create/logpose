@@ -19,6 +19,7 @@ import com.uriel.logpose.core.services.LogPoseInCallService
 import com.uriel.logpose.features.diagnostics.VehicleDiagnosticsManager
 import com.uriel.logpose.features.safety.IncidentManager
 import com.uriel.logpose.core.services.LogPoseHudService
+import com.uriel.logpose.core.services.LogPoseNotificationListener
 
 /**
  * CommandDispatcher: Orquestador central de ejecución de comandos.

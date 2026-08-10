@@ -8,7 +8,7 @@ import android.os.Handler
 import android.os.Looper
 import android.service.notification.NotificationListenerService
 import android.service.notification.StatusBarNotification
-import android.util.Log
+import com.uriel.logpose.core.compat.core.LogPoseLogger
 import com.uriel.logpose.core.compat.core.LogPoseLogger
 import java.util.concurrent.atomic.AtomicLong
 
@@ -24,7 +24,7 @@ class LogPoseNotificationListener : NotificationListenerService() {
     override fun onCreate() {
         super.onCreate()
         instance = this
-        Log.i("LogPose_NL", "¡LogPoseNotificationListener CREADO! 👁️")
+        LogPoseLogger.i("LogPose_NL", "¡LogPoseNotificationListener CREADO! 👁️")
     }
 
     companion object {
@@ -53,8 +53,8 @@ class LogPoseNotificationListener : NotificationListenerService() {
 
             val expected = component.flattenToString()
 
-            Log.d("LogPose_NL", "Esperado: $expected")
-            Log.d("LogPose_NL", "Sistema: $enabledListeners")
+            LogPoseLogger.d("LogPose_NL", "Esperado: $expected")
+            LogPoseLogger.d("LogPose_NL", "Sistema: $enabledListeners")
 
             return enabledListeners
                 .split(":")
@@ -65,15 +65,15 @@ class LogPoseNotificationListener : NotificationListenerService() {
 
         fun tryForceRebind(context: Context) {
             val hasPermission = isPermissionGranted(context)
-            Log.d("LogPose_NL", "Intento de rebind. Permiso: $hasPermission, Instancia: ${instance != null}")
+            LogPoseLogger.d("LogPose_NL", "Intento de rebind. Permiso: $hasPermission, Instancia: ${instance != null}")
             
             if (hasPermission && instance == null && rebindRetryCount < 3) {
                 rebindRetryCount++
-                Log.w("LogPose_NL", "¡DESFIBRILADOR! Intento $rebindRetryCount/3 de recuperar al Juez.")
+                LogPoseLogger.w("LogPose_NL", "¡DESFIBRILADOR! Intento $rebindRetryCount/3 de recuperar al Juez.")
                 try {
                     requestRebind(ComponentName(context, LogPoseNotificationListener::class.java))
                 } catch (e: Exception) { 
-                    Log.e("LogPose_NL", "Fallo rebind crítico: ${e.message}") 
+                    LogPoseLogger.e("LogPose_NL", "Fallo rebind crítico: ${e.message}") 
                 }
             }
         }
@@ -81,7 +81,7 @@ class LogPoseNotificationListener : NotificationListenerService() {
         fun getSpotifyController(context: Context): android.media.session.MediaController? {
             val svc = instance
             if (svc == null) {
-                Log.e("LogPose_NL", "getSpotifyController: INSTANCIA NULA.")
+                LogPoseLogger.e("LogPose_NL", "getSpotifyController: INSTANCIA NULA.")
                 tryForceRebind(context)
                 return null
             }
@@ -102,7 +102,7 @@ class LogPoseNotificationListener : NotificationListenerService() {
                     }
                 }
             } catch (e: Exception) {
-                Log.e("LogPose_NL", "Error quitando navegación: ${e.message}")
+                LogPoseLogger.e("LogPose_NL", "Error quitando navegación: ${e.message}")
             }
         }
     }
@@ -140,7 +140,7 @@ class LogPoseNotificationListener : NotificationListenerService() {
         super.onListenerConnected()
         instance = this
         rebindRetryCount = 0
-        Log.i("LogPose_NL", "¡LogPose Service CONECTADO Y LISTO! ✅")
+        LogPoseLogger.i("LogPose_NL", "¡LogPose Service CONECTADO Y LISTO! ✅")
         
         // v15.0: Escuchar todas las sesiones de medios (YouTube Music, Spotify, etc.)
         setupMediaSessionListener()
@@ -201,6 +201,6 @@ class LogPoseNotificationListener : NotificationListenerService() {
 
     fun notifyPipelineStarted(query: String) {
         lastPipelineStartTime.set(System.currentTimeMillis())
-        Log.d("LogPose_NL", "Ventana de gracia activa para: $query")
+        LogPoseLogger.d("LogPose_NL", "Ventana de gracia activa para: $query")
     }
 }

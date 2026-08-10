@@ -2,7 +2,7 @@ package com.uriel.logpose.core.audio
 
 import android.content.Context
 import android.media.AudioManager
-import android.util.Log
+import com.uriel.logpose.core.compat.core.LogPoseLogger
 
 /**
  * Manages where the audio is being routed (Bluetooth vs Speaker).
@@ -13,18 +13,18 @@ class AudioRouteManager(private val context: Context) {
 
     fun startBluetoothSco() {
         if (!audioManager.isBluetoothScoAvailableOffCall) {
-            Log.e("AudioRoute", "Bluetooth SCO not available")
+            LogPoseLogger.e("AudioRoute", "Bluetooth SCO not available")
             return
         }
         audioManager.startBluetoothSco()
         audioManager.isBluetoothScoOn = true
-        Log.d("AudioRoute", "Bluetooth SCO started")
+        LogPoseLogger.d("AudioRoute", "Bluetooth SCO started")
     }
 
     fun stopBluetoothSco() {
         audioManager.stopBluetoothSco()
         audioManager.isBluetoothScoOn = false
-        Log.d("AudioRoute", "Bluetooth SCO stopped")
+        LogPoseLogger.d("AudioRoute", "Bluetooth SCO stopped")
     }
 
     fun isBluetoothAudioRouteActive(): Boolean {

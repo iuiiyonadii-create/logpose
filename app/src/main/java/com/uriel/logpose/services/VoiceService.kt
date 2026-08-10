@@ -5,7 +5,7 @@ import android.content.Intent
 import android.os.IBinder
 import android.speech.RecognizerIntent
 import android.speech.SpeechRecognizer
-import android.util.Log
+import com.uriel.logpose.core.compat.core.LogPoseLogger
 import dagger.hilt.android.AndroidEntryPoint
 
 /**
@@ -26,7 +26,7 @@ class VoiceService : Service() {
             speechRecognizer = SpeechRecognizer.createSpeechRecognizer(this)
             // Implementation of RecognitionListener would go here
         } else {
-            Log.e("VoiceService", "Speech recognition not available")
+            LogPoseLogger.e("VoiceService", "Speech recognition not available")
         }
     }
 

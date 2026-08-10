@@ -50,13 +50,16 @@ object VoskGrammarBuilder {
         phrases.addAll(dictionary.listaDe("muletillas_a_ignorar").map { normalizeForVosk(it) })
         phrases.addAll(listOf("de", "con", "a", "por", "el", "la").map { normalizeForVosk(it) })
 
-        // 2. ENTIDADES MUSICALES (Misión #027)
-        // Inyectamos todo el catálogo para que Vosk tenga "fidelidad acústica"
+        // 2. ENTIDADES MUSICALES (Misión #027 / Sherlock v5.0 Fix)
+        // Inyectamos tanto frases completas como tokens individuales para mantener contexto n-gram y fidelidad
         val musicEntities = (MusicVocabulary.getAllArtists() + MusicVocabulary.getAllSongs() + MusicVocabulary.getAllPlaylists())
+        phrases.addAll(musicEntities.map { normalizeForVosk(it) })
         phrases.addAll(musicEntities.flatMap { it.split(" ") }.map { normalizeForVosk(it) })
 
         // 3. CONTACTOS (Agenda del usuario)
-        phrases.addAll(ContactResolver.getAllNames().flatMap { it.split(" ") }.map { normalizeForVosk(it) })
+        val contactNames = ContactResolver.getAllNames()
+        phrases.addAll(contactNames.map { normalizeForVosk(it) })
+        phrases.addAll(contactNames.flatMap { it.split(" ") }.map { normalizeForVosk(it) })
 
         phrases.add("[unk]")
         val result = JSONArray(phrases.distinct()).toString()
@@ -76,18 +79,14 @@ object VoskGrammarBuilder {
             .replace(Regex("[^a-z0-9 ]"), "")
             .trim()
             
-        // --- MAPEO DE TRADUCCIÓN ACÚSTICA (Misión #021.1 / #029) ---
-        // Mapeamos términos regionales a palabras "estándar" que Vosk SI conoce.
+        // --- MAPEO DE TRADUCCIÓN ACÚSTICA (Misión #021.1 / #029 / Sherlock v5.0 Fix) ---
+        // Se removió el mapeo destructivo de artistas (duki, wos, ysy, bizarrap) para preservar su identidad real.
         return when (lower) {
             "uzbekistan" -> "un tan"
             "kuelgue" -> "colgué"
             "wasap", "wasapp", "guasap", "wasa", "guasa" -> "whatsapp"
             "insta", "instagran", "ig" -> "instagram"
             "spoti", "spoty", "espotifai" -> "spotify"
-            "duki" -> "duque"
-            "wos" -> "voz"
-            "ysy", "ysy a" -> "y si"
-            "bizarrap", "biza" -> "pisa"
             "temon", "temazo" -> "tema"
             "morfar", "morfi" -> "comer"
             "cana", "ratis", "cobani", "yuta" -> "policia"

@@ -1,6 +1,6 @@
 package com.uriel.logpose.features.music.engine
 
-import android.util.Log
+import com.uriel.logpose.core.compat.core.LogPoseLogger
 import com.google.gson.annotations.SerializedName
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
@@ -23,7 +23,7 @@ class MusicResolver {
     suspend fun play(query: String): Boolean {
         val token = SpotifyAuthManager.getAccessToken()
         if (token == null) {
-            Log.w("MusicResolver", "No hay token de Spotify. Abortando Web API.")
+            LogPoseLogger.w("MusicResolver", "No hay token de Spotify. Abortando Web API.")
             return false
         }
         val authHeader = "Bearer $token"
@@ -41,13 +41,13 @@ class MusicResolver {
             if (trackUri != null) {
                 // 3. Reproducir con DeviceID (para evitar errores 404 de Spotify)
                 api.play(authHeader, deviceId, PlayRequest(listOf(trackUri)))
-                Log.i("MusicResolver", "Reproduciendo track: $trackUri en dispositivo: $deviceId")
+                LogPoseLogger.i("MusicResolver", "Reproduciendo track: $trackUri en dispositivo: $deviceId")
                 true
             } else {
                 false
             }
         } catch (e: Exception) {
-            Log.e("MusicResolver", "Fallo en Web API: ${e.message}")
+            LogPoseLogger.e("MusicResolver", "Fallo en Web API: ${e.message}")
             false
         }
     }

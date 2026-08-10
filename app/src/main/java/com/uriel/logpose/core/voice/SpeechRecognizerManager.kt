@@ -6,7 +6,7 @@ import android.os.Bundle
 import android.speech.RecognitionListener
 import android.speech.RecognizerIntent
 import android.speech.SpeechRecognizer
-import android.util.Log
+import com.uriel.logpose.core.compat.core.LogPoseLogger
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 
@@ -24,12 +24,12 @@ class SpeechRecognizerManager(private val context: Context) {
 
     init {
         speechRecognizer.setRecognitionListener(object : RecognitionListener {
-            override fun onReadyForSpeech(params: Bundle?) { Log.d("STT", "Ready") }
-            override fun onBeginningOfSpeech() { Log.d("STT", "Beginning") }
+            override fun onReadyForSpeech(params: Bundle?) { LogPoseLogger.d("STT", "Ready") }
+            override fun onBeginningOfSpeech() { LogPoseLogger.d("STT", "Beginning") }
             override fun onRmsChanged(rmsdB: Float) {}
             override fun onBufferReceived(buffer: ByteArray?) {}
-            override fun onEndOfSpeech() { Log.d("STT", "End") }
-            override fun onError(error: Int) { Log.e("STT", "Error: $error") }
+            override fun onEndOfSpeech() { LogPoseLogger.d("STT", "End") }
+            override fun onError(error: Int) { LogPoseLogger.e("STT", "Error: $error") }
             override fun onResults(results: Bundle?) {
                 val matches = results?.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION)
                 if (!matches.isNullOrEmpty()) {

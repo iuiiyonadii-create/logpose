@@ -5,7 +5,7 @@ import android.bluetooth.BluetoothDevice
 import android.bluetooth.BluetoothHeadset
 import android.bluetooth.BluetoothProfile
 import android.content.Context
-import android.util.Log
+import com.uriel.logpose.core.compat.core.LogPoseLogger
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -27,7 +27,7 @@ class BluetoothConnectionManager(private val context: Context) {
         override fun onServiceConnected(profile: Int, proxy: BluetoothProfile?) {
             if (profile == BluetoothProfile.HEADSET) {
                 bluetoothHeadset = proxy as BluetoothHeadset
-                Log.d("BT_CONN", "Headset profile connected")
+                LogPoseLogger.d("BT_CONN", "Headset profile connected")
             }
         }
 
@@ -63,7 +63,7 @@ class BluetoothConnectionManager(private val context: Context) {
         reconnectionJob = scope.launch {
             while (isActive && _connectionState.value != BluetoothState.CONNECTED) {
                 delay(5000)
-                Log.d("BT_CONN", "Reintentando conexión automática...")
+                LogPoseLogger.d("BT_CONN", "Reintentando conexión automática...")
                 // Aquí iría el intento real de conexión por Profile
             }
         }

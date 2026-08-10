@@ -1,6 +1,6 @@
 package com.uriel.logpose.thamis.language
 
-import android.util.Log
+import com.uriel.logpose.core.compat.core.LogPoseLogger
 import com.uriel.logpose.core.app.LogPoseApplication
 import com.uriel.logpose.core.parser.PhoneticDictionary
 import com.uriel.logpose.features.voice.MusicVocabulary
@@ -49,9 +49,9 @@ object PhoneticEngine {
             }
             
             updatePersonalProfile(updates)
-            Log.i(TAG, "🧠 Sincronización Exitosa: ${updates.size} reglas PSP.")
+            LogPoseLogger.i(TAG, "🧠 Sincronización Exitosa: ${updates.size} reglas PSP.")
         } catch (e: Exception) {
-            Log.e(TAG, "❌ Error sincronizando PSP: ${e.message}")
+            LogPoseLogger.e(TAG, "❌ Error sincronizando PSP: ${e.message}")
         }
     }
 
@@ -60,7 +60,7 @@ object PhoneticEngine {
      */
     fun updatePersonalProfile(updates: Map<String, String>) {
         dynamicBias.putAll(updates)
-        Log.i(TAG, "🧠 PSP: Perfil actualizado con ${updates.size} nuevas correcciones.")
+        LogPoseLogger.i(TAG, "🧠 PSP: Perfil actualizado con ${updates.size} nuevas correcciones.")
     }
 
     data class NormalizationTrace(
@@ -258,7 +258,7 @@ object PhoneticEngine {
         for (token in originalTokens) {
             semanticCloud[token]?.let { boost ->
                 score = (score + boost).coerceAtMost(1.0f)
-                Log.d(TAG, "🧠 Semantic Boost (v4.5) aplicado a '$token': +$boost")
+                LogPoseLogger.d(TAG, "🧠 Semantic Boost (v4.5) aplicado a '$token': +$boost")
             }
         }
 

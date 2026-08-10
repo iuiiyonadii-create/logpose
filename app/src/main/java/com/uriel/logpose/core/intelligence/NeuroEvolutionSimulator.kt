@@ -1,5 +1,7 @@
 package com.uriel.logpose.core.intelligence
 
+import com.uriel.logpose.core.compat.core.LogPoseLogger
+
 import com.uriel.logpose.core.app.LogPoseApplication
 import com.uriel.logpose.core.parser.PhoneticDictionary
 import com.uriel.logpose.core.services.LogPoseHudService
@@ -51,7 +53,7 @@ object NeuroEvolutionSimulator {
         // Misión #027.4: Separación total de arquitectura.
         // El motor de entrenamiento y generación de escenarios corre 100% en la PC (THAMIS LAB).
         // La app móvil permanece limpia, liviana y en reposo absoluto de CPU para el usuario.
-        android.util.Log.i("LogPose", "NeuroEvolutionSimulator: Entrenamiento delegado 100% a THAMIS LAB PC.")
+        LogPoseLogger.i("LogPose", "NeuroEvolutionSimulator: Entrenamiento delegado 100% a THAMIS LAB PC.")
         if (trainingJob?.isActive == true) return
         
         trainingJob = scope.launch {
@@ -79,7 +81,7 @@ object NeuroEvolutionSimulator {
                         cycle++
                     }
                 } else {
-                    android.util.Log.i("LogPose", "💎 ESTATUS: Mente Maestra Urbana Alcanzada. Patrullando Argentina...")
+                    LogPoseLogger.i("LogPose", "💎 ESTATUS: Mente Maestra Urbana Alcanzada. Patrullando Argentina...")
                     LogPoseHudService.updateStatus("👑 MENTE MAESTRA")
                     
                     val patrolSample = List(20) { "${mainStreets.random()} ${Random.nextInt(100, 15000)}" }
@@ -119,11 +121,11 @@ object NeuroEvolutionSimulator {
 
         if (testSuccess) {
             if (maturity < 10) {
-                android.util.Log.i("LogPose", "LAB_EXITO #$cycle: '$input' (Oído: '$distortedInput') -> '$currentTranslation' [Nivel $maturity/10]")
+                LogPoseLogger.i("LogPose", "LAB_EXITO #$cycle: '$input' (Oído: '$distortedInput') -> '$currentTranslation' [Nivel $maturity/10]")
             }
             LearningEngine.updateMaturity(input, true)
         } else {
-            android.util.Log.e("LogPose", "LAB_FALLO #$cycle: '$input' (Oído: '$distortedInput') dio '$currentTranslation' (Esperaba '$expected')")
+            LogPoseLogger.e("LogPose", "LAB_FALLO #$cycle: '$input' (Oído: '$distortedInput') dio '$currentTranslation' (Esperaba '$expected')")
             
             // Auto-reparación fonética: THAMIS aprende que con ese ruido, significa 'expected'
             LearningEngine.learn(distortedInput, expected, com.thamis.lab.core.contracts.intent.Intent.OPEN_APP)

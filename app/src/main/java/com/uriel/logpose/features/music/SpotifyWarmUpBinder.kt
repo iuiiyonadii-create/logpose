@@ -6,7 +6,7 @@ import android.media.browse.MediaBrowser
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
-import android.util.Log
+import com.uriel.logpose.core.compat.core.LogPoseLogger
 
 /**
  * Tier 1 de warm-up: Despierta el proceso de Spotify usando MediaBrowser estándar.
@@ -39,12 +39,12 @@ object SpotifyWarmUpBinder {
 
         val callback = object : MediaBrowser.ConnectionCallback() {
             override fun onConnected() {
-                Log.d(TAG, "Tier 1: Bind exitoso.")
+                LogPoseLogger.d(TAG, "Tier 1: Bind exitoso.")
                 disconnect()
             }
 
             override fun onConnectionFailed() {
-                Log.w(TAG, "Tier 1: Rechazado o fallido.")
+                LogPoseLogger.w(TAG, "Tier 1: Rechazado o fallido.")
                 disconnect()
                 onRejected()
             }
@@ -60,7 +60,7 @@ object SpotifyWarmUpBinder {
             browser = mediaBrowser
             mediaBrowser.connect()
         } catch (e: Exception) {
-            Log.e(TAG, "Error al crear MediaBrowser: ${e.message}")
+            LogPoseLogger.e(TAG, "Error al crear MediaBrowser: ${e.message}")
             onRejected()
         }
     }

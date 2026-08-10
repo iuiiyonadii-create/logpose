@@ -2,7 +2,7 @@ package com.uriel.logpose.core.voice
 
 import android.content.Context
 import android.speech.tts.TextToSpeech
-import android.util.Log
+import com.uriel.logpose.core.compat.core.LogPoseLogger
 import java.util.Locale
 
 /**
@@ -22,7 +22,7 @@ class TextToSpeechManager(private val context: Context) : TextToSpeech.OnInitLis
             isReady = true
             tts?.language = Locale("es", "ES")
         } else {
-            Log.e("TTS", "Initialization failed")
+            LogPoseLogger.e("TTS", "Initialization failed")
         }
     }
 

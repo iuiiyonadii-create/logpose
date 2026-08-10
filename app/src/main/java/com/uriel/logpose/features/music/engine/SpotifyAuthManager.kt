@@ -2,7 +2,7 @@ package com.uriel.logpose.features.music.engine
 
 import android.app.Activity
 import android.content.Intent
-import android.util.Log
+import com.uriel.logpose.core.compat.core.LogPoseLogger
 import com.spotify.sdk.android.auth.AuthorizationClient
 import com.spotify.sdk.android.auth.AuthorizationRequest
 import com.spotify.sdk.android.auth.AuthorizationResponse
@@ -29,14 +29,14 @@ object SpotifyAuthManager {
         val savedToken = prefs.getString(KEY_TOKEN, null)
         if (savedToken != null) {
             _tokenFlow.value = savedToken
-            Log.d(TAG, "Token recuperado de memoria.")
+            LogPoseLogger.d(TAG, "Token recuperado de memoria.")
         }
     }
 
     fun login(activity: Activity) {
-        Log.d(TAG, "Iniciando flujo de login Spotify (v5.0)...")
+        LogPoseLogger.d(TAG, "Iniciando flujo de login Spotify (v5.0)...")
         if (_tokenFlow.value != null) {
-            Log.d(TAG, "Ya existe un token activo.")
+            LogPoseLogger.d(TAG, "Ya existe un token activo.")
             return
         }
 
@@ -63,12 +63,12 @@ object SpotifyAuthManager {
                     .putString(KEY_TOKEN, token)
                     .apply()
                 
-                Log.i(TAG, "Token obtenido y guardado con éxito.")
+                LogPoseLogger.i(TAG, "Token obtenido y guardado con éxito.")
             }
             AuthorizationResponse.Type.ERROR -> {
-                Log.e(TAG, "Error de Spotify Auth: ${response.error}")
+                LogPoseLogger.e(TAG, "Error de Spotify Auth: ${response.error}")
             }
-            else -> Log.w(TAG, "Login cancelado.")
+            else -> LogPoseLogger.w(TAG, "Login cancelado.")
         }
     }
 

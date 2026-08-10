@@ -2,7 +2,7 @@ package com.uriel.logpose.core.speech
 
 import android.content.Context
 import android.content.res.AssetManager
-import android.util.Log
+import com.uriel.logpose.core.compat.core.LogPoseLogger
 import com.k2fsa.sherpa.onnx.OnlineModelConfig
 import com.k2fsa.sherpa.onnx.OnlineRecognizer
 import com.k2fsa.sherpa.onnx.OnlineRecognizerConfig
@@ -39,7 +39,7 @@ class SherpaSpeechEngine(private val context: Context) {
             val existingFiles = assetManager.list(modelDir) ?: emptyArray()
             
             if (!requiredFiles.all { it in existingFiles }) {
-                Log.e("SherpaEngine", "❌ Faltan archivos del modelo en assets/$modelDir. Abortando.")
+                LogPoseLogger.e("SherpaEngine", "❌ Faltan archivos del modelo en assets/$modelDir. Abortando.")
                 isReady.complete(value = false)
                 return@withContext false
             }
@@ -62,11 +62,11 @@ class SherpaSpeechEngine(private val context: Context) {
 
             recognizer = OnlineRecognizer(assetManager, config)
             stream = recognizer?.createStream()
-            Log.i("SherpaEngine", "✅ Motor Sherpa-ONNX listo (Modelo Zipformer2 Staff).")
+            LogPoseLogger.i("SherpaEngine", "✅ Motor Sherpa-ONNX listo (Modelo Zipformer2 Staff).")
             isReady.complete(value = true)
             true
         } catch (e: Exception) {
-            Log.e("SherpaEngine", "❌ Error al inicializar Sherpa-ONNX: ${e.message}")
+            LogPoseLogger.e("SherpaEngine", "❌ Error al inicializar Sherpa-ONNX: ${e.message}")
             isReady.complete(value = false)
             false
         }
@@ -113,9 +113,9 @@ class SherpaSpeechEngine(private val context: Context) {
             currentRecognizer.reset(currentStream)
             currentStream.release()
             stream = currentRecognizer.createStream()
-            Log.d("SherpaEngine", "Stream Staff re-instanciado (Zero-Echo Sync).")
+            LogPoseLogger.d("SherpaEngine", "Stream Staff re-instanciado (Zero-Echo Sync).")
         } catch (e: Exception) {
-            Log.e("SherpaEngine", "Error al resetear stream: ${e.message}")
+            LogPoseLogger.e("SherpaEngine", "Error al resetear stream: ${e.message}")
         }
     }
 

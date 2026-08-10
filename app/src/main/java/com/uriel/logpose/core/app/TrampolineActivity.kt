@@ -7,7 +7,7 @@ import android.content.Intent
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
-import android.util.Log
+import com.uriel.logpose.core.compat.core.LogPoseLogger
 import android.view.WindowManager
 
 /**
@@ -55,11 +55,11 @@ class TrampolineActivity : Activity() {
             if (targetIntent != null) {
                 // CASO A: Es una App específica (WhatsApp, Mapas, etc.)
                 startActivity(targetIntent)
-                Log.i(TAG, "🚀 Lanzando aplicación destino: ${targetIntent.`package`}")
+                LogPoseLogger.i(TAG, "🚀 Lanzando aplicación destino: ${targetIntent.`package`}")
             } else {
                 // CASO B: Búsqueda musical AGRESIVA para Spotify
                 val artistQuery = intent.getStringExtra(EXTRA_ARTIST_QUERY) ?: ""
-                Log.i(TAG, "🎯 Ejecutando Martillo para: $artistQuery")
+                LogPoseLogger.i(TAG, "🎯 Ejecutando Martillo para: $artistQuery")
 
                 // Intent 1: El estándar de MediaStore (Suele disparar reproducción automática)
                 val searchIntent = Intent(android.provider.MediaStore.INTENT_ACTION_MEDIA_PLAY_FROM_SEARCH).apply {
@@ -79,7 +79,7 @@ class TrampolineActivity : Activity() {
                         playIntent.putExtra("command", "play")
                         playIntent.`package` = "com.spotify.music"
                         sendBroadcast(playIntent)
-                        Log.d(TAG, "🔨 Segundo golpe: Comando PLAY enviado.")
+                        LogPoseLogger.d(TAG, "🔨 Segundo golpe: Comando PLAY enviado.")
                     }, 1500)
 
                 } catch (e: Exception) {
@@ -91,7 +91,7 @@ class TrampolineActivity : Activity() {
                 }
             }
         } catch (e: Exception) {
-            Log.e(TAG, "❌ Fallo en el salto: ${e.message}")
+            LogPoseLogger.e(TAG, "❌ Fallo en el salto: ${e.message}")
         }
 
         // SINCRO CLAUDE: Pequeño delay antes de cerrar para asegurar el Intent en HyperOS

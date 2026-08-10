@@ -6,7 +6,7 @@ import android.content.Intent
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
-import android.util.Log
+import com.uriel.logpose.core.compat.core.LogPoseLogger
  
 /**
  * Tier 2 de warm-up: solo se invoca cuando el bind silencioso no produjo una sesión activa.
@@ -33,7 +33,7 @@ class WarmUpTrampolineActivity : Activity() {
             com.uriel.logpose.core.services.LogPoseNotificationListener.SPOTIFY_PACKAGE
         )
         if (launchIntent == null) {
-            Log.w(TAG, "Spotify no está instalado o no expone launch intent")
+            LogPoseLogger.w(TAG, "Spotify no está instalado o no expone launch intent")
             finish()
             return
         }
@@ -47,7 +47,7 @@ class WarmUpTrampolineActivity : Activity() {
         try {
             startActivity(launchIntent)
         } catch (e: Exception) {
-            Log.e(TAG, "Fallo al lanzar trampoline de Spotify", e)
+            LogPoseLogger.e(TAG, "Fallo al lanzar trampoline de Spotify", e)
         }
  
         Handler(Looper.getMainLooper()).postDelayed({

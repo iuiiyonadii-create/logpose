@@ -2,7 +2,7 @@ package com.uriel.logpose.features.music
 
 import android.content.Context
 import android.media.MediaMetadata
-import android.util.Log
+import com.uriel.logpose.core.compat.core.LogPoseLogger
 import com.uriel.logpose.core.services.LogPoseNotificationListener
 import com.uriel.logpose.features.music.model.SpotifyConnectionState
 import java.text.Normalizer
@@ -27,11 +27,11 @@ class SpotifyBridge(private val context: Context) {
         val controller = LogPoseNotificationListener.getSpotifyController(context)
         if (controller == null) {
             if (connectionState != SpotifyConnectionState.CONNECTING) {
-                Log.e(TAG, "JUEZ: No hay controlador. Intentando despertar servicio...")
+                LogPoseLogger.e(TAG, "JUEZ: No hay controlador. Intentando despertar servicio...")
                 connectionState = SpotifyConnectionState.CONNECTING
                 LogPoseNotificationListener.tryForceRebind(context)
             } else {
-                Log.d(TAG, "THAMIS: Música no disponible (esperando rebind)")
+                LogPoseLogger.d(TAG, "THAMIS: Música no disponible (esperando rebind)")
             }
             return false
         }
@@ -39,7 +39,7 @@ class SpotifyBridge(private val context: Context) {
         connectionState = SpotifyConnectionState.CONNECTED
         val metadata = controller.metadata
         if (metadata == null) {
-            Log.w(TAG, "JUEZ: Spotify está conectado pero no hay metadata aún.")
+            LogPoseLogger.w(TAG, "JUEZ: Spotify está conectado pero no hay metadata aún.")
             return false
         }
         
@@ -51,9 +51,9 @@ class SpotifyBridge(private val context: Context) {
         
         val match = fuzzyMatchTokens(expected, actual)
         if (match) {
-            Log.i(TAG, "JUEZ: ¡MATCH CONFIRMADO! Suena: $title - $artist")
+            LogPoseLogger.i(TAG, "JUEZ: ¡MATCH CONFIRMADO! Suena: $title - $artist")
         } else {
-            Log.d(TAG, "JUEZ: No coincide. Esperaba '$query', suena '$title - $artist'")
+            LogPoseLogger.d(TAG, "JUEZ: No coincide. Esperaba '$query', suena '$title - $artist'")
         }
         return match
     }
@@ -97,7 +97,7 @@ class SpotifyBridge(private val context: Context) {
     // --- CONTROLES DE REPRODUCCIÓN ---
     fun resume() {
         if (connectionState != SpotifyConnectionState.CONNECTED) {
-            Log.w(TAG, "THAMIS: Música no disponible para RESUME")
+            LogPoseLogger.w(TAG, "THAMIS: Música no disponible para RESUME")
             return
         }
         LogPoseNotificationListener.getSpotifyController(context)?.transportControls?.play() 
@@ -105,7 +105,7 @@ class SpotifyBridge(private val context: Context) {
 
     fun pause() {
         if (connectionState != SpotifyConnectionState.CONNECTED) {
-            Log.w(TAG, "THAMIS: Música no disponible para PAUSE")
+            LogPoseLogger.w(TAG, "THAMIS: Música no disponible para PAUSE")
             return
         }
         LogPoseNotificationListener.getSpotifyController(context)?.transportControls?.pause() 
@@ -113,7 +113,7 @@ class SpotifyBridge(private val context: Context) {
 
     fun next() {
         if (connectionState != SpotifyConnectionState.CONNECTED) {
-            Log.w(TAG, "THAMIS: Música no disponible para NEXT")
+            LogPoseLogger.w(TAG, "THAMIS: Música no disponible para NEXT")
             return
         }
         LogPoseNotificationListener.getSpotifyController(context)?.transportControls?.skipToNext() 
@@ -121,7 +121,7 @@ class SpotifyBridge(private val context: Context) {
 
     fun previous() {
         if (connectionState != SpotifyConnectionState.CONNECTED) {
-            Log.w(TAG, "THAMIS: Música no disponible para PREVIOUS")
+            LogPoseLogger.w(TAG, "THAMIS: Música no disponible para PREVIOUS")
             return
         }
         LogPoseNotificationListener.getSpotifyController(context)?.transportControls?.skipToPrevious() 

@@ -3,7 +3,7 @@ package com.uriel.logpose.core.services
 import android.media.AudioTrack
 import android.os.Handler
 import android.os.HandlerThread
-import android.util.Log
+import com.uriel.logpose.core.compat.core.LogPoseLogger
 
 /**
  * Controla el ducking del AudioTrack de keep-alive SIN tocar su estado de reproducción.
@@ -36,7 +36,7 @@ class AudioDuckController(private val keepAliveTrack: AudioTrack) {
         try {
             keepAliveTrack.setVolume(volume)
         } catch (e: IllegalStateException) {
-            Log.w(TAG, "Track de keep-alive no inicializado.")
+            LogPoseLogger.w(TAG, "Track de keep-alive no inicializado.")
         }
     }
 

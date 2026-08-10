@@ -26,9 +26,21 @@ object LogPoseLogger {
         }
     }
 
+    fun d(tag: String, msg: String) {
+        val fullMsg = "[$tag] $msg"
+        Log.d(TAG, fullMsg)
+        writeToFile("D", fullMsg)
+    }
+
     fun d(msg: String) {
         Log.d(TAG, msg)
         writeToFile("D", msg)
+    }
+
+    fun i(tag: String, msg: String) {
+        val fullMsg = "[$tag] $msg"
+        Log.i(TAG, fullMsg)
+        writeToFile("I", fullMsg)
     }
 
     fun i(msg: String) {
@@ -36,9 +48,21 @@ object LogPoseLogger {
         writeToFile("I", msg)
     }
 
+    fun w(tag: String, msg: String) {
+        val fullMsg = "[$tag] $msg"
+        Log.w(TAG, fullMsg)
+        writeToFile("W", fullMsg)
+    }
+
     fun w(msg: String) {
         Log.w(TAG, msg)
         writeToFile("W", msg)
+    }
+
+    fun e(tag: String, msg: String) {
+        val fullMsg = "[$tag] $msg"
+        Log.e(TAG, fullMsg)
+        writeToFile("E", fullMsg)
     }
 
     fun e(msg: String) {

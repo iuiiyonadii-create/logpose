@@ -3,7 +3,7 @@ package com.uriel.logpose.features.music.engine
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
-import android.util.Log
+import com.uriel.logpose.core.compat.core.LogPoseLogger
 import com.spotify.android.appremote.api.ConnectionParams
 import com.spotify.android.appremote.api.Connector
 import com.spotify.android.appremote.api.SpotifyAppRemote
@@ -36,7 +36,7 @@ object SpotifyRemoteManager {
         SpotifyAppRemote.connect(context.applicationContext, connectionParams, object : Connector.ConnectionListener {
             override fun onConnected(remote: SpotifyAppRemote) {
                 spotifyAppRemote = remote
-                Log.i(TAG, "Spotify App Remote CONECTADO 🚀")
+                LogPoseLogger.i(TAG, "Spotify App Remote CONECTADO 🚀")
                 
                 // Suscribirse al estado para el sistema de marcadores y aprendizaje Staff (v7.6)
                 remote.playerApi.subscribeToPlayerState().setEventCallback { state ->
@@ -69,7 +69,7 @@ object SpotifyRemoteManager {
             }
 
             override fun onFailure(throwable: Throwable) {
-                Log.e(TAG, "Spotify Remote Error: ${throwable.message}")
+                LogPoseLogger.e(TAG, "Spotify Remote Error: ${throwable.message}")
                 if (continuation.isActive) continuation.resume(false)
             }
         })
@@ -77,7 +77,7 @@ object SpotifyRemoteManager {
 
     private fun processQueue() {
         synchronized(commandQueue) {
-            Log.d(TAG, "Spotify: Procesando cola de comandos (${commandQueue.size} pendientes)")
+            LogPoseLogger.d(TAG, "Spotify: Procesando cola de comandos (${commandQueue.size} pendientes)")
             commandQueue.forEach { it.invoke() }
             commandQueue.clear()
         }
@@ -87,7 +87,7 @@ object SpotifyRemoteManager {
         if (spotifyAppRemote?.isConnected == true) {
             spotifyAppRemote?.playerApi?.play(uri)
         } else {
-            Log.w(TAG, "Spotify: Comando 'play' encolado (esperando conexión)")
+            LogPoseLogger.w(TAG, "Spotify: Comando 'play' encolado (esperando conexión)")
             synchronized(commandQueue) { commandQueue.add { spotifyAppRemote?.playerApi?.play(uri) } }
         }
     }
@@ -134,22 +134,22 @@ object SpotifyRemoteManager {
         if (spotifyAppRemote?.isConnected == true) {
             spotifyAppRemote?.playerApi?.play(uri)
             spotifyAppRemote?.playerApi?.seekTo(positionMs)
-            Log.i(TAG, "Marcador restaurado: $uri en ${positionMs}ms")
+            LogPoseLogger.i(TAG, "Marcador restaurado: $uri en ${positionMs}ms")
         }
     }
 
     fun searchAndPlay(query: String) {
         if (spotifyAppRemote?.isConnected == true) {
-            Log.d(TAG, "Spotify: Ejecutando búsqueda remota para '$query'")
+            LogPoseLogger.d(TAG, "Spotify: Ejecutando búsqueda remota para '$query'")
             // Intentamos despertar al motor de búsqueda
             spotifyAppRemote?.contentApi?.getRecommendedContentItems("default")?.setResultCallback { items ->
-                Log.d(TAG, "Spotify: Motor despertado (${items.items.size} recomendaciones)")
+                LogPoseLogger.d(TAG, "Spotify: Motor despertado (${items.items.size} recomendaciones)")
             }
             
             val searchUri = "spotify:search:${Uri.encode(query)}"
             spotifyAppRemote?.playerApi?.play(searchUri)
         } else {
-            Log.w(TAG, "Spotify: No conectado. Usando Intent de respaldo.")
+            LogPoseLogger.w(TAG, "Spotify: No conectado. Usando Intent de respaldo.")
             launchSpotifySearchIntent(query)
         }
     }
@@ -163,7 +163,7 @@ object SpotifyRemoteManager {
 
         // 1. Escaneo de Recomendaciones y Temas
         spotifyAppRemote?.contentApi?.getRecommendedContentItems("default")?.setResultCallback { result ->
-            Log.i(TAG, "🧠 Sincronizando gustos Staff: ${result.items.size} elementos encontrados.")
+            LogPoseLogger.i(TAG, "🧠 Sincronizando gustos Staff: ${result.items.size} elementos encontrados.")
             result.items.forEach { item ->
                 if (item.playable) {
                     val title = item.title ?: ""
@@ -202,7 +202,7 @@ object SpotifyRemoteManager {
             }
             com.uriel.logpose.core.app.LogPoseApplication.instance.startActivity(intent)
         } catch (e: Exception) {
-            Log.e(TAG, "Spotify Intent Error: ${e.message}")
+            LogPoseLogger.e(TAG, "Spotify Intent Error: ${e.message}")
         }
     }
 

@@ -98,40 +98,46 @@ object ContactManager {
                 }
             }
         }
-        context.contentResolver.registerContentObserver(
-            ContactsContract.Contacts.CONTENT_URI,
-            true,
-            observer!!
-        )
+        try {
+            context.contentResolver.registerContentObserver(
+                ContactsContract.Contacts.CONTENT_URI,
+                true,
+                observer!!
+            )
+        } catch (e: Exception) {}
     }
 
     @Deprecated("Usar syncContacts para el motor inteligente")
     fun getTopContactNames(context: Context, limit: Int = 100): List<String> {
         val names = mutableListOf<String>()
+        if (context.checkSelfPermission(android.Manifest.permission.READ_CONTACTS) != android.content.pm.PackageManager.PERMISSION_GRANTED) {
+            return names
+        }
         val contentResolver = context.contentResolver
-        
-        val cursor = contentResolver.query(
-            ContactsContract.Contacts.CONTENT_URI,
-            arrayOf(ContactsContract.Contacts.DISPLAY_NAME),
-            null,
-            null,
-            "${ContactsContract.Contacts.TIMES_CONTACTED} DESC LIMIT $limit"
-        )
+        try {
+            val cursor = contentResolver.query(
+                ContactsContract.Contacts.CONTENT_URI,
+                arrayOf(ContactsContract.Contacts.DISPLAY_NAME),
+                null,
+                null,
+                "${ContactsContract.Contacts.TIMES_CONTACTED} DESC LIMIT $limit"
+            )
 
-        cursor?.use {
-            val nameIndex = it.getColumnIndex(ContactsContract.Contacts.DISPLAY_NAME)
-            while (it.moveToNext()) {
-                val fullName = it.getString(nameIndex) ?: continue
-                val cleanName = fullName.split(" ")
-                    .firstOrNull()
-                    ?.lowercase()
-                    ?.replace(Regex("[^a-zñáéíóú]"), "") ?: ""
-                
-                if (cleanName.length > 2) {
-                    names.add(cleanName)
+            cursor?.use {
+                val nameIndex = it.getColumnIndex(ContactsContract.Contacts.DISPLAY_NAME)
+                while (it.moveToNext()) {
+                    val fullName = it.getString(nameIndex) ?: continue
+                    val cleanName = fullName.split(" ")
+                        .firstOrNull()
+                        ?.lowercase()
+                        ?.replace(Regex("[^a-zñáéíóú]"), "") ?: ""
+                    
+                    if (cleanName.length > 2) {
+                        names.add(cleanName)
+                    }
                 }
             }
-        }
+        } catch (e: Exception) {}
         return names.distinct()
     }
 }

@@ -2,7 +2,12 @@ package com.uriel.logpose.thamis.knowledge
 
 import com.uriel.logpose.core.app.LogPoseApplication
 import com.uriel.logpose.core.parser.PhoneticDictionary
+import com.uriel.logpose.core.compat.core.LogPoseLogger
+import com.uriel.logpose.thamis.learning.LearningEngine
 import com.thamis.lab.core.contracts.intent.Intent
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import com.uriel.logpose.thamis.knowledge.apps.AppKnowledge
 import com.uriel.logpose.thamis.knowledge.apps.NotificationKnowledge
 import com.uriel.logpose.thamis.knowledge.calls.CallKnowledge
@@ -18,7 +23,6 @@ import com.uriel.logpose.thamis.knowledge.weather.WeatherKnowledge
 
 /**
  * Reúne todo el conocimiento disponible de THAMIS.
- * Mejorado (Misión #011): Soporte para búsqueda indexada (Fast Search).
  */
 object KnowledgeBase {
 
@@ -77,30 +81,32 @@ object KnowledgeBase {
      * Carga e hidrata la Semilla Staff (staff_seed.json) automáticamente al iniciar.
      */
     fun initializeStaffSeed(context: android.content.Context) {
-        try {
-            val jsonString = context.assets.open("staff_seed.json").bufferedReader().use { it.readText() }
-            val seed = org.json.JSONObject(jsonString)
+        CoroutineScope(Dispatchers.IO).launch {
+            try {
+                val jsonString = context.assets.open("staff_seed.json").bufferedReader().use { it.readText() }
+                val seed = org.json.JSONObject(jsonString)
 
-            if (seed.has("urban_matrix")) {
-                val urbanArray = seed.getJSONArray("urban_matrix")
-                for (i in 0 until urbanArray.length()) {
-                    val item = urbanArray.getJSONObject(i)
-                    val name = item.getString("name")
-                    com.uriel.logpose.thamis.learning.LearningEngine.learn(name, name, Intent.NAVIGATE)
+                if (seed.has("urban_matrix")) {
+                    val urbanArray = seed.getJSONArray("urban_matrix")
+                    for (i in 0 until urbanArray.length()) {
+                        val item = urbanArray.getJSONObject(i)
+                        val name = item.getString("name")
+                        LearningEngine.learn(name, name, Intent.NAVIGATE)
+                    }
                 }
-            }
 
-            if (seed.has("music_dna")) {
-                val musicArray = seed.getJSONArray("music_dna")
-                for (i in 0 until musicArray.length()) {
-                    val item = musicArray.getJSONObject(i)
-                    val name = item.getString("name")
-                    com.uriel.logpose.thamis.learning.LearningEngine.registerMusicTrack(name, name)
+                if (seed.has("music_dna")) {
+                    val musicArray = seed.getJSONArray("music_dna")
+                    for (i in 0 until musicArray.length()) {
+                        val item = musicArray.getJSONObject(i)
+                        val name = item.getString("name")
+                        LearningEngine.learnMusicEntity(name)
+                    }
                 }
+                LogPoseLogger.i("KnowledgeBase: Semilla Staff hidratada exitosamente desde assets.")
+            } catch (e: Exception) {
+                LogPoseLogger.w("KnowledgeBase: Error hidratando staff_seed.json: ${e.message}")
             }
-            com.uriel.logpose.core.compat.core.LogPoseLogger.i("KnowledgeBase: Semilla Staff hidratada exitosamente desde assets.")
-        } catch (e: Exception) {
-            com.uriel.logpose.core.compat.core.LogPoseLogger.w("KnowledgeBase: Error hidratando staff_seed.json: ${e.message}")
         }
     }
 }

@@ -22,12 +22,17 @@ class ContactsAnchorObserver(
 ) : ContentObserver(Handler(Looper.getMainLooper())) {
 
     fun register() {
-        context.contentResolver.registerContentObserver(
-            ContactsContract.Contacts.CONTENT_URI,
-            true,
-            this
-        )
-        syncContacts()
+        if (context.checkSelfPermission(android.Manifest.permission.READ_CONTACTS) != android.content.pm.PackageManager.PERMISSION_GRANTED) {
+            return
+        }
+        try {
+            context.contentResolver.registerContentObserver(
+                ContactsContract.Contacts.CONTENT_URI,
+                true,
+                this
+            )
+            syncContacts()
+        } catch (e: Exception) {}
     }
 
     override fun onChange(selfChange: Boolean, uri: Uri?) {
@@ -36,26 +41,31 @@ class ContactsAnchorObserver(
     }
 
     private fun syncContacts() {
+        if (context.checkSelfPermission(android.Manifest.permission.READ_CONTACTS) != android.content.pm.PackageManager.PERMISSION_GRANTED) {
+            return
+        }
         scope.launch(Dispatchers.IO) {
-            val contacts = mutableListOf<String>()
-            val cursor = context.contentResolver.query(
-                ContactsContract.Contacts.CONTENT_URI,
-                arrayOf(ContactsContract.Contacts.DISPLAY_NAME_PRIMARY),
-                "${ContactsContract.Contacts.HAS_PHONE_NUMBER} = 1",
-                null,
-                null
-            )
-            cursor?.use {
-                val nameIndex = it.getColumnIndex(ContactsContract.Contacts.DISPLAY_NAME_PRIMARY)
-                while (it.moveToNext()) {
-                    if (nameIndex >= 0) {
-                        it.getString(nameIndex)?.let { name -> 
-                            if (name.length > 2) contacts.add(name)
+            try {
+                val contacts = mutableListOf<String>()
+                val cursor = context.contentResolver.query(
+                    ContactsContract.Contacts.CONTENT_URI,
+                    arrayOf(ContactsContract.Contacts.DISPLAY_NAME_PRIMARY),
+                    "${ContactsContract.Contacts.HAS_PHONE_NUMBER} = 1",
+                    null,
+                    null
+                )
+                cursor?.use {
+                    val nameIndex = it.getColumnIndex(ContactsContract.Contacts.DISPLAY_NAME_PRIMARY)
+                    while (it.moveToNext()) {
+                        if (nameIndex >= 0) {
+                            it.getString(nameIndex)?.let { name -> 
+                                if (name.length > 2) contacts.add(name)
+                            }
                         }
                     }
                 }
-            }
-            anchorRepository.updateContacts(contacts)
+                anchorRepository.updateContacts(contacts)
+            } catch (e: Exception) {}
         }
     }
 

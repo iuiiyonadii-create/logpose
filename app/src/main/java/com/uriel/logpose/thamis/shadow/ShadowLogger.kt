@@ -1,6 +1,6 @@
 package com.uriel.logpose.thamis.shadow
 
-import android.util.Log
+import com.uriel.logpose.core.compat.core.LogPoseLogger
 import com.uriel.logpose.core.compat.core.LogPoseLogger
 
 /**
@@ -13,14 +13,14 @@ object ShadowLogger {
         val status = if (result.isMatch) "✅ [MATCH]" else "⚠️ [DIVERGENCE]"
         
         LogPoseLogger.i("$status Input: '${result.input}'")
-        Log.d(TAG, "   Legacy: ${result.legacyIntent}")
-        Log.d(TAG, "   THAMIS: ${result.thamisDecision.winningEvaluation?.hypothesis?.candidateGoal?.category} (Conf: ${result.thamisDecision.winningEvaluation?.finalScore})")
-        Log.d(TAG, "   Time: ${result.processingTimeMs}ms")
+        LogPoseLogger.d(TAG, "   Legacy: ${result.legacyIntent}")
+        LogPoseLogger.d(TAG, "   THAMIS: ${result.thamisDecision.winningEvaluation?.hypothesis?.candidateGoal?.category} (Conf: ${result.thamisDecision.winningEvaluation?.finalScore})")
+        LogPoseLogger.d(TAG, "   Time: ${result.processingTimeMs}ms")
         
         if (!result.isMatch) {
-            Log.w(TAG, "   Reasoning: ${result.thamisDecision.summary}")
+            LogPoseLogger.w(TAG, "   Reasoning: ${result.thamisDecision.summary}")
             result.thamisDecision.winningEvaluation?.hypothesis?.evidences?.forEach { 
-                Log.d(TAG, "      - Evidence: ${it.description} (${it.impact})")
+                LogPoseLogger.d(TAG, "      - Evidence: ${it.description} (${it.impact})")
             }
         }
     }

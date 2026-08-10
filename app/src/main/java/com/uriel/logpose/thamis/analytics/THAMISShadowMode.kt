@@ -1,6 +1,6 @@
 package com.uriel.logpose.thamis.analytics
 
-import android.util.Log
+import com.uriel.logpose.core.compat.core.LogPoseLogger
 import com.thamis.lab.core.contracts.intent.Intent
 import com.uriel.logpose.thamis.decision.ThamisDecision
 import com.uriel.logpose.thamis.decision.DecisionType
@@ -28,11 +28,11 @@ object THAMISShadowMode {
         
         if (isMatch) {
             matchCount.incrementAndGet()
-            Log.i(TAG, "✅ [MATCH] Legacy: $legacyIntent | THAMIS: ${thamisDecision.intent} (${thamisDecision.confidence})")
+            LogPoseLogger.i(TAG, "✅ [MATCH] Legacy: $legacyIntent | THAMIS: ${thamisDecision.intent} (${thamisDecision.confidence})")
         } else {
             divergenceCount.incrementAndGet()
-            Log.w(TAG, "⚠️ [DIVERGENCE] Legacy: $legacyIntent | THAMIS: ${thamisDecision.intent}")
-            Log.d(TAG, "   Motivo THAMIS: ${thamisDecision.reason}")
+            LogPoseLogger.w(TAG, "⚠️ [DIVERGENCE] Legacy: $legacyIntent | THAMIS: ${thamisDecision.intent}")
+            LogPoseLogger.d(TAG, "   Motivo THAMIS: ${thamisDecision.reason}")
         }
 
         if (total % 5 == 0) {
@@ -46,11 +46,11 @@ object THAMISShadowMode {
         val matchRate = if (total > 0) (matches / total) * 100 else 0.0
         val avgTime = if (total > 0) totalProcessingTime.get() / total else 0.0
 
-        Log.i(TAG, "--- ESTADÍSTICAS SHADOW MODE ---")
-        Log.i(TAG, "Total Comandos: ${total.toInt()}")
-        Log.i(TAG, "Match Rate: %.2f%%".format(matchRate))
-        Log.i(TAG, "Tiempo Medio: %.2fms".format(avgTime))
-        Log.i(TAG, "--------------------------------")
+        LogPoseLogger.i(TAG, "--- ESTADÍSTICAS SHADOW MODE ---")
+        LogPoseLogger.i(TAG, "Total Comandos: ${total.toInt()}")
+        LogPoseLogger.i(TAG, "Match Rate: %.2f%%".format(matchRate))
+        LogPoseLogger.i(TAG, "Tiempo Medio: %.2fms".format(avgTime))
+        LogPoseLogger.i(TAG, "--------------------------------")
     }
 
     fun getMatchRate(): Float {

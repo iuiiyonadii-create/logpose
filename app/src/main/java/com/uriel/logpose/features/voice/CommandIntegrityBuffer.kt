@@ -38,12 +38,12 @@ class CommandIntegrityBuffer(
             val current = accumulatedText.toString()
             if (isAnchorOnly(current)) {
                 state.set(State.ANCHOR_WAITING)
-                startTimer(2000L) // Espera agresiva
+                startTimer(3500L) // Sherlock v5.0 Fix: Espera extendida para moto/Bluetooth SCO
             } else {
                 finalizeBuffer()
             }
         } else {
-            startTimer(800L) // Parcial normal
+            startTimer(1000L) // Parcial normal
         }
     }
 

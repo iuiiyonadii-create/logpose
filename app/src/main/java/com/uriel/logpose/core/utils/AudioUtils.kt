@@ -7,12 +7,12 @@ object AudioUtils {
 
     /**
      * Filtro de Banda (Band-Pass): Combina un High-Pass y un Low-Pass.
-     * Rango optimizado para voz humana: 300Hz - 3400Hz.
-     * Elimina el "hum" del motor y el "silbido" del viento.
+     * Rango optimizado para Bluetooth SCO y voz en moto (Sherlock v5.0 Fix): 150Hz - 4000Hz.
+     * Preserva la armónica fundamental de voces masculinas y abarca el ancho de banda mSBC.
      */
     class VoiceBandPassFilter(
-        lowCutoffHz: Double = 300.0,
-        highCutoffHz: Double = 3400.0,
+        lowCutoffHz: Double = 150.0,
+        highCutoffHz: Double = 4000.0,
         sampleRate: Int = 16000
     ) {
         private val hp = HighPassFilter(lowCutoffHz, sampleRate)
@@ -43,9 +43,9 @@ object AudioUtils {
     }
 
     /**
-     * Filtro pasa-altos: Atenúa frecuencias menores a 300Hz (el rugido del motor).
+     * Filtro pasa-altos: Atenúa frecuencias menores a 150Hz (el rugido grave del motor).
      */
-    class HighPassFilter(cutoffHz: Double = 300.0, sampleRate: Int = 16000) {
+    class HighPassFilter(cutoffHz: Double = 150.0, sampleRate: Int = 16000) {
         private val rc = 1.0 / (2 * Math.PI * cutoffHz)
         private val dt = 1.0 / sampleRate
         private val alpha = rc / (rc + dt)
@@ -68,7 +68,7 @@ object AudioUtils {
     /**
      * VAD (Voice Activity Detection) mejorado: Energía RMS + Tasa de Cruce por Cero (ZCR).
      */
-    class EnergyVad(private var thresholdRms: Double = 200.0) {
+    class EnergyVad(private var thresholdRms: Double = 450.0) {
         private var noiseFloor = thresholdRms
         private val alpha = 0.98 
         private val maxNoiseRms = 8000.0 
@@ -91,8 +91,8 @@ object AudioUtils {
                 noiseFloor = alpha * noiseFloor + (1.0 - alpha) * rms
             }
 
-            // El umbral dinámico se ajusta al ruido ambiente
-            val dynamicThreshold = Math.max(thresholdRms, noiseFloor * 1.6)
+            // Sherlock v5.0 Fix: Umbral dinámico optimizado para moto (2.2x noiseFloor)
+            val dynamicThreshold = Math.max(thresholdRms, noiseFloor * 2.2)
             
             // La voz humana tiene un ZCR moderado (0.05 - 0.25). 
             // El ruido de viento puro tiene ZCR muy alto (>0.4).

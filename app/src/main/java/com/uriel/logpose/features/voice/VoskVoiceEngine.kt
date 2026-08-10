@@ -128,7 +128,12 @@ class VoskVoiceEngine(private var context: Context) {
         processingJob?.cancel()
         processingJob = scope.launch {
             for (chunk in audioChannel) {
-                if (!isProcessing || !LogPoseApplication.entryPoint.playbackAwareMicGate().isGateOpen()) continue
+                if (!isProcessing) continue
+                
+                // Sherlock v5.0 Fix: Voice-Through bypass if VAD detects active speech despite playback mic gate
+                val isGateOpen = LogPoseApplication.entryPoint.playbackAwareMicGate().isGateOpen()
+                val hasSpeech = vad.hasVoice(chunk.buffer, chunk.length)
+                if (!isGateOpen && !hasSpeech) continue
                 
                 // Misión #022.3: Llenado de Rolling Buffer para Handover v4.6
                 synchronized(bufferLock) {

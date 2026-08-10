@@ -1,7 +1,7 @@
 package com.uriel.logpose.thamis_ai.final
 
 import android.content.Context
-import android.util.Log
+import com.uriel.logpose.core.compat.core.LogPoseLogger
 
 /**
  * LogPose Master System Orchestrator coordinating all 6 driving assistant modules:
@@ -27,51 +27,51 @@ class SystemOrchestrator(private val context: Context? = null) {
         private set
 
     fun startSystem() {
-        Log.i(tag, "Booting LogPose Master Driving Assistant Engine...")
+        LogPoseLogger.i(tag, "Booting LogPose Master Driving Assistant Engine...")
         initializeAudioPipeline()
         initializeNotificationBridge()
         initializeVoiceNluEngine()
         initializeGpsNavigation()
         initializeBluetoothIntercom()
         initializeSafetyCore()
-        Log.i(tag, "LogPose Master Driving Assistant Engine fully booted and operational.")
+        LogPoseLogger.i(tag, "LogPose Master Driving Assistant Engine fully booted and operational.")
     }
 
     // 1. Music & Multimedia Module
     private fun initializeAudioPipeline() {
-        Log.d(tag, "Initialized Audio Pipeline (A2DP/SCO Media Control).")
+        LogPoseLogger.d(tag, "Initialized Audio Pipeline (A2DP/SCO Media Control).")
     }
 
     fun playMusic() {
         isMusicPlaying = true
-        Log.i(tag, "Media Command: PLAY MUSIC")
+        LogPoseLogger.i(tag, "Media Command: PLAY MUSIC")
     }
 
     fun pauseMusic() {
         isMusicPlaying = false
-        Log.i(tag, "Media Command: PAUSE MUSIC")
+        LogPoseLogger.i(tag, "Media Command: PAUSE MUSIC")
     }
 
     fun nextTrack() {
-        Log.i(tag, "Media Command: NEXT TRACK")
+        LogPoseLogger.i(tag, "Media Command: NEXT TRACK")
     }
 
     fun adjustVolumeForSpeed(speedKmh: Float) {
         this.currentSpeedKmh = speedKmh
         if (speedKmh > 70.0f && isMusicPlaying) {
-            Log.i(tag, "Speed-adjusted volume boost applied for $speedKmh km/h.")
+            LogPoseLogger.i(tag, "Speed-adjusted volume boost applied for $speedKmh km/h.")
         }
     }
 
     // 2. Notification & WhatsApp Module
     private fun initializeNotificationBridge() {
-        Log.d(tag, "Initialized Notification Bridge (WhatsApp & Instagram).")
+        LogPoseLogger.d(tag, "Initialized Notification Bridge (WhatsApp & Instagram).")
     }
 
     fun onIncomingNotification(sender: String, message: String, isUrgent: Boolean) {
-        Log.i(tag, "Incoming notification from $sender. Urgent: $isUrgent")
+        LogPoseLogger.i(tag, "Incoming notification from $sender. Urgent: $isUrgent")
         if (isSafetyModeActive && !isUrgent) {
-            Log.w(tag, "High speed driving detected. Suppressed non-urgent notification from $sender.")
+            LogPoseLogger.w(tag, "High speed driving detected. Suppressed non-urgent notification from $sender.")
             return
         }
         readoutNotificationTts(sender, message)
@@ -79,7 +79,7 @@ class SystemOrchestrator(private val context: Context? = null) {
 
     // 3. Voice & NLU Engine
     private fun initializeVoiceNluEngine() {
-        Log.d(tag, "Initialized Voice NLU & Phonetic Synthesis Engine.")
+        LogPoseLogger.d(tag, "Initialized Voice NLU & Phonetic Synthesis Engine.")
     }
 
     fun readoutNotificationTts(sender: String, text: String) {
@@ -87,14 +87,14 @@ class SystemOrchestrator(private val context: Context? = null) {
         val wasPlaying = isMusicPlaying
         if (wasPlaying) pauseMusic()
 
-        Log.i(tag, "Voice Readout (TTS): 'Notificación de $sender: $text'")
+        LogPoseLogger.i(tag, "Voice Readout (TTS): 'Notificación de $sender: $text'")
 
         if (wasPlaying) playMusic()
     }
 
     // 4. GPS & Navigation Module
     private fun initializeGpsNavigation() {
-        Log.d(tag, "Initialized GPS Location & Speed Tracking Engine.")
+        LogPoseLogger.d(tag, "Initialized GPS Location & Speed Tracking Engine.")
     }
 
     fun updateSpeedAndLocation(speedKmh: Float, lat: Double, lon: Double) {
@@ -105,29 +105,29 @@ class SystemOrchestrator(private val context: Context? = null) {
 
     // 5. Bluetooth & Intercom Module
     private fun initializeBluetoothIntercom() {
-        Log.d(tag, "Initialized Bluetooth A2DP/SCO Intercom Manager.")
+        LogPoseLogger.d(tag, "Initialized Bluetooth A2DP/SCO Intercom Manager.")
     }
 
     fun onBluetoothHeadsetChanged(connected: Boolean) {
         this.isBluetoothHeadsetConnected = connected
-        Log.i(tag, "Bluetooth Intercom Headset Connection: $connected")
+        LogPoseLogger.i(tag, "Bluetooth Intercom Headset Connection: $connected")
     }
 
     // 6. Safety Core & Priority Resolver
     private fun initializeSafetyCore() {
-        Log.d(tag, "Initialized Safety Core & Priority Resolver Engine.")
+        LogPoseLogger.d(tag, "Initialized Safety Core & Priority Resolver Engine.")
     }
 
     private fun checkSafetyThresholds(speedKmh: Float) {
         if (speedKmh > 90.0f) {
             if (!isSafetyModeActive) {
                 isSafetyModeActive = true
-                Log.w(tag, "HIGH-SPEED DRIVING SAFETY MODE ACTIVATED (>90 km/h).")
+                LogPoseLogger.w(tag, "HIGH-SPEED DRIVING SAFETY MODE ACTIVATED (>90 km/h).")
             }
         } else {
             if (isSafetyModeActive) {
                 isSafetyModeActive = false
-                Log.i(tag, "Normal driving speed resumed. Safety Mode deactivated.")
+                LogPoseLogger.i(tag, "Normal driving speed resumed. Safety Mode deactivated.")
             }
         }
     }

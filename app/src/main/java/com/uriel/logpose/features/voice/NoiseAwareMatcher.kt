@@ -26,9 +26,10 @@ object NoiseAwareMatcher {
     ): MatchResult? {
         if (text.isBlank()) return null
         
-        // Calculamos el umbral dinámico (Claude's logic)
-        // A más ruido y menos confianza, bajamos el requerimiento
-        val threshold = (0.50f + (noiseLevel * 0.20f) - (voskConfidence * 0.10f)).coerceIn(0.40f, 0.75f)
+        // Calculamos el umbral adaptativo (Sherlock v5.0 Fix):
+        // En ambientes ruidosos (noiseLevel alto), el umbral se relaja ligeramente (0.38f - 0.60f)
+        // para evitar el deadlock donde el ruido exigía un score inalcanzable.
+        val threshold = (0.48f - (noiseLevel * 0.05f) - (voskConfidence * 0.05f)).coerceIn(0.38f, 0.60f)
         
         var bestCandidate = ""
         var highestScore = 0f
