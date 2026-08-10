@@ -20,7 +20,7 @@ object MusicVocabulary {
     private val THAMIS_DICTIONARY: Map<String, String> get() = dictionary.mapaDe("musica.correcciones_foneticas")
     private val PLAYLISTS: List<String> get() = dictionary.listaDe("musica.playlists")
 
-    private val normalizedCache = LruCache<String, String>(256)
+    private val normalizedCache = LruCache<String, String>(512)
 
     fun clearCache() {
         normalizedCache.evictAll()

@@ -47,7 +47,7 @@ class VoskVoiceEngine(private var context: Context) {
         }
     }
 
-    private val audioChannel = Channel<AudioChunk>(128)
+    private val audioChannel = Channel<AudioChunk>(48)
     private var processingJob: Job? = null
     
     // --- ESTRATEGIA HÍBRIDA v4.6: ROLLING BUFFER ---
