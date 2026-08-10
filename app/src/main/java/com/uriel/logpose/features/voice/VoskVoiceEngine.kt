@@ -116,7 +116,7 @@ class VoskVoiceEngine(private var context: Context) {
         synchronized(recognizerLock) {
             try {
                 grammarRecognizer?.close()
-            } catch (e: Exception) {}
+            } catch (e: Exception) { LogPoseLogger.w("Suppressed: ${e.message}") }
             grammarRecognizer = null
             model = null
             isInitialized = false

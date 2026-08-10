@@ -68,7 +68,7 @@ object SpotifyWarmUpBinder {
     fun disconnect() {
         try {
             browser?.disconnect()
-        } catch (e: Exception) {}
+        } catch (e: Exception) { LogPoseLogger.w("Suppressed: ${e.message}") }
         browser = null
     }
 }

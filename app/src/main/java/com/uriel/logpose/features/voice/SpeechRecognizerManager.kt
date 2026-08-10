@@ -77,7 +77,7 @@ class SpeechRecognizerManager(
             isActuallyListening = false
             try {
                 recognizer?.stopListening()
-            } catch (e: Exception) {}
+            } catch (e: Exception) { LogPoseLogger.w("Suppressed: ${e.message}") }
         }
     }
 
@@ -86,7 +86,7 @@ class SpeechRecognizerManager(
             isActuallyListening = false
             try {
                 recognizer?.cancel()
-            } catch (e: Exception) {}
+            } catch (e: Exception) { LogPoseLogger.w("Suppressed: ${e.message}") }
         }
     }
 
@@ -96,7 +96,7 @@ class SpeechRecognizerManager(
             recognizer?.setRecognitionListener(null)
             recognizer?.destroy()
             recognizer = null
-        } catch (e: Exception) {}
+        } catch (e: Exception) { LogPoseLogger.w("Suppressed: ${e.message}") }
     }
 
     fun destroy() {

@@ -58,7 +58,7 @@ class ScoStateManager(
     fun stopMonitoring() {
         try {
             context.unregisterReceiver(receiver)
-        } catch (e: Exception) {}
+        } catch (e: Exception) { LogPoseLogger.w("Suppressed: ${e.message}") }
         backoffJob?.cancel()
     }
 

@@ -137,7 +137,7 @@ object ThamisAssistant {
                 addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK or android.content.Intent.FLAG_ACTIVITY_NO_ANIMATION)
             }
             context.startActivity(trampolineIntent)
-        } catch (e: Exception) {}
+        } catch (e: Exception) { LogPoseLogger.w("Suppressed: ${e.message}") }
     }
 
     fun stop() {

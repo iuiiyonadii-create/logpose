@@ -80,13 +80,13 @@ object LearningEngine {
         try {
             val json = org.json.JSONObject(phoneticJson)
             json.keys().forEach { key -> learnedPhoneticMap[key] = json.getString(key) }
-        } catch (e: Exception) {}
+        } catch (e: Exception) { LogPoseLogger.w("Suppressed: ${e.message}") }
 
         val maturityJson = p.getString("maturity_map", "{}") ?: "{}"
         try {
             val json = org.json.JSONObject(maturityJson)
             json.keys().forEach { key -> maturityMap[key] = json.getInt(key) }
-        } catch (e: Exception) {}
+        } catch (e: Exception) { LogPoseLogger.w("Suppressed: ${e.message}") }
 
         p.getStringSet("learned_music", emptySet())?.let { learnedMusicEntities.addAll(it) }
         p.getStringSet("learned_apps", emptySet())?.let { learnedApps.addAll(it) }
@@ -97,9 +97,9 @@ object LearningEngine {
         try {
             val json = org.json.JSONObject(correctionsJson)
             json.keys().forEach { key ->
-                try { userCorrections[key] = Intent.valueOf(json.getString(key)) } catch (e: Exception) {}
+                try { userCorrections[key] = Intent.valueOf(json.getString(key)) } catch (e: Exception) { LogPoseLogger.w("Suppressed: ${e.message}") }
             }
-        } catch (e: Exception) {}
+        } catch (e: Exception) { LogPoseLogger.w("Suppressed: ${e.message}") }
     }
 
     private fun saveMemoryImmediate() {

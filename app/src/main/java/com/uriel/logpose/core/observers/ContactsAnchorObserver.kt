@@ -32,7 +32,7 @@ class ContactsAnchorObserver(
                 this
             )
             syncContacts()
-        } catch (e: Exception) {}
+        } catch (e: Exception) { LogPoseLogger.w("Suppressed: ${e.message}") }
     }
 
     override fun onChange(selfChange: Boolean, uri: Uri?) {
@@ -65,7 +65,7 @@ class ContactsAnchorObserver(
                     }
                 }
                 anchorRepository.updateContacts(contacts)
-            } catch (e: Exception) {}
+            } catch (e: Exception) { LogPoseLogger.w("Suppressed: ${e.message}") }
         }
     }
 

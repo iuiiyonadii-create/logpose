@@ -76,7 +76,7 @@ class PhoneticDictionary(context: Context) {
                     result[key] = nodo.getString(key)
                 }
             }
-        } catch (e: Exception) {}
+        } catch (e: Exception) { LogPoseLogger.w("Suppressed: ${e.message}") }
         return result
     }
 

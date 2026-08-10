@@ -104,7 +104,7 @@ object ContactManager {
                 true,
                 observer!!
             )
-        } catch (e: Exception) {}
+        } catch (e: Exception) { LogPoseLogger.w("Suppressed: ${e.message}") }
     }
 
     @Deprecated("Usar syncContacts para el motor inteligente")
@@ -137,7 +137,7 @@ object ContactManager {
                     }
                 }
             }
-        } catch (e: Exception) {}
+        } catch (e: Exception) { LogPoseLogger.w("Suppressed: ${e.message}") }
         return names.distinct()
     }
 }

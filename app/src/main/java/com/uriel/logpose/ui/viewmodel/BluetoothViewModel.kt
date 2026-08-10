@@ -76,7 +76,7 @@ class BluetoothViewModel @Inject constructor(
         registeredContext?.let {
             try {
                 it.unregisterReceiver(batteryReceiver)
-            } catch (e: Exception) {}
+            } catch (e: Exception) { LogPoseLogger.w("Suppressed: ${e.message}") }
             registeredContext = null
         }
     }
