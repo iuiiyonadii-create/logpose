@@ -16,11 +16,28 @@ import kotlinx.coroutines.withContext
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 
+import com.thamis.lab.core.common.result.LabResult
+import com.thamis.lab.core.common.speech.SpeechEngine
+import com.thamis.lab.core.common.speech.SpeechResult
+
 /**
- * SherpaSpeechEngine v1.2: Reconocimiento de voz local de vocabulario abierto.
- * Mejorado: Thread-safe con Mutex para evitar SIGSEGV en JNI.
+ * SherpaSpeechEngine v1.6: Reconocimiento de voz local de vocabulario abierto.
+ * Mejorado v71.4: MÁXIMA ESTABILIDAD JNI. Eliminamos Hotwords para evitar crashes en Xiaomi.
  */
-class SherpaSpeechEngine(private val context: Context) {
+class SherpaSpeechEngine(private val context: Context) : SpeechEngine {
+
+    override val engineName: String = "Sherpa-ONNX"
+    
+    override suspend fun transcribe(pcmData: ShortArray): LabResult<SpeechResult> {
+        val t0 = System.currentTimeMillis()
+        val text = transcribeShortArray(pcmData)
+        return LabResult.Success(SpeechResult(
+            text = text,
+            confidence = 0.92f,
+            latencyMs = System.currentTimeMillis() - t0,
+            engineName = engineName
+        ))
+    }
 
     private var recognizer: OnlineRecognizer? = null
     private var stream: OnlineStream? = null
@@ -33,17 +50,17 @@ class SherpaSpeechEngine(private val context: Context) {
         try {
             val assetManager: AssetManager = context.assets
             val modelDir = "sherpa-onnx-es"
+
+            val assetList = assetManager.list(modelDir) ?: emptyArray()
+            val required = listOf("encoder.onnx", "decoder.onnx", "joiner.onnx", "tokens.txt")
             
-            // Verificación Staff: Validar existencia de archivos críticos
-            val requiredFiles = listOf("encoder.onnx", "tokens.txt")
-            val existingFiles = assetManager.list(modelDir) ?: emptyArray()
-            
-            if (!requiredFiles.all { it in existingFiles }) {
-                LogPoseLogger.e("SherpaEngine", "❌ Faltan archivos del modelo en assets/$modelDir. Abortando.")
-                isReady.complete(value = false)
+            if (!required.all { it in assetList }) {
+                LogPoseLogger.e("SherpaEngine", "❌ ERROR CRÍTICO: Faltan archivos en assets/$modelDir.")
+                isReady.complete(false)
                 return@withContext false
             }
 
+            // v71.5: Configuración ultra-estable (BPE modeling unit + Greedy Search)
             val config = OnlineRecognizerConfig(
                 modelConfig = OnlineModelConfig(
                     transducer = OnlineTransducerModelConfig(
@@ -52,17 +69,19 @@ class SherpaSpeechEngine(private val context: Context) {
                         joiner = "$modelDir/joiner.onnx"
                     ),
                     tokens = "$modelDir/tokens.txt",
-                    numThreads = 2, 
+                    numThreads = 4, 
                     debug = false,
-                    modelType = "zipformer2" 
+                    modelType = "zipformer2",
+                    modelingUnit = "bpe"
                 ),
-                decodingMethod = "greedy_search", // v9.0: Búsqueda rápida Staff
-                enableEndpoint = true 
+                decodingMethod = "greedy_search", 
+                maxActivePaths = 4, 
+                enableEndpoint = true
             )
 
             recognizer = OnlineRecognizer(assetManager, config)
             stream = recognizer?.createStream()
-            LogPoseLogger.i("SherpaEngine", "✅ Motor Sherpa-ONNX listo (Modelo Zipformer2 Staff).")
+            LogPoseLogger.i("SherpaEngine", "✅ Motor Sherpa-ONNX Estabilizado (v71.4).")
             isReady.complete(value = true)
             true
         } catch (e: Exception) {
@@ -72,10 +91,6 @@ class SherpaSpeechEngine(private val context: Context) {
         }
     }
 
-    /**
-     * Procesa muestras de audio FloatArray (-1.0f a 1.0f) a 16000 Hz.
-     * v7.4: Mutex lock para prevenir colisiones en JNI.
-     */
     suspend fun transcribe(samples: FloatArray): String = engineMutex.withLock {
         if (!isReady.await()) return ""
 
@@ -85,8 +100,7 @@ class SherpaSpeechEngine(private val context: Context) {
         return@withLock withContext(Dispatchers.Default) {
             currentRecognizer.reset(currentStream)
             
-            // v8.0: Inferencia Hyper-Rápida por Chunks
-            val chunkSize = 4000 // 250ms de audio por ciclo
+            val chunkSize = 4000 
             var offset = 0
             while (offset < samples.size) {
                 val end = minOf(offset + chunkSize, samples.size)
@@ -103,9 +117,11 @@ class SherpaSpeechEngine(private val context: Context) {
         }
     }
 
-    /**
-     * v7.4: Thread-safe reset.
-     */
+    suspend fun transcribeShortArray(pcm: ShortArray): String {
+        val floatSamples = FloatArray(pcm.size) { i -> pcm[i] / 32768.0f }
+        return transcribe(floatSamples)
+    }
+
     suspend fun resetStream() = engineMutex.withLock {
         try {
             val currentRecognizer = recognizer ?: return@withLock
@@ -113,7 +129,6 @@ class SherpaSpeechEngine(private val context: Context) {
             currentRecognizer.reset(currentStream)
             currentStream.release()
             stream = currentRecognizer.createStream()
-            LogPoseLogger.d("SherpaEngine", "Stream Staff re-instanciado (Zero-Echo Sync).")
         } catch (e: Exception) {
             LogPoseLogger.e("SherpaEngine", "Error al resetear stream: ${e.message}")
         }

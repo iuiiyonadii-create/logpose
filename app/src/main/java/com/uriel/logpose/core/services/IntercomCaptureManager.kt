@@ -10,6 +10,7 @@ import android.media.audiofx.AutomaticGainControl
 import android.media.audiofx.NoiseSuppressor
 import android.os.Build
 import android.os.Process
+import com.uriel.logpose.core.app.LogPoseApplication
 import com.uriel.logpose.core.compat.core.LogPoseLogger
 import kotlinx.coroutines.*
 
@@ -34,12 +35,16 @@ object IntercomCaptureManager {
     private var lastCallback: ((ShortArray, Int) -> Unit)? = null
     private var isPersistent = false
     private var lastAudioChunkTimestamp = 0L
+    private var lastRms = 0.0
+    private var currentSmoothingFactor = 0.02f
 
-    // --- AUDIO POOL v1.7 (Misión #029) ---
-    private val bufferPool = java.util.concurrent.LinkedBlockingQueue<ShortArray>(20)
+    // --- AUDIO POOL v1.8 (Misión #040) ---
+    // Aumentamos el pool a 150 para evitar creaciones de arrays bajo carga (Optimización GC Staff)
+    private val bufferPool = java.util.concurrent.LinkedBlockingQueue<ShortArray>(150)
     
     private fun getBufferFromPool(size: Int): ShortArray {
-        return bufferPool.poll() ?: ShortArray(size)
+        val polled = bufferPool.poll()
+        return if ((polled != null) && (polled.size >= size)) polled else ShortArray(size)
     }
 
     private fun releaseBufferToPool(buffer: ShortArray) {
@@ -47,15 +52,10 @@ object IntercomCaptureManager {
     }
 
     fun isCapturing(): Boolean = audioRecord?.recordingState == AudioRecord.RECORDSTATE_RECORDING
-    fun getActiveSessionId(): Int = audioRecord?.audioSessionId ?: -1
 
     @SuppressLint("MissingPermission")
     fun start(context: Context, onAudioData: (ShortArray, Int) -> Unit) {
-        lastCallback = { data, len ->
-            val poolBuffer = getBufferFromPool(len)
-            System.arraycopy(data, 0, poolBuffer, 0, len)
-            onAudioData(poolBuffer, len)
-        }
+        lastCallback = onAudioData
         isPersistent = true
         
         if (isCapturing()) {
@@ -74,10 +74,21 @@ object IntercomCaptureManager {
         releaseBufferToPool(buffer)
     }
 
-    private var currentGain = 4.0f
-    private const val TARGET_RMS = 6000.0
-    private const val MAX_GAIN = 15.0f
-    private const val MIN_GAIN = 1.0f
+    /**
+     * SINCRO CLAUDE: Fuerza un re-intento de inicio tras otorgar permisos en tiempo real.
+     */
+    fun retryAfterPermission() {
+        LogPoseLogger.i("Capture", "Solicitando re-arranque tras cambio de permisos.")
+        restartAttempts = 0
+        isPersistent = true
+        val context = LogPoseCallService.instance ?: LogPoseApplication.instance
+        internalStart(context)
+    }
+
+    private var currentGain = 3.0f
+    private const val TARGET_RMS = 5500.0
+    private const val MAX_GAIN = 8.0f
+    private const val MIN_GAIN = 0.8f
 
     @SuppressLint("MissingPermission")
     private fun internalStart(context: Context) {
@@ -87,26 +98,44 @@ object IntercomCaptureManager {
                 AudioFormat.CHANNEL_IN_MONO,
                 AudioFormat.ENCODING_PCM_16BIT
             )
+            // Alineación a marco neural (Múltiplo exacto de 512 muestras = 32ms a 16kHz)
+            val alignedBufferSize = maxOf(minBufferSize, 2048)
 
+            // SINCRO CLAUDE: Inversión de prioridad Staff. 
+            // VOICE_RECOGNITION es superior para IA porque incluye Noise Suppression nativa.
+            val preferredSource = MediaRecorder.AudioSource.VOICE_RECOGNITION
+            
             audioRecord = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
                 AudioRecord.Builder()
-                    .setContext(context) 
-                    .setAudioSource(MediaRecorder.AudioSource.VOICE_COMMUNICATION)
+                    .setContext(context)
+                    .setAudioSource(preferredSource)
                     .setAudioFormat(AudioFormat.Builder()
                         .setEncoding(AudioFormat.ENCODING_PCM_16BIT)
                         .setSampleRate(SAMPLE_RATE)
                         .setChannelMask(AudioFormat.CHANNEL_IN_MONO)
                         .build())
-                    .setBufferSizeInBytes(minBufferSize * 2)
+                    .setBufferSizeInBytes(alignedBufferSize * 2)
                     .build()
             } else {
                 @Suppress("DEPRECATION")
                 AudioRecord(
-                    MediaRecorder.AudioSource.VOICE_COMMUNICATION,
+                    preferredSource,
                     SAMPLE_RATE,
                     AudioFormat.CHANNEL_IN_MONO,
                     AudioFormat.ENCODING_PCM_16BIT,
-                    minBufferSize * 2
+                    alignedBufferSize * 2
+                )
+            }
+
+            if (audioRecord?.state != AudioRecord.STATE_INITIALIZED) {
+                LogPoseLogger.w("Capture", "Fallo inicial con VOICE_RECOGNITION. Intentando fallback a MIC...")
+                audioRecord?.release()
+                audioRecord = AudioRecord(
+                    MediaRecorder.AudioSource.MIC,
+                    SAMPLE_RATE,
+                    AudioFormat.CHANNEL_IN_MONO,
+                    AudioFormat.ENCODING_PCM_16BIT,
+                    alignedBufferSize * 2
                 )
             }
 
@@ -116,18 +145,30 @@ object IntercomCaptureManager {
                 return
             }
 
-            // SINCRO CLAUDE: Blindaje absoluto contra muertes de proceso por AppOps en HyperOS
-            // Solo intentamos grabar si tenemos un contexto de atribución y estamos en condiciones.
             try {
                 audioRecord?.startRecording()
                 if (audioRecord?.recordingState != AudioRecord.RECORDSTATE_RECORDING) {
                     throw Exception("El hardware de audio no aceptó el comando startRecording.")
                 }
-                LogPoseLogger.i("Capture: Hardware mic activado con éxito.")
+                
+                // v68.0: Explicit Hardware Denoising Activation
+                val sessionId = audioRecord?.audioSessionId ?: 0
+                if (sessionId != 0) {
+                    if (NoiseSuppressor.isAvailable()) {
+                        noiseSuppressor = NoiseSuppressor.create(sessionId).apply { enabled = true }
+                        LogPoseLogger.i("Capture", "✅ Hardware NoiseSuppressor: ACTIVADO")
+                    }
+                    if (AcousticEchoCanceler.isAvailable()) {
+                        echoCanceler = AcousticEchoCanceler.create(sessionId).apply { enabled = true }
+                        LogPoseLogger.i("Capture", "✅ Hardware EchoCanceler: ACTIVADO")
+                    }
+                }
+
+                LogPoseLogger.i("Capture: Hardware mic (VOICE_RECOGNITION) activado con éxito a 16kHz.")
+                LogPoseHudService.updateStatus("🟢 MIC: ACTIVO")
             } catch (e: Exception) {
                 LogPoseLogger.e("Capture: ERROR CRÍTICO. El sistema denegó la grabación (AppOps/HyperOS): ${e.message}")
-                // SINCRO CLAUDE: Si el sistema nos deniega, no intentamos re-iniciar en loop infinito
-                // para evitar que el system_server nos mate el proceso por insistencia.
+                LogPoseHudService.updateStatus("🔴 MIC: BLOQUEADO POR OS")
                 audioRecord?.release()
                 audioRecord = null
                 isPersistent = false
@@ -135,10 +176,8 @@ object IntercomCaptureManager {
             }
 
             restartAttempts = 0 
-
-            setupAudioEffects()
             
-            launchCaptureLoop(context, minBufferSize)
+            launchCaptureLoop(context, alignedBufferSize)
             
         } catch (e: Exception) {
             LogPoseLogger.e("Capture Error: ${e.message}")
@@ -146,38 +185,15 @@ object IntercomCaptureManager {
         }
     }
 
-    private fun setupAudioEffects() {
-        val record = audioRecord ?: return
-        val sessionId = record.audioSessionId
-
-        if (NoiseSuppressor.isAvailable()) {
-            noiseSuppressor = NoiseSuppressor.create(sessionId)
-            noiseSuppressor?.enabled = true
-            LogPoseLogger.i("Hardware: Supresor de ruido ACTIVADO.")
-        }
-        
-        if (AcousticEchoCanceler.isAvailable()) {
-            echoCanceler = AcousticEchoCanceler.create(sessionId)
-            echoCanceler?.enabled = true
-            LogPoseLogger.i("Hardware: Cancelador de eco ACTIVADO.")
-        }
-
-        if (AutomaticGainControl.isAvailable()) {
-            hardwareAgc = AutomaticGainControl.create(sessionId)
-            hardwareAgc?.enabled = true
-            LogPoseLogger.i("Hardware: AGC de hardware ACTIVADO.")
-        }
-    }
-
     private fun launchCaptureLoop(context: Context, bufferSize: Int) {
         captureJob?.cancel()
         captureJob = scope.launch {
             Process.setThreadPriority(Process.THREAD_PRIORITY_URGENT_AUDIO)
-            val buffer = ShortArray(bufferSize)
+            val rawBuffer = ShortArray(bufferSize)
             
             while (isPersistent) {
                 val record = audioRecord ?: break
-                val read = record.read(buffer, 0, buffer.size)
+                val read = record.read(rawBuffer, 0, rawBuffer.size)
                 
                 when {
                     read == AudioRecord.ERROR_DEAD_OBJECT -> {
@@ -192,9 +208,20 @@ object IntercomCaptureManager {
                     }
                     read > 0 -> {
                         lastAudioChunkTimestamp = System.currentTimeMillis()
-                        // --- AGC DINÁMICO ---
-                        processAGC(buffer, read)
-                        lastCallback?.invoke(buffer, read)
+                        
+                        // v1.9: Activación de AGC Staff - Normalización de volumen en tiempo real
+                        processAGC(rawBuffer, read)
+
+                        // v68.0: Software Denoising (Noise Gate / Spectral Expander Simulation)
+                        // Limpia ruidos de fondo por debajo de un umbral dinámico
+                        applySoftwareDenoising(rawBuffer, read)
+
+                        // --- POOL DE BUFFERS v1.8 (Misión #030) ---
+                        // Re-usamos buffers del pool para evitar la fragmentación de memoria y el GC churn.
+                        val cleanChunk = getBufferFromPool(read)
+                        System.arraycopy(rawBuffer, 0, cleanChunk, 0, read)
+                        
+                        lastCallback?.invoke(cleanChunk, read)
                     }
                 }
             }
@@ -208,20 +235,43 @@ object IntercomCaptureManager {
             val sample = buffer[i].toDouble()
             sumSq += sample * sample
         }
-        val rms = Math.sqrt(sumSq / read)
+        val rms = kotlin.math.sqrt(sumSq / read)
         
-        // --- AGC SMART v1.6 (Optimizado para Intercoms) ---
+        // --- AGC SMART v1.7 (Zero-Distortion Staff) ---
         // Si el RMS es extremadamente bajo, el casco podría estar en standby.
         // Si es extremadamente alto, el viento está saturando.
         if (rms in 20.0..10000.0) {
             val targetGain = (TARGET_RMS / rms).toFloat().coerceIn(MIN_GAIN, MAX_GAIN)
-            // Suavizado más lento para intercoms (Evita el "efecto bombeo" del ruido de viento)
-            currentGain = currentGain * 0.98f + targetGain * 0.02f
+            
+            // v61.0: Adaptive AGC Smoothing. 
+            // Reaccionamos más rápido ante cambios bruscos (vibraciones/viento) y más lento ante voz estable.
+            val variance = kotlin.math.abs(rms - lastRms)
+            lastRms = rms
+            
+            currentSmoothingFactor = if (variance > 1500.0) 0.15f else 0.02f
+            currentGain = currentGain * (1f - currentSmoothingFactor) + targetGain * currentSmoothingFactor
         }
 
         for (i in 0 until read) {
             val amplified = buffer[i].toInt() * currentGain
             buffer[i] = amplified.toInt().coerceIn(-32768, 32767).toShort()
+        }
+    }
+
+    /**
+     * v68.0: Software Denoising (Neural Proxy).
+     * Aplica una puerta de ruido dinámica para atenuar frecuencias de viento residuales.
+     */
+    private fun applySoftwareDenoising(buffer: ShortArray, read: Int) {
+        // Umbral dinámico basado en el RMS calculado en el AGC
+        val noiseThreshold = (lastRms * 0.25).toInt()
+        
+        for (i in 0 until read) {
+            val absSample = kotlin.math.abs(buffer[i].toInt())
+            if (absSample < noiseThreshold) {
+                // Atenuación suave para sonidos de bajo volumen (ruido de fondo)
+                buffer[i] = (buffer[i] * 0.4).toInt().toShort()
+            }
         }
     }
 
@@ -253,12 +303,14 @@ object IntercomCaptureManager {
         if (restartAttempts < MAX_RESTART_ATTEMPTS) {
             restartAttempts++
             LogPoseLogger.w("Capture Watchdog: Re-creando AudioRecord (Intento $restartAttempts)...")
+            LogPoseHudService.updateStatus("⚠️ MIC: RECUPERANDO ($restartAttempts)")
             scope.launch {
-                delay(500)
+                delay(500L)
                 internalStart(context)
             }
         } else {
             LogPoseLogger.e("Capture: Hardware Mic falló definitivamente.")
+            LogPoseHudService.updateStatus("🔴 MIC: FALLO TOTAL")
             isPersistent = false
         }
     }

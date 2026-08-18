@@ -10,8 +10,16 @@ import com.uriel.logpose.core.parser.PhoneticDictionary
  */
 object MusicVocabulary {
 
-    private val dictionary: PhoneticDictionary by lazy {
-        PhoneticDictionary(LogPoseApplication.instance)
+    private var _dictionary: PhoneticDictionary? = null
+    private val dictionary: PhoneticDictionary 
+        get() = _dictionary ?: PhoneticDictionary(LogPoseApplication.instance)
+
+    fun setDictionaryForTesting(dict: PhoneticDictionary) {
+        _dictionary = dict
+    }
+
+    fun clearCache() {
+        normalizedCache.evictAll()
     }
 
     private val ARTISTS: List<String> get() = dictionary.listaDe("musica.artistas")
@@ -20,24 +28,44 @@ object MusicVocabulary {
     private val THAMIS_DICTIONARY: Map<String, String> get() = dictionary.mapaDe("musica.correcciones_foneticas")
     private val PLAYLISTS: List<String> get() = dictionary.listaDe("musica.playlists")
 
+    // v57.2: Cache de Entidades Normalizadas para evitar 5000+ normalizaciones por segundo
+    private val normalizedEntitiesCache: Map<String, String> by lazy {
+        val map = mutableMapOf<String, String>()
+        (ARTISTS + SONGS + PLAYLISTS).distinct().forEach {
+            map[it] = normalize(it)
+        }
+        map
+    }
+
+    private val fastLookupSet: HashSet<String> by lazy {
+        val set = HashSet<String>()
+        normalizedEntitiesCache.values.forEach { set.add(it) }
+        set
+    }
+
     private val normalizedCache = LruCache<String, String>(512)
 
-    fun clearCache() {
-        normalizedCache.evictAll()
-    }
+    // v57.0: Regex pre-compilados para ahorrar ciclos de CPU (Misión #057)
+    private val DIACRITICS_A = Regex("[áàäâã]")
+    private val DIACRITICS_E = Regex("[éèëê]")
+    private val DIACRITICS_I = Regex("[íìïî]")
+    private val DIACRITICS_O = Regex("[óòöôõ]")
+    private val DIACRITICS_U = Regex("[úùüû]")
+    private val CLEAN_CHAR_REGEX = Regex("[^a-z0-9ñ ]")
+    private val SPACES_REGEX = Regex("\\s+")
 
     fun normalize(input: String): String {
         if (input.isBlank()) return ""
         
         // v22.9: Limpieza previa de caracteres para asegurar que la llave de caché sea pura
         val cleanInput = input.lowercase()
-            .replace(Regex("[áàäâã]"), "a")
-            .replace(Regex("[éèëê]"), "e")
-            .replace(Regex("[íìïî]"), "i")
-            .replace(Regex("[óòöôõ]"), "o")
-            .replace(Regex("[úùüû]"), "u")
-            .replace(Regex("[^a-z0-9ñ ]"), " ")
-            .replace(Regex("\\s+"), " ")
+            .replace(DIACRITICS_A, "a")
+            .replace(DIACRITICS_E, "e")
+            .replace(DIACRITICS_I, "i")
+            .replace(DIACRITICS_O, "o")
+            .replace(DIACRITICS_U, "u")
+            .replace(CLEAN_CHAR_REGEX, " ")
+            .replace(SPACES_REGEX, " ")
             .trim()
 
         normalizedCache.get(cleanInput)?.let { return it }
@@ -51,7 +79,7 @@ object MusicVocabulary {
             return corrected
         }
 
-        // Luego el diccionario estático
+        // Luego el diccionario estático (v99.6: STAFF FIX - Reemplazo por límites de palabra \b para evitar efecto eco)
         for ((hears, targets) in THAMIS_DICTIONARY) {
             val regex = Regex("\\b${Regex.escape(hears)}\\b", RegexOption.IGNORE_CASE)
             if (result.contains(regex)) {
@@ -87,35 +115,75 @@ object MusicVocabulary {
     fun findBestMatch(query: String, threshold: Double = 0.72): Pair<String, Double>? {
         if (query.isBlank()) return null
         val normalizedQuery = normalize(query)
+        
+        // v57.3: Bypass Instantáneo si el match es perfecto
+        if (fastLookupSet.contains(normalizedQuery)) {
+            // Buscamos la entidad original (pobre en performance pero solo ocurre una vez)
+            val original = normalizedEntitiesCache.entries.find { it.value == normalizedQuery }?.key ?: normalizedQuery
+            return original to 1.0
+        }
+
         var bestEntity: String? = null
         var bestScore = threshold
         
         val stopwords = setOf("un", "una", "el", "la", "los", "las", "de", "con", "por", "en")
+        val qTokens = if (normalizedQuery.contains(" ")) normalizedQuery.split(" ").filter { it.length >= 3 && it !in stopwords } else emptyList()
         
-        for (entity in (ARTISTS + SONGS + PLAYLISTS + LEARNED)) {
-            val entityNorm = normalize(entity)
-            if (normalizedQuery == entityNorm) return entity to 1.0
-            
-            // v7.3: Aplicar peso de afinidad (User Preferences)
-            val affinityWeight = com.uriel.logpose.thamis.learning.LearningEngine.getAffinityWeight(entity)
+        // Iteramos sobre el cache pre-normalizado
+        for ((entity, entityNorm) in normalizedEntitiesCache) {
+            val affinityWeight = com.uriel.logpose.thamis.learning.LearningEngine.getAffinityWeight(entity).toDouble()
             val baseScore = weightedLevenshteinRatio(normalizedQuery, entityNorm)
-            val finalScore = baseScore * affinityWeight // Boost Staff para favoritos
+            val finalScore = baseScore * affinityWeight
 
             if (finalScore > bestScore) {
                 bestScore = finalScore
                 bestEntity = entity
             }
             
-            val qTokens = normalizedQuery.split(" ").filter { it.length >= 3 && it !in stopwords }
-            val eTokens = entityNorm.split(" ").filter { it.length >= 3 && it !in stopwords }
-            for (qt in qTokens) {
-                for (et in eTokens) {
-                    val tScore = weightedLevenshteinRatio(qt, et) * affinityWeight
-                    if (tScore > bestScore) { bestScore = tScore; bestEntity = entity }
+            if (qTokens.isNotEmpty() && entityNorm.contains(" ")) {
+                val eTokens = entityNorm.split(" ").filter { it.length >= 3 && it !in stopwords }
+                for (qt in qTokens) {
+                    for (et in eTokens) {
+                        val tScore = weightedLevenshteinRatio(qt, et) * affinityWeight
+                        if (tScore > bestScore) { 
+                            bestScore = tScore
+                            bestEntity = entity 
+                        }
+                    }
                 }
             }
         }
         return bestEntity?.let { it to bestScore }
+    }
+
+    private fun weightedLevenshteinRatio(s1: String, s2: String): Double {
+        if (s1 == s2) return 1.0
+        val n = s1.length
+        val m = s2.length
+        if (n == 0 || m == 0) return 0.0
+
+        // v57.2: Optimización con FloatArray (Más liviano para CPU móvil)
+        var prev = FloatArray(m + 1)
+        var curr = FloatArray(m + 1)
+
+        for (j in 0..m) prev[j] = j.toFloat()
+
+        for (i in 1..n) {
+            curr[0] = i.toFloat()
+            val c1 = s1[i - 1]
+            for (j in 1..m) {
+                val c2 = s2[j - 1]
+                val cost = if (c1 == c2) 0.0f else {
+                    if (isSibilant(c1) && isSibilant(c2)) 0.3f else 1.0f
+                }
+                curr[j] = minOf(curr[j - 1] + 1.0f, prev[j] + 1.0f, prev[j - 1] + cost)
+            }
+            val temp = prev
+            prev = curr
+            curr = temp
+        }
+
+        return (maxOf(n, m).toDouble() - prev[m].toDouble()) / maxOf(n, m).toDouble()
     }
 
     fun reconstructFromPartial(partial: String): String? {
@@ -136,30 +204,14 @@ object MusicVocabulary {
     fun getAllSongs(): List<String> = SONGS
     fun getAllPlaylists(): List<String> = PLAYLISTS
 
-    private fun weightedLevenshteinRatio(s1: String, s2: String): Double {
-        if (s1 == s2) return 1.0
-        val len1 = s1.length; val len2 = s2.length
-        if (len1 == 0 || len2 == 0) return 0.0
-        val prev = DoubleArray(len2 + 1)
-        val curr = DoubleArray(len2 + 1)
-        for (j in 0..len2) prev[j] = j.toDouble()
-        for (i in 1..len1) {
-            curr[0] = i.toDouble()
-            for (j in 1..len2) {
-                val c1 = s1[i - 1]; val c2 = s2[j - 1]
-                val cost = when {
-                    c1 == c2 -> 0.0
-                    isSibilant(c1) && isSibilant(c2) -> 0.3
-                    isSibilant(c1) || isSibilant(c2) -> 0.5
-                    else -> 1.0
-                }
-                curr[j] = minOf(prev[j] + 1.0, curr[j - 1] + 1.0, prev[j - 1] + cost)
-            }
-            for (j in 0..len2) prev[j] = curr[j]
-        }
-        return (maxOf(len1, len2) - prev[len2]) / maxOf(len1, len2)
-    }
-
     private fun isSibilant(c: Char): Boolean = c in setOf('s', 'z', 'x', 'j', 'c')
-    fun isKnown(query: String): Boolean = findBestMatch(query, 0.90) != null
+    
+    fun isKnown(query: String): Boolean {
+        if (query.isBlank()) return false
+        val norm = normalize(query)
+        // Match instantáneo O(1)
+        if (fastLookupSet.contains(norm)) return true
+        // Solo si no hay match exacto, hacemos el fuzzy pesado
+        return findBestMatch(query, 0.90) != null
+    }
 }

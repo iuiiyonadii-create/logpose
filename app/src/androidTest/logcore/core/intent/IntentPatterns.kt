@@ -1,5 +1,7 @@
 package com.uriel.logpose.logcore.core.intent
 
+import com.thamis.lab.core.contracts.intent.Intent
+
 object IntentPatterns {
 
     val patterns = listOf(

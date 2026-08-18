@@ -11,9 +11,10 @@ object PriorityResolver {
 
     fun resolve(command: LogPoseCommand): Priority {
         return when (command) {
-            is LogPoseCommand.Call -> Priority.CRITICAL
-            LogPoseCommand.WhereAmI -> Priority.IMPORTANT
-            is LogPoseCommand.PlayMusic, LogPoseCommand.PauseMusic -> Priority.NORMAL
+            is LogPoseCommand.Communication.Call -> Priority.CRITICAL
+            LogPoseCommand.Navigation.WhereAmI -> Priority.IMPORTANT
+            is LogPoseCommand.Media.PlayMusic, 
+            LogPoseCommand.Media.PauseMusic -> Priority.NORMAL
             else -> Priority.LOW
         }
     }

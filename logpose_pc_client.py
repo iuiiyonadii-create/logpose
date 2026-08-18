@@ -107,6 +107,28 @@ class LogPoseApp:
         
         self.log("SISTEMA LOGPOSE PC: INICIANDO...", "yellow")
         threading.Thread(target=self.init_hardware, daemon=True).start()
+        threading.Thread(target=self.sync_project_context, daemon=True).start()
+
+    def sync_project_context(self):
+        """ Envía el mapa del proyecto al cerebro para modo Agente """
+        try:
+            self.log("Sincronizando contexto del proyecto con Thamis Agent...", "cyan")
+            import requests
+            files = []
+            for root, dirs, f_names in os.walk("."):
+                if ".git" in root or "build" in root or ".gradle" in root: continue
+                for f in f_names:
+                    if f.endswith((".kt", ".py", ".gradle", ".xml")):
+                        files.append(os.path.join(root, f))
+            
+            payload = {
+                "msg": f"SYSTEM_SYNC: Estructura del proyecto detectada con {len(files)} archivos. Raíz: {os.getcwd()}",
+                "files": files[:50] # Solo mandamos los primeros 50 para no saturar el prompt inicial
+            }
+            requests.post("http://localhost:5000/chat", json=payload)
+            self.log("✅ Contexto sincronizado.", "green")
+        except Exception as e:
+            self.log(f"WARN: No se pudo sincronizar contexto: {e}", "yellow")
 
     def load_glosario(self):
         try:

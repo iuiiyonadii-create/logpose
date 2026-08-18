@@ -47,7 +47,7 @@ class WarmUpTrampolineActivity : Activity() {
         try {
             startActivity(launchIntent)
         } catch (e: Exception) {
-            LogPoseLogger.e(TAG, "Fallo al lanzar trampoline de Spotify", e)
+            LogPoseLogger.e(TAG, "Fallo al lanzar trampoline de Spotify: ${e.message}")
         }
  
         Handler(Looper.getMainLooper()).postDelayed({

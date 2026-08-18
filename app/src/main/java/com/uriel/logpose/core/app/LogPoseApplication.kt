@@ -12,6 +12,7 @@ import com.uriel.logpose.features.voice.VoskVoiceEngine
 import dagger.hilt.android.EntryPointAccessors
 import dagger.hilt.android.HiltAndroidApp
 import kotlinx.coroutines.*
+import java.io.File
 import javax.inject.Inject
 
 /**
@@ -28,6 +29,7 @@ class LogPoseApplication : Application() {
     val anchorRepository = com.uriel.logpose.core.engine.AnchorRepository()
     lateinit var contextualResolver: com.uriel.logpose.core.engine.ContextualIntentResolver
     lateinit var sherpaEngine: com.uriel.logpose.core.speech.SherpaSpeechEngine
+    lateinit var whisperEngine: com.uriel.logpose.core.speech.whisper.WhisperSpeechEngine
     private var contactsObserver: com.uriel.logpose.core.observers.ContactsAnchorObserver? = null
 
     override fun onCreate() {
@@ -36,27 +38,68 @@ class LogPoseApplication : Application() {
         
         contextualResolver = com.uriel.logpose.core.engine.ContextualIntentResolver(anchorRepository)
         sherpaEngine = com.uriel.logpose.core.speech.SherpaSpeechEngine(this)
+        whisperEngine = com.uriel.logpose.core.speech.whisper.WhisperSpeechEngine(this)
+        
+        // v11.0 STAFF: Eliminamos Radar de Laboratorio y Reset de IPs para evitar timeouts.
+        // El sistema ahora nace y vive 100% de forma local.
         
         try {
-            // 1. Inicializaciones asíncronas pesadas (Performance Optimization)
+            // 1. Inicializaciones asíncronas escalonadas (Xiaomi Staggered Startup v1.0)
             val appScope = CoroutineScope(Dispatchers.IO + SupervisorJob())
             appScope.launch {
+                // PRIORIDAD 1: Motores de Voz (Hearing path) - INICIO ESCALONADO STAFF
+                LogPoseLogger.d("Startup", "Despertando Vosk...")
+                voskEngine.start() 
+                delay(800)
+                
+                LogPoseLogger.d("Startup", "Despertando Sherpa...")
                 sherpaEngine.initEngine()
+                delay(800)
+                
+                LogPoseLogger.d("Startup", "Despertando Whisper Pro...")
+                whisperEngine.initEngine()
+                delay(800)
+                
+                LogPoseLogger.d("Startup", "Despertando Memoria Vectorial...")
+                com.uriel.logpose.core.intelligence.memory.VectorMemoryEngine.initialize(this@LogPoseApplication)
+                delay(800)
+                
+                com.uriel.logpose.core.forensic.ForensicVault.initialize(this@LogPoseApplication)
+                
+                LogPoseLogger.d("Startup", "Despertando Cerebro Unificado...")
+                val neuralInit = com.uriel.logpose.core.intelligence.ThamisNeuralEngine.initialize(this@LogPoseApplication)
+                com.uriel.logpose.core.intelligence.llm.LLMDecisionEngine.initialize()
+                
+                // v73.0 STAFF: Reportamos salud a la Motherbase (PC) para auto-descarga de modelos
+                val whisperMissing = !File(getExternalFilesDir(null), "whisper/tiny.en-encoder.int8.onnx").exists()
+                val gemmaMissing = !neuralInit
+                com.uriel.logpose.core.intelligence.MotherbaseBridge.reportSystemHealth(whisperMissing, gemmaMissing)
+                
+                // v66.0: Glosario movido al IntentDetector blindado
+                
+                delay(500) // Escalonamiento para no saturar CPU en Xiaomi
+                
+                // PRIORIDAD 2: Managers de Feedback y Música
                 com.uriel.logpose.features.voice.FeedbackManager.initialize(this@LogPoseApplication)
                 com.uriel.logpose.features.music.MusicManager.initialize(this@LogPoseApplication)
-                com.uriel.logpose.core.parser.LabDiscoveryService.start()
-                com.uriel.logpose.features.voice.VoiceManager.initialize(this@LogPoseApplication, voiceRepository)
+                
+                delay(500)
+                
+                // PRIORIDAD 3: Pipeline de Voz y Aprendizaje
                 com.uriel.logpose.features.voice.CallManager.initialize(this@LogPoseApplication)
                 
                 com.uriel.logpose.thamis.learning.LearningEngine.initialize(this@LogPoseApplication)
-                com.uriel.logpose.thamis.knowledge.KnowledgeBase.initializeStaffSeed(this@LogPoseApplication)
                 com.uriel.logpose.thamis.learning.LearningEngine.cleanOldCache()
                 
                 // v1.1: Limpieza de Misión #026 (Fix Secuestro Uzbekistan)
                 com.uriel.logpose.thamis.learning.LearningEngine.forget("con ubekistan ponle ube")
                 com.uriel.logpose.thamis.learning.LearningEngine.forget("con ubekistán ponle ube")
                 
-                // Misión #021.4: Hidratación ALF-R v4.5
+                delay(500)
+                
+                // PRIORIDAD 4: Anclas y Observadores (Context Path)
+                com.uriel.logpose.core.services.ContactManager.syncContacts(this@LogPoseApplication)
+                
                 contactsObserver = com.uriel.logpose.core.observers.ContactsAnchorObserver(
                     this@LogPoseApplication, anchorRepository, appScope
                 ).apply { register() }
@@ -64,14 +107,11 @@ class LogPoseApplication : Application() {
                 hydrateMusicAnchors()
                 hydrateNavigationAnchors()
                 
-                // v5.0: Sherpa-ONNX se inicializa en paralelo (no bloquea Vosk)
-                voskEngine.updateGrammar()
-                com.uriel.logpose.core.nlp.LanguageRepository.initialize(this@LogPoseApplication)
-                
                 com.uriel.logpose.thamis.navigation.provider.NavigationProviderFactory.registerProvider(
                     com.uriel.logpose.thamis.navigation.provider.GoogleMapsProvider()
                 )
-                LogPoseLogger.i("LogPoseApplication: Sistemas de fondo listos (ALF-R v4.5 Active).")
+                
+                LogPoseLogger.i("LogPoseApplication: Sistemas de fondo listos (Xiaomi Staggered Active).")
                 checkOrphanedSession()
             }
         } catch (e: Exception) {
@@ -133,6 +173,23 @@ class LogPoseApplication : Application() {
                     startService(intent)
                 }
             }
+        }
+    }
+
+    override fun onTerminate() {
+        super.onTerminate()
+        releaseEngines()
+    }
+
+    fun releaseEngines() {
+        LogPoseLogger.i("LogPose", "Cerrando motores Staff para evitar JNI Leaks...")
+        try {
+            voskEngine.stop()
+            sherpaEngine.release()
+            whisperEngine.release()
+            com.uriel.logpose.core.intelligence.ThamisNeuralEngine.release()
+        } catch (e: Exception) {
+            LogPoseLogger.e("LogPose", "Error en liberación: ${e.message}")
         }
     }
 

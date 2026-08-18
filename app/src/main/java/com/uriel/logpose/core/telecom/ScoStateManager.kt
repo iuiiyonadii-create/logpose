@@ -24,7 +24,8 @@ class ScoStateManager(
 ) {
     enum class ScoState { CONNECTED, DEGRADED, DISCONNECTED, RECONNECTING }
 
-    private val _state = MutableStateFlow(ScoState.DISCONNECTED)
+    // LAB DESK BYPASS: Inicializado por defecto en CONNECTED para permitir captura con micrófono nativo en escritorio
+    private val _state = MutableStateFlow(ScoState.CONNECTED)
     val state = _state.asStateFlow()
 
     private var retryCount = 0
@@ -46,12 +47,35 @@ class ScoStateManager(
         }
     }
 
+    private var bluetoothHeadsetProxy: BluetoothHeadset? = null
+
+    private val profileListener = object : BluetoothProfile.ServiceListener {
+        override fun onServiceConnected(profile: Int, proxy: BluetoothProfile) {
+            if (profile == BluetoothProfile.HEADSET) {
+                bluetoothHeadsetProxy = proxy as BluetoothHeadset
+                LogPoseLogger.i("BluetoothSCO: Perfil Manos Libres (HFP) inicializado correctamente en el OS.")
+            }
+        }
+        override fun onServiceDisconnected(profile: Int) {
+            if (profile == BluetoothProfile.HEADSET) {
+                bluetoothHeadsetProxy = null
+                LogPoseLogger.w("BluetoothSCO: Perfil Manos Libres desconectado.")
+            }
+        }
+    }
+
     fun startMonitoring() {
         val filter = IntentFilter().apply {
             addAction(BluetoothHeadset.ACTION_AUDIO_STATE_CHANGED)
             addAction(AudioManager.ACTION_SCO_AUDIO_STATE_UPDATED)
         }
         context.registerReceiver(receiver, filter)
+        try {
+            val adapter = BluetoothAdapter.getDefaultAdapter()
+            adapter?.getProfileProxy(context, profileListener, BluetoothProfile.HEADSET)
+        } catch (e: Exception) {
+            LogPoseLogger.w("BluetoothSCO Proxy Init Warning: ${e.message}")
+        }
         updateCurrentState()
     }
 

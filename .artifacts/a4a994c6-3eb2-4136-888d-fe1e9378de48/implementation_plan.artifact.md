@@ -1,38 +1,45 @@
-# Lab Discovery Autonomous System Implementation
+# Proyecto LogPose: Misión de Saneamiento "Tierra Arrasada" v13.0
 
-Implement a robust, autonomous PC Bridge discovery system for THAMIS using UDP Broadcast/Multicast. This eliminates the need for static IP configuration and allows the Android device to find the Laboratory/PC environment automatically.
-
-## User Review Required
-
-> [!IMPORTANT]
-> The system will use UDP port `5051` for discovery. Ensure this port is open on the host PC.
+Este plan tiene como objetivo eliminar la redundancia masiva, unificar contratos y optimizar el rendimiento térmico y de memoria del Xiaomi Redmi 15C, eliminando el 40% de código muerto detectado en la auditoría.
 
 ## Proposed Changes
 
-### [Component: Core Network]
+### [Componente: Purga de Código Muerto y Fantasmas]
 
-#### [MODIFY] [LabDiscoveryService.kt](file:///C:/projects/LogPose4/app/src/main/java/com/uriel/logpose/core/parser/LabDiscoveryService.kt)
-- Refactor to provide a `StateFlow<String?>` for the current PC IP.
-- Implement periodic heartbeat monitoring.
-- Add support for discovering the bridge via UDP Broadcast.
+Eliminación física de paquetes experimentales y legados que generan colisiones de lógica.
 
-#### [MODIFY] [LogPoseApplication.kt](file:///C:/projects/LogPose4/app/src/main/java/com/uriel/logpose/core/app/LogPoseApplication.kt)
-- Ensure `LabDiscoveryService` is initialized and started correctly during app startup.
+#### [DELETE] Paquete com.uriel.logpose.thamis_ai
+- Borrado completo de la carpeta `app/src/main/java/com/uriel/logpose/thamis_ai`.
 
-### [Component: Cognitive Pipeline]
+#### [DELETE] Redundancias en Core Bluetooth
+- Borrado de `app/src/main/java/com/uriel/logpose/core/bluetooth`. (La versión activa es `features/bluetooth`).
 
-#### [MODIFY] [CognitivePipeline.kt](file:///C:/projects/LogPose4/app/src/main/java/com/uriel/logpose/thamis/cognitive/CognitivePipeline.kt)
-- Update `getUdpSender()` to react to IP changes from `LabDiscoveryService`.
+#### [DELETE] Redundancias en Core NLP
+- Borrado de `app/src/main/java/com/uriel/logpose/core/nlp`. (La versión activa es `thamis/learning`).
 
-### [Verification Tools]
+### [Componente: Unificación de Contratos]
 
-#### [NEW] [simulate_pc_bridge.py](file:///C:/projects/LogPose4/.artifacts/a4a994c6-3eb2-4136-888d-fe1e9378de48/scratch/simulate_pc_bridge.py)
-- A scratch script to simulate the PC side broadcasting the magic token.
+#### [DELETE] com.uriel.logpose.domain.models.LogPoseCommand
+- Eliminación del archivo deprecado para forzar el uso de `:core:contracts`.
+
+#### [MODIFY] Actualización de Referencias
+- Migración de cualquier clase que aún use el enum `domain.models.LogPoseCommand` al contrato unificado.
+
+### [Componente: Optimización y Fixes de Xiaomi]
+
+#### [MODIFY] [BluetoothViewModel.kt](file:///C:/projects/LogPose4/app/src/main/java/com/uriel/logpose/ui/viewmodel/BluetoothViewModel.kt)
+- Refactor del `batteryReceiver` para usar el ciclo de vida del ViewModel de forma segura y evitar fugas de memoria.
+
+#### [MODIFY] [VoskVoiceEngine.kt](file:///C:/projects/LogPose4/app/src/main/java/com/uriel/logpose/features/voice/VoskVoiceEngine.kt)
+- Eliminación de la variable no usada `musicController`.
+
+#### [MODIFY] [app/build.gradle.kts](file:///C:/projects/LogPose4/app/build.gradle.kts)
+- Eliminación de la declaración duplicada de `androidx.compose.bom`.
 
 ## Verification Plan
 
+### Automated Tests
+- Ejecución de `.\gradlew.bat clean assembleProductionDebug` para asegurar que el borrado no rompió el árbol de dependencias.
+
 ### Manual Verification
-- Run the `simulate_pc_bridge.py` on the host PC.
-- Check Logcat for "📡 Discovery: Bridge detected at [IP]".
-- Verify that `pc_ip` in `SettingsManager` is updated.
-- Send a music command and verify it reaches the simulated bridge (if implemented in the script).
+- Verificación en el dispositivo de que el "lo" fix sigue operativo y que el Bluetooth conecta sin saturar el sistema.

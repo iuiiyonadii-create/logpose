@@ -7,4 +7,5 @@ interface PCBridge {
     fun sendCommand(action: String)
     fun startRemoteServer()
     fun stopRemoteServer()
+    fun setHeartbeatEnabled(enabled: Boolean)
 }

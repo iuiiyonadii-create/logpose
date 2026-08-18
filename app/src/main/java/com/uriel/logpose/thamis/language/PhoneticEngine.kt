@@ -4,6 +4,7 @@ import com.uriel.logpose.core.compat.core.LogPoseLogger
 import com.uriel.logpose.core.app.LogPoseApplication
 import com.uriel.logpose.core.parser.PhoneticDictionary
 import com.uriel.logpose.features.voice.MusicVocabulary
+import kotlinx.coroutines.launch
 import org.json.JSONObject
 
 /**
@@ -12,13 +13,20 @@ import org.json.JSONObject
 object PhoneticEngine {
 
     private const val TAG = "PhoneticEngine"
-    private val phoneticCache = mutableMapOf<String, String>()
+    private val phoneticCache = androidx.collection.LruCache<String, String>(512)
+    private val normalizationCache = androidx.collection.LruCache<String, NormalizationTrace>(512)
+
+    // v57.0: Regex pre-compilados (Misión #057)
+    private val SPACES_REGEX = Regex("\\s+")
+    private val PLURALS_REGEX = Regex("s\\b")
+    private val REPETITIONS_REGEX = Regex("([a-z])\\1+")
+    private val VOWELS_AEO = Regex("[aeo]")
+    private val VOWELS_IU = Regex("[iu]")
 
     private val dictionary: PhoneticDictionary by lazy {
         PhoneticDictionary(LogPoseApplication.instance)
     }
 
-    // Unificación de todas las correcciones del ULC
     private val MASTER_CORRECTIONS: Map<String, String> by lazy {
         val all = mutableMapOf<String, String>()
         all.putAll(dictionary.mapaDe("alucinaciones"))
@@ -30,29 +38,11 @@ object PhoneticEngine {
     private val dynamicBias = mutableMapOf<String, String>()
 
     /**
-     * Sincroniza el perfil personal desde el Cognitive Server del laboratorio.
+     * v11.0 STAFF: Sincronización remota ELIMINADA para evitar timeouts en calle.
+     * LogPose ahora opera 100% en modo Radio-Silencio (Offline-First).
      */
     fun syncWithLab() {
-        val pcIp = LogPoseApplication.entryPoint.settingsManager().getString("pc_ip", "192.168.1.33") ?: "192.168.1.33"
-        val url = "http://$pcIp:5000/knowledge/psp"
-        
-        try {
-            val response = java.net.URL(url).readText()
-            val json = org.json.JSONObject(response)
-            val psp = json.getJSONObject("psp")
-            val updates = mutableMapOf<String, String>()
-            
-            val keys = psp.keys()
-            while (keys.hasNext()) {
-                val key = keys.next()
-                updates[key] = psp.getString(key)
-            }
-            
-            updatePersonalProfile(updates)
-            LogPoseLogger.i(TAG, "🧠 Sincronización Exitosa: ${updates.size} reglas PSP.")
-        } catch (e: Exception) {
-            LogPoseLogger.e(TAG, "❌ Error sincronizando PSP: ${e.message}")
-        }
+        LogPoseLogger.d(TAG, "🧠 PSP: Modo local puro activado. Ignorando red.")
     }
 
     /**
@@ -71,13 +61,10 @@ object PhoneticEngine {
         val finalResult: String
     )
 
-    private val normalizationCache = mutableMapOf<String, NormalizationTrace>()
-
     fun normalizeWithTrace(raw: String): NormalizationTrace {
         if (raw.isBlank()) return NormalizationTrace(raw, "", null, null, "")
         
-        val cached = normalizationCache[raw]
-        if (cached != null) return cached
+        normalizationCache[raw]?.let { return it }
 
         val tStart = System.currentTimeMillis()
         val musicNorm = MusicVocabulary.normalize(raw.lowercase().trim())
@@ -87,17 +74,15 @@ object PhoneticEngine {
         // 1. Match dinámico completo (Prioridad PSP)
         dynamicBias[musicNorm]?.let { 
             pspResult = it 
-            logPSPAudit("HIT", musicNorm, System.currentTimeMillis() - tStart)
         }
 
         // 2. Match estático completo (Glosario)
         if (pspResult == null) {
             MASTER_CORRECTIONS[musicNorm]?.let { glosarioResult = it }
-            logPSPAudit(if (glosarioResult != null) "ULC_HIT" else "MISS", musicNorm, System.currentTimeMillis() - tStart)
         }
 
         val result = pspResult ?: glosarioResult ?: run {
-            val tokens = musicNorm.split(Regex("\\s+"))
+            val tokens = musicNorm.split(SPACES_REGEX)
             val sb = StringBuilder()
             
             // v6.3: Búsqueda de Ventana Deslizante para sub-frases aprendidas (Misión #024)
@@ -141,9 +126,7 @@ object PhoneticEngine {
             finalResult = result
         )
         
-        if (normalizationCache.size > 500) normalizationCache.clear() // Prevent leak
-        normalizationCache[raw] = finalTrace
-        
+        normalizationCache.put(raw, finalTrace)
         return finalTrace
     }
 
@@ -168,20 +151,15 @@ object PhoneticEngine {
     fun getPhoneticKey(text: String, noiseLevel: Float = 0.0f): String {
         if (text.isEmpty()) return ""
         
-        // El nivel de ruido > 0.8 activa el colapso agresivo (Fuzzy Collapse Pro)
         val isExtremeNoise = noiseLevel > 0.8f
-        val cacheKey = if (isExtremeNoise) "v4_noise_$text" else "v4_$text"
+        val cacheKey = if (isExtremeNoise) "v4_n_$text" else "v4_$text"
         
-        val cached = phoneticCache[cacheKey]
-        if (cached != null) return cached
+        phoneticCache[cacheKey]?.let { return it }
 
-        // 1. Normalización Rioplatense Dinámica (Quitar acentos de voseo y normalización Staff)
         var key = text.lowercase().trim()
             .replace("á", "a").replace("é", "e").replace("í", "i")
             .replace("ó", "o").replace("ú", "u").replace("ü", "u")
 
-        // 2. ALF-R v4.4: Hardening Acústico contra Ruido de Motor
-        // Colapso de rimas asonantes: la 'a' y la 'o' suelen sonar igual con viento fuerte
         key = key.replace("y", "i")
             .replace("ll", "i")
             .replace("sh", "i")
@@ -193,29 +171,20 @@ object PhoneticEngine {
             .replace("q", "k")
             .replace("j", "h")
             .replace("g", "h")
-            .replace(Regex("s\\b"), "") // Ignorar plurales
+            .replace(PLURALS_REGEX, "") 
 
-        // 3. ALF-R v4.4: Colapso de Consonantes por Punto de Articulación (Bilabiales)
         key = key.replace("p", "b")
             .replace("t", "d")
             .replace("f", "b")
             
-        // 4. Pre-procesamiento: Eliminar repeticiones por jitter de audio
-        key = key.replace(Regex("([a-z])\\1+"), "$1")
+        key = key.replace(REPETITIONS_REGEX, "$1")
 
-        // 4. ALF-R v4.0: Fuzzy Collapse Pro (Solo bajo ruido extremo)
         if (isExtremeNoise) {
-            // Colapsar consonantes por punto de articulación (Bilabiales y Dentales)
-            key = key.replace("p", "b")
-                .replace("t", "d")
-                .replace("f", "b")
-            
-            // Colapsar vocales (Asonancia extrema: la 'a' y la 'o' suenan igual con viento)
-            key = key.replace(Regex("[aeo]"), "V")
-            key = key.replace(Regex("[iu]"), "I")
+            key = key.replace(VOWELS_AEO, "V")
+            key = key.replace(VOWELS_IU, "I")
         }
 
-        phoneticCache[cacheKey] = key
+        phoneticCache.put(cacheKey, key)
         return key
     }
 

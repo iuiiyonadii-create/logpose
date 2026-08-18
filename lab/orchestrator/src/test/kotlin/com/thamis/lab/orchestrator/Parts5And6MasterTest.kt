@@ -1,7 +1,7 @@
 package com.thamis.lab.orchestrator
 
-import com.thamis.lab.intelligence.health.ProjectHealthEngine
-import com.thamis.lab.intelligence.twin.RepositoryDigitalTwinEngine
+import com.thamis.lab.intelligence.engineering.ProjectHealthEngine
+import com.thamis.lab.intelligence.evolution.RepositoryDigitalTwinEngine
 import com.thamis.lab.orchestrator.execution.ExecutionQueueManager
 import com.thamis.lab.orchestrator.execution.QueuedExecutionTask
 import com.thamis.lab.performance.adb.AdbOrchestratorEngine

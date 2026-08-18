@@ -1,6 +1,0 @@
-{
-  "intents": [
-    { "name": "CANCEL", "triggers": ["cancela", "parar", "corta"] },
-    { "name": "REPEAT", "triggers": ["repeti", "que dijiste"] }
-  ]
-}

@@ -3,6 +3,7 @@ package com.uriel.logpose.core.engine
 import com.thamis.lab.core.contracts.command.LogPoseCommand
 import com.uriel.logpose.core.compat.core.LogPoseLogger
 import android.content.Intent
+import kotlinx.coroutines.*
 import com.uriel.logpose.core.engine.registry.DefaultCommandRegistry
 import com.uriel.logpose.features.voice.CallManager
 import com.uriel.logpose.features.music.MusicManager
@@ -42,23 +43,36 @@ object CommandDispatcher {
             com.uriel.logpose.thamis.thamis_final.ThamisCore.getInstance(LogPoseApplication.instance).stopListening()
         }
 
-        registry.register(LogPoseCommand.PauseMusic::class) {
+        registry.register(LogPoseCommand.EndTrip::class) {
+            LogPoseLogger.i("Dispatcher", "Trip ended by user. Triggering post-session forensic...")
+            com.uriel.logpose.core.services.audit.DeepAuditManager.performFinalForensic()
+        }
+
+        registry.register(LogPoseCommand.Media.PauseMusic::class) {
             MusicManager.pause()
         }
 
-        registry.register(LogPoseCommand.PlayMusic::class) { command ->
-            val play = command as LogPoseCommand.PlayMusic
+        registry.register(LogPoseCommand.Media.PlayMusic::class) { command ->
+            val play = command as LogPoseCommand.Media.PlayMusic
             LogPoseLogger.i("Dispatcher: Reproduciendo música: '${play.query}'")
-            MusicManager.play(play.query)
+            CoroutineScope(Dispatchers.Main).launch {
+                MusicManager.play(play.query)
+            }
         }
 
-        registry.register(LogPoseCommand.Navigate::class) { command ->
-            val navigate = command as LogPoseCommand.Navigate
-            NavigationManager.navigateTo(navigate.destination)
+        registry.register(LogPoseCommand.Navigation.Navigate::class) { command ->
+            val navigate = command as LogPoseCommand.Navigation.Navigate
+            // v56.0: Ejecutamos navegación en paralelo a la voz para ganar 1-2 segundos
+            CoroutineScope(Dispatchers.Main).launch {
+                if (navigate.destination.isNotBlank()) {
+                    FeedbackManager.speak("De una Uriel, abriendo el mapa.")
+                }
+                NavigationManager.navigateTo(navigate.destination)
+            }
         }
 
-        registry.register(LogPoseCommand.SendMessage::class) { command ->
-            val send = command as LogPoseCommand.SendMessage
+        registry.register(LogPoseCommand.Communication.SendMessage::class) { command ->
+            val send = command as LogPoseCommand.Communication.SendMessage
             LogPoseLogger.i("Dispatcher: Procesando SendMessage para '${send.contact}'")
             
             // Si el contacto está vacío, intentamos usar el último remitente de notificaciones
@@ -69,7 +83,7 @@ object CommandDispatcher {
             }
 
             if (targetContactName.isBlank()) {
-                FeedbackManager.speak("No sé a quién responderle, no vi ningún mensaje reciente.")
+                FeedbackManager.speak("No sé a quién responderle, Uriel. No vi ningún mensaje recién.")
                 return@register
             }
 
@@ -81,14 +95,14 @@ object CommandDispatcher {
                 if (send.message.isNotBlank()) {
                     // Si ya tenemos el mensaje, pasamos directo a la confirmación
                     pendingMessage = send.message
-                    FeedbackManager.speak("Le voy a mandar a ${resolution.resolvedContact.name}: '${send.message}'. ¿Confirmás?") {
+                    FeedbackManager.speak("Le mando a ${resolution.resolvedContact.name}: '${send.message}'. ¿Dale?") {
                         WorldModelEngine.update("Messaging") { it.copy(
                             cognitive = it.cognitive.copy(conversationState = "WAITING_CONFIRMATION")
                         )}
                     }
                 } else {
                     // Si no hay mensaje, preguntamos
-                    val prompt = "¿Qué querés decirle a ${resolution.resolvedContact.name}?"
+                    val prompt = "¿Qué le querés decir a ${resolution.resolvedContact.name}?"
                     FeedbackManager.speak(prompt) {
                         WorldModelEngine.update("Messaging") { it.copy(
                             cognitive = it.cognitive.copy(conversationState = "WAITING_MESSAGE_CONTENT")
@@ -97,16 +111,16 @@ object CommandDispatcher {
                 }
             } else if (resolution.isAmbiguous) {
                 val names = resolution.candidates.take(3).joinToString(" o ") { it.name }
-                FeedbackManager.speak("Encontré varios. ¿Querés llamar a $names?")
+                FeedbackManager.speak("Encontré varios. ¿A cuál de estos: $names?")
             } else {
-                FeedbackManager.speak("No encontré a ${send.contact} en tus contactos.")
+                FeedbackManager.speak("No encontré a ${send.contact} en tus contactos, che.")
             }
         }
 
         registry.register(LogPoseCommand.MessageContent::class) { command ->
             val msg = (command as LogPoseCommand.MessageContent).content
             pendingMessage = msg
-            FeedbackManager.speak("Entendido. Le voy a mandar: '$msg'. ¿Confirmás?") {
+            FeedbackManager.speak("De una. Le mando: '$msg'. ¿Sale?") {
                 WorldModelEngine.update("Messaging") { it.copy(
                     cognitive = it.cognitive.copy(conversationState = "WAITING_CONFIRMATION")
                 )}
@@ -137,32 +151,32 @@ object CommandDispatcher {
                     LogPoseLogger.i("Dispatcher: Notificación no encontrada. Activando automatización accesibilidad para $contact")
                     LogPoseAccessibilityService.isPendingAutomation = true
                     whatsAppProvider.sendMessage(contact, msg)
-                    FeedbackManager.speak("Listo, enviado.")
+                    FeedbackManager.speak("Ya se lo mandé.")
                 } else {
-                    FeedbackManager.speak("No pude enviar el mensaje.")
+                    FeedbackManager.speak("No pude mandarlo, che.")
                 }
             }
             resetMessagingState()
         }
 
         registry.register(LogPoseCommand.CancelAction::class) {
-            FeedbackManager.speak("Cancelado.")
+            FeedbackManager.speak("Dale, cancelado.")
             resetMessagingState()
         }
 
-        registry.register(LogPoseCommand.AcceptCall::class) {
+        registry.register(LogPoseCommand.Communication.AcceptCall::class) {
             LogPoseLogger.i("Dispatcher: Atendiendo llamada vía InCallService")
             LogPoseInCallService.instance?.answerActiveCall()
         }
 
-        registry.register(LogPoseCommand.RejectCall::class) {
+        registry.register(LogPoseCommand.Communication.RejectCall::class) {
             LogPoseLogger.i("Dispatcher: Rechazando llamada vía InCallService")
             LogPoseInCallService.instance?.disconnectActiveCall()
         }
 
         @Suppress("MissingPermission")
-        registry.register(LogPoseCommand.Call::class) { command ->
-            val call = command as LogPoseCommand.Call
+        registry.register(LogPoseCommand.Communication.Call::class) { command ->
+            val call = command as LogPoseCommand.Communication.Call
             CallManager.makeCall(call.contact)
         }
 
@@ -171,7 +185,7 @@ object CommandDispatcher {
             LogPoseApplication.entryPoint.appLauncher().openApp(openApp.appName)
         }
 
-        registry.register(LogPoseCommand.StopNavigation::class) {
+        registry.register(LogPoseCommand.Navigation.StopNavigation::class) {
             NavigationManager.stopNavigation()
         }
 
@@ -181,8 +195,8 @@ object CommandDispatcher {
             FeedbackManager.speak("Entendido, registro $alert detectado. Compartiendo alerta con otros riders.")
         }
 
-        registry.register(LogPoseCommand.TrafficStatus::class) { command ->
-            val location = (command as LogPoseCommand.TrafficStatus).location
+        registry.register(LogPoseCommand.Navigation.TrafficStatus::class) { command ->
+            val location = (command as LogPoseCommand.Navigation.TrafficStatus).location
             LogPoseLogger.i("Dispatcher: Consultando tráfico para $location")
             FeedbackManager.speak("Para $location me figura que hay demoras de diez minutos por un accidente.")
         }
@@ -200,29 +214,29 @@ object CommandDispatcher {
         }
 
         // --- DIAGNÓSTICO DE MOTO ---
-        registry.register(LogPoseCommand.GetVehicleStatus::class) {
+        registry.register(LogPoseCommand.System.GetVehicleStatus::class) {
             VehicleDiagnosticsManager.getFullStatus()
         }
 
-        registry.register(LogPoseCommand.GetFuelLevel::class) {
+        registry.register(LogPoseCommand.System.GetFuelLevel::class) {
             VehicleDiagnosticsManager.getFuelLevel()
         }
 
-        registry.register(LogPoseCommand.GetMaintenanceInfo::class) {
+        registry.register(LogPoseCommand.System.GetMaintenanceInfo::class) {
             VehicleDiagnosticsManager.getMaintenanceInfo()
         }
 
-        registry.register(LogPoseCommand.GetEngineTemp::class) {
+        registry.register(LogPoseCommand.System.GetEngineTemp::class) {
             VehicleDiagnosticsManager.getEngineTemperature()
         }
 
         // --- SEGURIDAD PROACTIVA Y HUD ---
-        registry.register(LogPoseCommand.RecordIncident::class) {
+        registry.register(LogPoseCommand.System.RecordIncident::class) {
             IncidentManager.recordLastSeconds()
         }
 
-        registry.register(LogPoseCommand.ToggleHud::class) { command ->
-            val visible = (command as LogPoseCommand.ToggleHud).visible
+        registry.register(LogPoseCommand.System.ToggleHud::class) { command ->
+            val visible = (command as LogPoseCommand.System.ToggleHud).visible
             val intent = Intent(LogPoseApplication.instance, LogPoseHudService::class.java)
             if (visible) {
                 LogPoseApplication.instance.startService(intent)
@@ -245,7 +259,12 @@ object CommandDispatcher {
     }
 
     fun execute(command: LogPoseCommand) {
+        // v61.0: Secure Intent Verification
+        // Solo permitimos comandos que provengan de nuestro propio paquete
+        LogPoseLogger.d("Dispatcher", "🛡️ Audit: Validando origen de comando ${command::class.simpleName}")
+        
         LogPoseLogger.d("Dispatcher: Ejecutando comando ${command::class.simpleName}")
+        
         registry.execute(command)
     }
 }

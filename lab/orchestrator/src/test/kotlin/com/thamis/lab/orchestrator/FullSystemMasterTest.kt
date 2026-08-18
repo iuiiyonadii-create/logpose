@@ -1,11 +1,11 @@
 package com.thamis.lab.orchestrator
 
 import com.thamis.lab.core.common.result.LabResult
-import com.thamis.lab.intelligence.analytics.EngineeringAnalytics
-import com.thamis.lab.intelligence.bug.BugIntelligenceEngine
-import com.thamis.lab.intelligence.bug.BugRecord
-import com.thamis.lab.intelligence.graph.GraphNode
-import com.thamis.lab.intelligence.graph.KnowledgeGraphEngine
+import com.thamis.lab.intelligence.core.EngineeringAnalytics
+import com.thamis.lab.intelligence.engineering.BugIntelligenceEngine
+import com.thamis.lab.intelligence.engineering.BugRecord
+import com.thamis.lab.intelligence.core.GraphNode
+import com.thamis.lab.intelligence.core.KnowledgeGraphEngine
 import com.thamis.lab.orchestrator.loop.AutonomousEngineeringLoop
 import com.thamis.lab.orchestrator.sdk.PluginSdk
 import com.thamis.lab.orchestrator.sdk.ThamisPlugin

@@ -1,6 +1,6 @@
 package com.thamis.lab.orchestrator
 
-import com.thamis.lab.intelligence.debt.TechnicalDebtEngine
+import com.thamis.lab.intelligence.engineering.TechnicalDebtEngine
 import com.thamis.lab.orchestrator.bus.EngineeringCommand
 import com.thamis.lab.orchestrator.bus.EngineeringCommandBus
 import com.thamis.lab.orchestrator.kernel.ThamisPlatformKernel

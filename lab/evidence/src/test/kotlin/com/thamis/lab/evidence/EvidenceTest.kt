@@ -56,8 +56,9 @@ class EvidenceTest {
             )
         }
 
-        val level = certEngine.evaluateCertification(list)
-        assertEquals(CertificationLevel.READY_FOR_PRODUCTION, level)
+        val report = certEngine.evaluateCertification(list)
+        assertEquals(CertificationLevel.READY_FOR_PRODUCTION, report.level)
+        assertTrue(report.rationale.contains("Evaluation based on 100 evidences"))
     }
 
     @Test

@@ -13,7 +13,7 @@ object THAMISPolicy {
         if (decision.confidence < 0.4f) {
             return decision.copy(
                 intent = Intent.UNKNOWN,
-                requiresConfirmation = false
+                       requiresConfirmation = false
             )
         }
         

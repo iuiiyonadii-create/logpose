@@ -18,12 +18,15 @@ import java.util.concurrent.atomic.AtomicBoolean
  */
 object LabDiscoveryService {
 
-    private const val DISCOVERY_PORT = 5051
+    private const val DISCOVERY_PORT = 5052
     private const val MAGIC_TOKEN = "LOGPOSE_BRIDGE_HERE"
     private const val HEARTBEAT_TIMEOUT_MS = 15000L
 
     private val _pcIp = MutableStateFlow<String?>(null)
     val pcIp: StateFlow<String?> = _pcIp.asStateFlow()
+
+    private val _isLabPresent = MutableStateFlow(false)
+    val isLabPresent: StateFlow<Boolean> = _isLabPresent.asStateFlow()
 
     private val isRunning = AtomicBoolean(false)
     private val scope = CoroutineScope(Dispatchers.IO + SupervisorJob())
@@ -33,26 +36,8 @@ object LabDiscoveryService {
 
     fun start() {
         if (isRunning.getAndSet(true)) return
-        
-        LogPoseLogger.i("📡 Discovery: Lab Discovery Service v2.0 Active.")
-        
-        // Start with the last known IP from settings
-        val storedIp = LogPoseApplication.entryPoint.settingsManager().getString("pc_ip", null)
-        _pcIp.value = storedIp
-
-        discoveryJob = scope.launch {
-            while (isActive) {
-                try {
-                    listenForBridge()
-                } catch (e: Exception) {
-                    if (isActive) {
-                        LogPoseLogger.e("📡 Discovery: UDP Listener failed: ${e.message}. Restarting in 5s...")
-                        delay(5000)
-                    }
-                }
-            }
-        }
-
+        LogPoseLogger.i("📡 Discovery: Lab Discovery Service ACTIVADO (Staff Mode).")
+        discoveryJob = scope.launch { listenForBridge() }
         startWatchdog()
     }
 
@@ -89,6 +74,7 @@ object LabDiscoveryService {
 
     private fun handleBridgeDetection(ip: String) {
         lastSeenTimestamp = System.currentTimeMillis()
+        _isLabPresent.value = true
         if (_pcIp.value != ip) {
             LogPoseLogger.i("📡 Discovery: NEW Bridge detected at $ip")
             _pcIp.value = ip
@@ -104,6 +90,7 @@ object LabDiscoveryService {
                 delay(5000)
                 if (_pcIp.value != null && System.currentTimeMillis() - lastSeenTimestamp > HEARTBEAT_TIMEOUT_MS) {
                     LogPoseLogger.w("📡 Discovery: Bridge connection lost (Heartbeat timeout).")
+                    _isLabPresent.value = false
                     // We keep the IP but could optionally null it if we want to force re-discovery
                     // _pcIp.value = null 
                 }

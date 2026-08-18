@@ -7,9 +7,11 @@ import com.thamis.lab.core.contracts.intent.Intent
 import kotlinx.coroutines.*
 import java.util.concurrent.ConcurrentHashMap
 
+import androidx.security.crypto.EncryptedSharedPreferences
+import androidx.security.crypto.MasterKey
+
 /**
- * LearningEngine v22.8: Full API Staff Sincronizada.
- * Restauración de compatibilidad total y blindaje Thread-Safe.
+ * LearningEngine v23.0: ADN Staff Cifrado por Hardware (Misión #058).
  */
 object LearningEngine {
 
@@ -63,13 +65,23 @@ object LearningEngine {
     suspend fun initialize(context: Context) {
         if (initDeferred.isCompleted) return
         try {
-            val p = context.getSharedPreferences("thamis_learning_v22", Context.MODE_PRIVATE)
+            val masterKey = MasterKey.Builder(context)
+                .setKeyScheme(MasterKey.KeyScheme.AES256_GCM)
+                .build()
+
+            val p = EncryptedSharedPreferences.create(
+                context,
+                "thamis_learning_secure_v23",
+                masterKey,
+                EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
+                EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM
+            )
             prefs = p
             loadMemory(p)
             initDeferred.complete(Unit)
-            LogPoseLogger.i("🧠 LearningEngine v22.8: Memoria Staff Integral lista.")
+            LogPoseLogger.i("🧠 LearningEngine v23.0: Memoria Staff CIFRADA lista.")
         } catch (e: Exception) {
-            LogPoseLogger.e("LearningEngine: Error: ${e.message}")
+            LogPoseLogger.e("LearningEngine: Error crítico de cifrado: ${e.message}")
         }
     }
 
@@ -135,7 +147,7 @@ object LearningEngine {
         // v22.10: Siempre limpiamos la caché ante un intento de aprendizaje 
         // para evitar "fantasmas" de normalización.
         fastCache.evictAll()
-        com.uriel.logpose.features.voice.MusicVocabulary.clearCache()
+        // com.uriel.logpose.features.voice.MusicVocabulary.clearCache() // v58.1: Temporalmente comentado para resolver circularidad de build
 
         if (learnedPhoneticMap[key] == cleanActual) return
         
@@ -235,14 +247,14 @@ object LearningEngine {
         maturityMap.remove(key)
         maturityMap.remove(keyWithSpaces)
         saveMemoryImmediate()
-        com.uriel.logpose.features.voice.MusicVocabulary.clearCache()
+        // com.uriel.logpose.features.voice.MusicVocabulary.clearCache()
     }
 
     fun forgetLast() {
         learnedPhoneticMap.clear()
         maturityMap.clear()
         saveMemoryImmediate()
-        com.uriel.logpose.features.voice.MusicVocabulary.clearCache()
+        // com.uriel.logpose.features.voice.MusicVocabulary.clearCache()
     }
 
     /**
@@ -259,6 +271,40 @@ object LearningEngine {
             }
         }
         saveMemoryImmediate()
+    }
+
+    fun getUserRegistry(): Map<String, Intent> = userCorrections.toMap()
+
+    /**
+     * v67.6: Inyector de Parches Staff desde Labs (Misión #067).
+     * Permite que el Dashboard de la PC actualice el ADN de Thamis en caliente.
+     */
+    fun applyHotPatch(patchJson: String) {
+        try {
+            val json = org.json.JSONObject(patchJson)
+            val type = json.optString("type", "UNKNOWN")
+            
+            if (type == "PHONETIC_PATCH") {
+                val data = json.getJSONObject("data")
+                data.keys().forEach { key ->
+                    val value = data.getString(key)
+                    learnedPhoneticMap[key.toStaffKey()] = value
+                    maturityMap[key.toStaffKey()] = 10 // Forzamos graduación inmediata
+                    LogPoseLogger.i("🧠 MATRIX PATCH: '$key' graduada como '$value' por mando remoto.")
+                }
+                saveMemoryImmediate()
+                fastCache.evictAll()
+                
+                // v68.0: Notificamos a Vosk para que actualice su oído en caliente
+                try {
+                    com.uriel.logpose.core.app.LogPoseApplication.entryPoint.voskVoiceEngine().updateGrammar()
+                } catch (e: Exception) {
+                    LogPoseLogger.w("LearningEngine: No se pudo actualizar gramática de Vosk en vivo.")
+                }
+            }
+        } catch (e: Exception) {
+            LogPoseLogger.e("LearningEngine: Error al aplicar parche de inteligencia: ${e.message}")
+        }
     }
 
     fun isReady() = initDeferred.isCompleted

@@ -1,13 +1,13 @@
 package com.uriel.logpose.features.music.engine
 
 import android.content.Context
-import android.content.Intent
 import android.net.Uri
 import com.uriel.logpose.core.compat.core.LogPoseLogger
 import com.spotify.android.appremote.api.ConnectionParams
 import com.spotify.android.appremote.api.Connector
 import com.spotify.android.appremote.api.SpotifyAppRemote
 import com.spotify.protocol.types.PlayerState
+import kotlinx.coroutines.*
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlin.coroutines.resume
 
@@ -26,6 +26,9 @@ object SpotifyRemoteManager {
     // Último estado conocido (Marcador en memoria)
     private var lastPlayerState: PlayerState? = null
     private val commandQueue = mutableListOf<() -> Unit>()
+    private var kickstartJob: Job? = null
+
+    fun isConnected(): Boolean = spotifyAppRemote?.isConnected == true
 
     suspend fun connect(context: Context): Boolean = suspendCancellableCoroutine { continuation ->
         if (spotifyAppRemote?.isConnected == true) {
@@ -42,22 +45,12 @@ object SpotifyRemoteManager {
                 remote.playerApi.subscribeToPlayerState().setEventCallback { state ->
                     lastPlayerState = state
                     
-                    // v7.6: Aprendizaje Automático de Preferencias en Tiempo Real
+                    // v100.0: AUTO-APRENDIZAJE RAG STAFF
                     state.track?.let { track ->
-                        val artistName = track.artist.name
-                        val trackName = track.name
-                        
-                        if (artistName.isNotBlank()) {
-                            com.uriel.logpose.thamis.learning.LearningEngine.addFavoriteArtist(artistName)
-                            com.uriel.logpose.thamis.learning.LearningEngine.learnMusicEntity(artistName)
-                        }
-                        if (trackName.isNotBlank()) {
-                            com.uriel.logpose.thamis.learning.LearningEngine.learnMusicEntity(trackName)
-                        }
-                        
-                        // v7.8: Vinculación ADN de canción con su artista
-                        if (trackName.isNotBlank() && artistName.isNotBlank()) {
-                            com.uriel.logpose.thamis.learning.LearningEngine.learnTrackArtistRelation(trackName, artistName)
+                        val artist = track.artist.name
+                        val title = track.name
+                        if (title.isNotBlank()) {
+                            com.uriel.logpose.core.intelligence.memory.VectorMemoryEngine.learn(title, "Canción de $artist")
                         }
                     }
                 }
@@ -139,18 +132,43 @@ object SpotifyRemoteManager {
     }
 
     fun searchAndPlay(query: String) {
+        val rawQuery = query.replace("spotify:search:", "").trim()
+        val cleanQuery = try {
+            java.net.URLDecoder.decode(rawQuery, java.nio.charset.StandardCharsets.UTF_8.toString())
+        } catch (_: Exception) { rawQuery }
+
         if (spotifyAppRemote?.isConnected == true) {
-            LogPoseLogger.d(TAG, "Spotify: Ejecutando búsqueda remota para '$query'")
-            // Intentamos despertar al motor de búsqueda
-            spotifyAppRemote?.contentApi?.getRecommendedContentItems("default")?.setResultCallback { items ->
-                LogPoseLogger.d(TAG, "Spotify: Motor despertado (${items.items.size} recomendaciones)")
+            if (cleanQuery.isBlank()) {
+                LogPoseLogger.d(TAG, "Spotify: Reanudación inteligente (Recomendaciones Staff)")
+                spotifyAppRemote?.contentApi?.getRecommendedContentItems("default")?.setResultCallback { result ->
+                    val firstPlayable = result.items.find { it.playable }
+                    if (firstPlayable != null) {
+                        spotifyAppRemote?.playerApi?.play(firstPlayable.uri)
+                    } else {
+                        spotifyAppRemote?.playerApi?.resume()
+                    }
+                }
+            } else {
+                LogPoseLogger.d(TAG, "Spotify: Lanzando búsqueda profunda para '$cleanQuery'")
+                // v100.1: Kickstart con Debouncer (Cancela ejecuciones previas)
+                kickstartJob?.cancel()
+                launchSpotifySearchIntent(cleanQuery)
+                
+                kickstartJob = CoroutineScope(Dispatchers.Main).launch {
+                    delay(3000) // Esperamos a que el Intent abra la app
+                    if (isConnected()) {
+                        LogPoseLogger.d(TAG, "Kickstart [1/3]: SDK Resume")
+                        spotifyAppRemote?.playerApi?.resume()
+                        
+                        delay(1000)
+                        LogPoseLogger.d(TAG, "Kickstart [2/3]: Hardware Key Injection")
+                        HardwareMediaController.executeCommand(com.uriel.logpose.core.app.LogPoseApplication.instance, "PLAY")
+                    }
+                }
             }
-            
-            val searchUri = "spotify:search:${Uri.encode(query)}"
-            spotifyAppRemote?.playerApi?.play(searchUri)
         } else {
             LogPoseLogger.w(TAG, "Spotify: No conectado. Usando Intent de respaldo.")
-            launchSpotifySearchIntent(query)
+            launchSpotifySearchIntent(cleanQuery)
         }
     }
 
@@ -196,14 +214,7 @@ object SpotifyRemoteManager {
     }
 
     private fun launchSpotifySearchIntent(query: String) {
-        try {
-            val intent = Intent(Intent.ACTION_VIEW, Uri.parse("spotify:search:${Uri.encode(query)}")).apply {
-                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-            }
-            com.uriel.logpose.core.app.LogPoseApplication.instance.startActivity(intent)
-        } catch (e: Exception) {
-            LogPoseLogger.e(TAG, "Spotify Intent Error: ${e.message}")
-        }
+        SpotifyIntentDispatcher.ejecutarIntentSpotify(com.uriel.logpose.core.app.LogPoseApplication.instance, query)
     }
 
     fun disconnect() {

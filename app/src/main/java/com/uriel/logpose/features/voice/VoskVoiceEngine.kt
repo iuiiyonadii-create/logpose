@@ -9,39 +9,68 @@ import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.SharedFlow
-import org.json.JSONObject
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import org.vosk.Model
 import org.vosk.Recognizer
 import org.vosk.android.StorageService
 import java.io.File
 
+import com.thamis.lab.core.common.result.LabResult
+import com.thamis.lab.core.common.speech.SpeechEngine
+import com.thamis.lab.core.common.speech.SpeechResult
+import com.thamis.lab.core.common.error.LabError
+
 /**
- * VoskVoiceEngine v5.2: Con Actualización Dinámica de Gramática (Misión #013).
+ * VoskVoiceEngine v6.2: Refactor DSP Automático (High-Pass + Noise Gate).
+ * Blindaje térmico y acústico para hardware Xiaomi en condiciones de calle.
+ * v71.4: Gramática optimizada para capturar variantes de Wake-word y comandos.
  */
-class VoskVoiceEngine(private var context: Context) {
+class VoskVoiceEngine(context: Context) : SpeechEngine {
+
+    private var context: Context = context.applicationContext
+
+    override val engineName: String = "Vosk-Centinel"
+
+    override suspend fun transcribe(pcmData: ShortArray): LabResult<SpeechResult> {
+        val m = model ?: return LabResult.Failure(LabError.SystemError("Modelo no cargado"))
+        return withContext(Dispatchers.IO) {
+            try {
+                val rec = Recognizer(m, 16000f)
+                rec.acceptWaveForm(pcmData, pcmData.size)
+                val resultJson = rec.result
+                val text = extractTextFast(resultJson, "text")
+                LabResult.Success(SpeechResult(text, 1.0f, 0, engineName))
+            } catch (e: Exception) {
+                LabResult.Failure(LabError.SystemError("Fallo en transcripción: ${e.message}"))
+            }
+        }
+    }
 
     private var model: Model? = null
     @Volatile private var grammarRecognizer: Recognizer? = null
-    private val recognizerLock = Any()
+    private val recognizerMutex = Mutex()
     
-    private val filter = AudioUtils.VoiceBandPassFilter()
     private val vad = AudioUtils.EnergyVad()
     
+    private var lastRaw = 0f
+    private var lastFiltered = 0f
+    private val hpfAlpha = 0.96f // v71.7: fc=100Hz @ 16000Hz (Preservamos más cuerpo de voz)
+    private var noiseGateThreshold = 25f // v71.7: Más sensible para captar finales suaves
+
+    fun setSensitivity(level: Float) {
+        val targetThreshold = (60f - (level * 50f)).coerceIn(10f, 60f)
+        noiseGateThreshold = targetThreshold
+        LogPoseLogger.i("Vosk", "Sensibilidad v71.7: $level (Umbral: $targetThreshold)")
+    }
+    
     private val scope = CoroutineScope(Dispatchers.Default + SupervisorJob())
-    private val musicController = VoiceMusicController(context)
-    private val slotInterceptor = SlotInterceptor(context)
 
     private val _recognizedCommands = MutableSharedFlow<RecognizedCommand>()
     val recognizedCommands: SharedFlow<RecognizedCommand> = _recognizedCommands
 
     private val integrityBuffer = CommandIntegrityBuffer(scope) { command, duration ->
-        val wasSlot = slotInterceptor.intercept(command)
-        if (!wasSlot) {
-            // v4.6: Si detectamos música, pero el texto de Vosk es basura (reloj, mental),
-            // el pipeline principal debería disparar el análisis del audio buffer.
-            LogPoseLogger.d("Vosk: Centinela detectó -> '$command'")
-        }
-        
+        LogPoseLogger.d("Vosk: Centinela detectó -> '$command'")
         scope.launch {
             _recognizedCommands.emit(RecognizedCommand(command, 1.0f, duration))
         }
@@ -50,20 +79,33 @@ class VoskVoiceEngine(private var context: Context) {
     private val audioChannel = Channel<AudioChunk>(48)
     private var processingJob: Job? = null
     
-    // --- ESTRATEGIA HÍBRIDA v4.6: ROLLING BUFFER ---
-    private val rollingBuffer = ShortArray(16000 * 8) // 8 segundos Staff Standard (Anti-Clipping)
+    private val chunkPool = java.util.concurrent.LinkedBlockingQueue<AudioChunk>(100)
+    private fun obtainChunk(buffer: ShortArray, length: Int): AudioChunk {
+        val chunk = chunkPool.poll() ?: AudioChunk(buffer, length)
+        chunk.buffer = buffer
+        chunk.length = length
+        return chunk
+    }
+    private fun releaseChunk(chunk: AudioChunk) {
+        chunkPool.offer(chunk)
+    }
+
+    private val rollingBuffer = ShortArray(16000 * 10)
     private var writePointer = 0
     private val bufferLock = Any()
 
-    private var isInitialized = false
+    @Volatile private var isInitialized = false
+    @Volatile private var isModelLoading = false
     @Volatile private var isProcessing = false
     private var silenceCounter = 0
     private var speechStartTime = 0L
+    private var lastPartialText = ""
+    private var lastPartialRequestTime = 0L
 
     @Volatile private var isPowerSaveMode = false
 
     data class RecognizedCommand(val text: String, val confidence: Float, val durationMs: Long = 0)
-    private data class AudioChunk(val buffer: ShortArray, val length: Int)
+    private class AudioChunk(var buffer: ShortArray, var length: Int)
 
     init {
         loadModelAsync()
@@ -77,95 +119,138 @@ class VoskVoiceEngine(private var context: Context) {
     }
 
     private fun loadModelAsync() {
-        if (isInitialized && model != null) return
-        
-        StorageService.unpack(context, "model-es", "model",
-            { m: Model ->
-                model = m
-                updateGrammar()
-            },
-            { e: Exception ->
-                LogPoseLogger.e("Vosk Init Error: ${e.message}")
+        if (isInitialized && (model != null)) return
+        if (isModelLoading) return
+        isModelLoading = true
+
+        scope.launch(Dispatchers.IO) {
+            try {
+                val modelFolder = File(context.getExternalFilesDir(null), "model/model-es")
+                val dictionaryFile = File(modelFolder, "graph/words.txt")
+                
+                if (dictionaryFile.exists()) {
+                    val content = dictionaryFile.readText()
+                    if (!content.contains("log 425115")) {
+                        LogPoseLogger.w("Vosk", "🧠 Cerebro acústico desactualizado. Forzando Hard Reset...")
+                        modelFolder.deleteRecursively()
+                    }
+                }
+
+                if (modelFolder.exists() && modelFolder.isDirectory && (modelFolder.list()?.isNotEmpty() == true)) {
+                    LogPoseLogger.i("Vosk", "Intentando cargar modelo desde caché local...")
+                    try {
+                        model = Model(modelFolder.absolutePath)
+                        updateGrammar()
+                        isModelLoading = false
+                        return@launch
+                    } catch (_: Exception) {
+                        LogPoseLogger.w("Vosk", "Modelo corrupto en caché. Eliminando para re-unpack.")
+                        modelFolder.deleteRecursively()
+                    }
+                }
+
+                StorageService.unpack(context, "model-es", "model",
+                    { m: Model ->
+                        model = m
+                        updateGrammar()
+                        isModelLoading = false
+                    },
+                    { e: Exception ->
+                        LogPoseLogger.e("Vosk", "Error crítico en unpack: ${e.message}")
+                        isModelLoading = false
+                    }
+                )
+            } catch (e: Exception) {
+                LogPoseLogger.e("Vosk", "Fallo general en carga de modelo: ${e.message}")
+                isModelLoading = false
             }
-        )
+        }
     }
 
-    /**
-     * Re-compila la gramática JSON e instancia un nuevo Recognizer sin reiniciar el modelo.
-     */
     fun updateGrammar() {
         val m = model ?: return
-        LogPoseLogger.i("Vosk: Actualizando gramática dinámica...")
-        
-        val grammarJson = VoskGrammarBuilder.buildFullGrammar()
-        synchronized(recognizerLock) {
+        scope.launch(Dispatchers.IO) {
+            LogPoseLogger.i("LogPose", "Vosk: Activando modo SENTINELA (v77.0) - Cascada Estricta.")
             try {
-                grammarRecognizer?.close()
-                grammarRecognizer = Recognizer(m, 16000f, grammarJson)
-                isInitialized = true
-                LogPoseLogger.d("Vosk: Gramática actualizada con éxito.")
+                // v77.0 STAFF: Restauramos la gramática mínima. 
+                // Vosk solo debe detectar Wake-words o Verbos clave para despertar a los motores pesados.
+                val grammar = VoskGrammarBuilder.buildMinimalGrammar()
+                val newRecognizer = Recognizer(m, 16000f, grammar) 
+                
+                recognizerMutex.withLock {
+                    val oldRecognizer = grammarRecognizer
+                    grammarRecognizer = newRecognizer
+                    oldRecognizer?.close()
+                    isInitialized = true
+                }
+                LogPoseLogger.d("Vosk: Sentinela activo. Esperando disparadores...")
             } catch (e: Exception) {
-                LogPoseLogger.e("Vosk: Error al instanciar Recognizer con nueva gramática: ${e.message}")
+                LogPoseLogger.e("Vosk", "Error al inicializar Sentinela: ${e.message}")
             }
         }
-    }
-
-    fun releaseResources() {
-        LogPoseLogger.i("Vosk: Liberando recursos pesados.")
-        stop()
-        synchronized(recognizerLock) {
-            try {
-                grammarRecognizer?.close()
-            } catch (e: Exception) { LogPoseLogger.w("Suppressed: ${e.message}") }
-            grammarRecognizer = null
-            model = null
-            isInitialized = false
-        }
-        System.gc()
     }
 
     private fun startProcessingLoop() {
         processingJob?.cancel()
         processingJob = scope.launch {
             for (chunk in audioChannel) {
-                if (!isProcessing) continue
-                
-                // Sherlock v5.0 Fix: Voice-Through bypass if VAD detects active speech despite playback mic gate
-                val isGateOpen = LogPoseApplication.entryPoint.playbackAwareMicGate().isGateOpen()
-                val hasSpeech = vad.hasVoice(chunk.buffer, chunk.length)
-                if (!isGateOpen && !hasSpeech) continue
-                
-                // Misión #022.3: Llenado de Rolling Buffer para Handover v4.6
-                synchronized(bufferLock) {
-                    chunk.buffer.forEach { sample ->
-                        rollingBuffer[writePointer] = sample
-                        writePointer = (writePointer + 1) % rollingBuffer.size
+                try {
+                    if (!isProcessing) continue
+                    
+                    if (!LogPoseApplication.entryPoint.playbackAwareMicGate().isGateOpen()) {
+                        continue
                     }
-                }
-
-                synchronized(recognizerLock) {
-                    val rec = grammarRecognizer ?: return@synchronized
-                    try {
-                        val ready = rec.acceptWaveForm(chunk.buffer, chunk.length)
-                        if (ready) {
-                            val text = extractText(rec.result, "text")
-                            if (text.isNotBlank()) {
-                                integrityBuffer.feed(text, isFinal = true, startTime = speechStartTime)
-                                speechStartTime = 0 
-                            }
+                    
+                    synchronized(bufferLock) {
+                        val remainingSpace = rollingBuffer.size - writePointer
+                        writePointer = if (chunk.length <= remainingSpace) {
+                            System.arraycopy(chunk.buffer, 0, rollingBuffer, writePointer, chunk.length)
+                            (writePointer + chunk.length) % rollingBuffer.size
                         } else {
-                            if (isPowerSaveMode) return@synchronized
-                            val partial = extractText(rec.partialResult, "partial")
-                            if (partial.isNotBlank() && speechStartTime == 0L) {
-                                speechStartTime = System.currentTimeMillis()
+                            System.arraycopy(chunk.buffer, 0, rollingBuffer, writePointer, remainingSpace)
+                            val leftover = chunk.length - remainingSpace
+                            System.arraycopy(chunk.buffer, remainingSpace, rollingBuffer, 0, leftover)
+                            leftover
+                        }
+                    }
+
+                    recognizerMutex.withLock {
+                        val rec = grammarRecognizer
+                        if (rec != null) {
+                            val ready = rec.acceptWaveForm(chunk.buffer, chunk.length)
+                            if (ready) {
+                                val resultJson = rec.result
+                                val text = extractTextFast(resultJson, "text")
+                                
+                                if (text.isNotBlank()) {
+                                    LogPoseLogger.i("Vosk", "🧠 Cerebro Acústico detectó: '$text'")
+                                    lastPartialText = ""
+                                    integrityBuffer.feed(text, isFinal = true, startTime = speechStartTime)
+                                    speechStartTime = 0 
+                                }
+                            } else {
+                                if (!isPowerSaveMode) {
+                                    val now = System.currentTimeMillis()
+                                    if (now - lastPartialRequestTime >= 1000) {
+                                        lastPartialRequestTime = now
+                                        val partialJson = rec.partialResult
+                                        val partial = extractTextFast(partialJson, "partial")
+                                        if (partial.isNotBlank() && partial != lastPartialText) {
+                                            lastPartialText = partial
+                                            if (speechStartTime == 0L) {
+                                                speechStartTime = System.currentTimeMillis()
+                                            }
+                                        }
+                                    }
+                                }
                             }
                         }
-                    } catch (e: Exception) {
-                        LogPoseLogger.e("Vosk JNI Error: ${e.message}")
-                    } finally {
-                        // v1.7: Devolver al pool para reducir GC (Misión #029)
-                        IntercomCaptureManager.releaseBuffer(chunk.buffer)
                     }
+                } catch (e: Exception) {
+                    LogPoseLogger.e("Vosk JNI Error: ${e.message}")
+                } finally {
+                    IntercomCaptureManager.releaseBuffer(chunk.buffer)
+                    releaseChunk(chunk)
                 }
             }
         }
@@ -186,7 +271,7 @@ class VoskVoiceEngine(private var context: Context) {
     }
     
     fun setAttributionContext(newContext: Context) {
-        this.context = newContext
+        this.context = newContext.applicationContext
     }
 
     private fun attachToCapture() {
@@ -195,17 +280,37 @@ class VoskVoiceEngine(private var context: Context) {
                 IntercomCaptureManager.releaseBuffer(buffer)
                 return@start
             }
-            val cleanBuffer = filter.apply(buffer, length)
+
+            if (System.currentTimeMillis() % 5000 < 50) { 
+                 LogPoseLogger.d("Vosk", "Mic Heartbeat: Ruido $currentNoiseLevel | ASR Activo")
+            }
+
+            for (i in 0 until length) {
+                val current = buffer[i].toInt()
+                val filtered = (hpfAlpha * (lastFiltered + current - lastRaw)).toInt()
+                lastRaw = current.toFloat()
+                lastFiltered = filtered.toFloat()
+                buffer[i] = filtered.coerceIn(-32768, 32767).toShort()
+            }
+
             val noiseLevel = vad.getNormalizedNoiseLevel()
             currentNoiseLevel = noiseLevel
-            val hasVoice = vad.hasVoice(cleanBuffer, length)
+            
+            // v71.7: VAD Pro-Rider Suave - Umbral reducido para no cortar payloads (canciones/nombres)
+            val dynamicMultiplier = if (noiseLevel > 0.6f) 1.15f else 1.0f
+            val hasVoice = vad.hasVoice(buffer, length, multiplier = dynamicMultiplier)
             
             silenceCounter = if (!hasVoice) silenceCounter + 1 else 0
-            val persistenceThreshold = if (noiseLevel > 0.7f) 40 else 30
+            // v71.7: Inercia Rider - Mayor persistencia para capturar pausas naturales
+            val persistenceThreshold = if (noiseLevel > 0.7f) 60 else 45
             
             if (hasVoice || (silenceCounter in 1..persistenceThreshold)) {
-                // Ya no hacemos copyOf(), usamos el buffer del pool (Misión #029)
-                audioChannel.trySend(AudioChunk(buffer, length))
+                val chunk = obtainChunk(buffer, length)
+                val sent = audioChannel.trySend(chunk).isSuccess
+                if (!sent) {
+                    IntercomCaptureManager.releaseBuffer(buffer)
+                    releaseChunk(chunk)
+                }
             } else {
                 IntercomCaptureManager.releaseBuffer(buffer)
             }
@@ -213,32 +318,55 @@ class VoskVoiceEngine(private var context: Context) {
     }
 
     private fun resetSession() {
-        synchronized(recognizerLock) { grammarRecognizer?.reset() }
+        scope.launch(Dispatchers.IO) {
+            if (recognizerMutex.tryLock()) {
+                try {
+                    grammarRecognizer?.reset() 
+                } finally {
+                    recognizerMutex.unlock()
+                }
+            }
+        }
         silenceCounter = 0 
     }
 
-    private fun extractText(json: String, key: String): String = try { 
-        JSONObject(json).optString(key, "") 
-    } catch (e: Exception) { "" }
+    private fun extractTextFast(json: String, key: String): String {
+        val searchKey = "\"$key\""
+        val keyIndex = json.indexOf(searchKey)
+        if (keyIndex == -1) return ""
+        
+        val colonIndex = json.indexOf(":", keyIndex + searchKey.length)
+        if (colonIndex == -1) return ""
+        
+        val startQuote = json.indexOf("\"", colonIndex)
+        if (startQuote == -1) return ""
+        
+        val endQuote = json.indexOf("\"", startQuote + 1)
+        if (endQuote == -1) return ""
+        
+        return json.substring(startQuote + 1, endQuote)
+    }
 
-    /**
-     * Misión #022.3: Extrae una copia instantánea del audio PCM reciente.
-     * Útil para que Whisper procese nombres que Vosk ignora.
-     */
-    fun getRecentAudioBuffer(): ShortArray {
+    fun getRecentAudioBuffer(seconds: Int = 4): ShortArray {
         synchronized(bufferLock) {
-            val result = ShortArray(rollingBuffer.size)
-            // Re-alineamos el buffer circular para que sea lineal
-            val part1 = rollingBuffer.size - writePointer
-            System.arraycopy(rollingBuffer, writePointer, result, 0, part1)
-            System.arraycopy(rollingBuffer, 0, result, part1, writePointer)
+            val samplesNeeded = (16000 * seconds).coerceAtMost(rollingBuffer.size)
+            val result = ShortArray(samplesNeeded)
+            
+            var readPointer = (writePointer - samplesNeeded)
+            if (readPointer < 0) readPointer += rollingBuffer.size
+            
+            val part1 = rollingBuffer.size - readPointer
+            if (part1 >= samplesNeeded) {
+                System.arraycopy(rollingBuffer, readPointer, result, 0, samplesNeeded)
+            } else {
+                System.arraycopy(rollingBuffer, readPointer, result, 0, part1)
+                val part2 = samplesNeeded - part1
+                System.arraycopy(rollingBuffer, 0, result, part1, part2)
+            }
             return result
         }
     }
 
-    /**
-     * Staff v5.4: Limpia el buffer de audio para evitar el "eco" de comandos previos.
-     */
     fun clearRollingBuffer() {
         synchronized(bufferLock) {
             rollingBuffer.fill(0)

@@ -34,7 +34,7 @@ object ThamisLabSimulator {
 
             // 2. Intentar comando prohibido
             LogPoseLogger.i("SIMULATOR: Intentando llamar a un contacto a $customSpeed km/h...")
-            SystemOrchestrator.dispatchCompatCommand(LogPoseCommand.Call("Test Contact"))
+            SystemOrchestrator.dispatchCompatCommand(LogPoseCommand.Communication.Call("Test Contact"))
         }
     }
 
@@ -56,7 +56,7 @@ object ThamisLabSimulator {
             LogPoseLogger.i("SIMULATOR: Iniciando escenario de MÚSICA...")
             injectState(speed = 50f, battery = 90)
             delay(1000)
-            SystemOrchestrator.dispatchCompatCommand(LogPoseCommand.PlayMusic("Test Song"))
+            SystemOrchestrator.dispatchCompatCommand(LogPoseCommand.Media.PlayMusic("Test Song"))
         }
     }
 
@@ -91,6 +91,41 @@ object ThamisLabSimulator {
             SystemOrchestrator.updateHealth(40)
             delay(2000)
             LogPoseLogger.i("SIMULATOR: El QualityAgent debería detectar la degradación.")
+        }
+    }
+
+    /**
+     * v66.7: Simulación de telemetría dinámica para el HUD (Xiaomi HyperOS Test).
+     * Mueve el Lean Angle y la Temperatura para verificar la reactividad visual.
+     */
+    fun simulateLiveTelemetryFlow() {
+        scope.launch {
+            LogPoseLogger.i("SIMULATOR: Iniciando flujo de telemetría en vivo...")
+            var angle = 0f
+            var temp = 70
+            
+            repeat(20) { i ->
+                angle = (kotlin.math.sin(i.toDouble() / 3.0) * 25.0).toFloat()
+                val simulatedG = (kotlin.math.abs(angle) / 20.0).toFloat() + (i % 3) * 0.2f
+                temp += (i % 2)
+                
+                // Actualizamos el WorldModel real para que el HUD reaccione en el Xiaomi
+                com.uriel.logpose.thamis.world.engine.WorldModelEngine.update("Simulator") { 
+                    it.copy(
+                        vehicle = it.vehicle.copy(
+                            leanAngle = angle,
+                            gForce = simulatedG,
+                            moving = true,
+                            engineTempCelsius = temp,
+                            riskLevel = if (kotlin.math.abs(angle) > 20) 
+                                com.uriel.logpose.thamis.world.model.RiskLevel.HIGH 
+                                else com.uriel.logpose.thamis.world.model.RiskLevel.LOW
+                        )
+                    )
+                }
+                delay(200)
+            }
+            LogPoseLogger.i("SIMULATOR: Test de telemetría finalizado.")
         }
     }
 

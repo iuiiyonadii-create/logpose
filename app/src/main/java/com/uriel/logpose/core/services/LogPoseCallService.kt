@@ -38,9 +38,10 @@ class LogPoseCallService : Service() {
     @Inject lateinit var communicationManager: BluetoothCommunicationManager
     @Inject lateinit var micGate: PlaybackAwareMicGate
     @Inject lateinit var tripOrchestrator: TripOrchestrator
+    @Inject lateinit var missionPowerManager: MissionPowerManager
 
     private lateinit var attributionContext: Context
-    private lateinit var scoStateManager: ScoStateManager
+    @Inject lateinit var scoStateManager: ScoStateManager
     private val mediaButtonTrigger by lazy { com.uriel.logpose.features.bluetooth.MediaButtonTrigger(this) }
 
     private val serviceScope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
@@ -87,13 +88,6 @@ class LogPoseCallService : Service() {
 
         voskEngine.setAttributionContext(attributionContext)
 
-        scoStateManager = ScoStateManager(this, attributionContext.getSystemService(Context.AUDIO_SERVICE) as android.media.AudioManager) {
-            if (isTripActive) {
-                LogPoseLogger.i("Service: Gatillando reconexión SCO automática.")
-                communicationManager.hammerScoConnection()
-            }
-        }
-        
         com.uriel.logpose.features.music.MusicManager.initialize(attributionContext)
         communicationManager.updateContext(attributionContext)
 
@@ -104,6 +98,7 @@ class LogPoseCallService : Service() {
         
         PowerManagerHelper.requestIgnoreBatteryOptimizations(this)
         FlightRecorder.initialize(this)
+        missionPowerManager.start()
         checkAndRestoreSession()
     }
 
@@ -156,7 +151,8 @@ class LogPoseCallService : Service() {
                     startForeground(NOTIFICATION_ID, buildOngoingNotification("Conectando..."))
                 }
                 
-                AlertManager.enqueue("LogPose iniciado. Buen viaje, Uriel.", priority = AlertPriority.SYSTEM)
+                // v77.0: Eliminamos saludo inicial redundante para evitar ducking innecesario
+                // AlertManager.enqueue("LogPose iniciado. Buen viaje, Uriel.", priority = AlertPriority.SYSTEM)
                 
                 isTripActive = true
                 isHeadsetConnected = true

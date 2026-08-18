@@ -1,12 +1,12 @@
 package com.uriel.logpose.core.parser
 
+import com.uriel.logpose.core.compat.core.LogPoseLogger
 import org.json.JSONObject
 import java.net.DatagramPacket
 import java.net.DatagramSocket
 import java.net.InetAddress
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.*
+import kotlinx.coroutines.channels.Channel
 
 /**
  * LogPoseCommand, CommandParser and UdpSender for PC bridge control.
@@ -54,25 +54,70 @@ class CommandParser(private val glosario: PhoneticDictionary) {
     }
 }
 
-class UdpSender(private val pcIp: String, private val pcPort: Int = 5055) {
-    private val scope = CoroutineScope(Dispatchers.IO)
+class UdpSender(pcIp: String, private val pcPort: Int = 5055) {
+    private val scope = CoroutineScope(Dispatchers.IO + SupervisorJob())
+    private var socket: DatagramSocket? = null
+    private var address: InetAddress? = null
+    
+    // v58.0: Canal de envío persistente para evitar creación masiva de corrutinas (Misión #058)
+    private val sendChannel = Channel<String>(Channel.UNLIMITED)
+
+    init {
+        try {
+            socket = DatagramSocket().apply {
+                soTimeout = 2000
+            }
+            address = InetAddress.getByName(pcIp)
+            
+            // Un solo loop de fondo para todos los envíos
+            scope.launch {
+                for (json in sendChannel) {
+                    enviarReal(json)
+                }
+            }
+        } catch (e: Exception) {
+            LogPoseLogger.e("UDP", "Fallo al inicializar socket: ${e.message}")
+        }
+    }
     
     fun enviar(comando: LogPoseCommand) {
         enviarJson(comando.toJson())
     }
 
     fun enviarJson(json: String) {
-        scope.launch {
-            try {
-                DatagramSocket().use { socket ->
-                    val data = json.toByteArray()
-                    val address = InetAddress.getByName(pcIp)
-                    val packet = DatagramPacket(data, data.size, address, pcPort)
-                    socket.send(packet)
-                }
-            } catch (e: Exception) {
-                // Log error
-            }
+        if (!isActive) return
+        sendChannel.trySend(json)
+    }
+
+    private val isActive: Boolean get() = scope.isActive
+
+    fun close() {
+        LogPoseLogger.d("UDP", "Cerrando socket y liberando recursos de red.")
+        sendChannel.close()
+        scope.cancel()
+        try {
+            socket?.close()
+        } catch (e: Exception) {}
+        socket = null
+        address = null
+    }
+
+    private fun enviarReal(json: String) {
+        val s = socket ?: return
+        val addr = address ?: return
+        
+        // Misión #061: Sanitización de Memoria Pre-JNI (Reforzada v75.0)
+        if (json.length > 4096) {
+            LogPoseLogger.w("UDP", "Payload excedió límite Staff (4KB). Abortando.")
+            return 
+        }
+        val sanitized = json.replace(Regex("[\\x00-\\x08\\x0B\\x0C\\x0E-\\x1F\\x7F]"), "")
+
+        try {
+            val data = sanitized.toByteArray()
+            val packet = DatagramPacket(data, data.size, addr, pcPort)
+            s.send(packet)
+        } catch (ignored: Exception) {
         }
     }
 }

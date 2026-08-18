@@ -15,7 +15,7 @@ import com.uriel.logpose.features.navigation.NavigationReader
  */
 class NotificationCoreManager(
     private val session: NotificationSession = NotificationSession(),
-    private val repository: NotificationRepository = NotificationRepository(session)
+    private val repository: NotificationCoreRepository = NotificationCoreRepository(session)
 ) {
 
     private val receiver = NotificationReceiver(repository)

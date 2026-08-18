@@ -1,8 +1,8 @@
 package com.thamis.lab.orchestrator
 
-import com.thamis.lab.intelligence.architecture.ArchitectureValidatorEngine
-import com.thamis.lab.intelligence.backlog.BacklogItem
-import com.thamis.lab.intelligence.backlog.EngineeringBacklogStore
+import com.thamis.lab.intelligence.engineering.ArchitectureValidatorEngine
+import com.thamis.lab.intelligence.engineering.BacklogItem
+import com.thamis.lab.intelligence.engineering.EngineeringBacklogStore
 import com.thamis.lab.orchestrator.docs.DocumentationEngine
 import com.thamis.lab.orchestrator.workflow.EngineeringWorkflowEngine
 import org.junit.Assert.assertEquals

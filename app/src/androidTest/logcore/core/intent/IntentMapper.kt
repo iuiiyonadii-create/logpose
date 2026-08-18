@@ -1,6 +1,7 @@
 package com.uriel.logpose.logcore.core.intent
 
 import com.uriel.logpose.logcore.core.capability.Capability
+import com.thamis.lab.core.contracts.intent.Intent
 
 /**
  * Convierte una Intent en la Capability correspondiente.

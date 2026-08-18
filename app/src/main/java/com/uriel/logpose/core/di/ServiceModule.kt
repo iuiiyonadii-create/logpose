@@ -1,7 +1,7 @@
 package com.uriel.logpose.core.di
 
 import android.content.Context
-import com.uriel.logpose.services.ServiceNotificationManager
+import com.uriel.logpose.core.services.ServiceNotificationManager
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn

@@ -1,6 +1,5 @@
 package com.uriel.logpose.thamis.actuation
 
-import android.util.Log
 import com.uriel.logpose.core.compat.core.LogPoseLogger
 import com.uriel.logpose.thamis.cognitive.model.ThamisDecision
 

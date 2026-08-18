@@ -28,7 +28,15 @@ class GoogleMapsProvider : NavigationProvider {
 
     override fun navigate(destination: String): NavigationProviderResult {
         return try {
-            val gmmIntentUri = "google.navigation:q=$destination".toUri()
+            // v88.1: Detección Staff de URI pre-codificada
+            val gmmIntentUri = when {
+                destination.startsWith("google.navigation:") || destination.startsWith("geo:") -> {
+                    destination.toUri()
+                }
+                else -> {
+                    "google.navigation:q=${java.net.URLEncoder.encode(destination, "UTF-8")}".toUri()
+                }
+            }
             val mapIntent = Intent(Intent.ACTION_VIEW, gmmIntentUri)
             mapIntent.setPackage(packageName)
             mapIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)

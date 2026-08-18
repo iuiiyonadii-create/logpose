@@ -6,7 +6,7 @@ import android.media.session.MediaSession
 import android.media.session.PlaybackState
 import android.view.KeyEvent
 import com.uriel.logpose.core.compat.core.LogPoseLogger
-import com.uriel.logpose.features.voice.VoiceManager
+import com.uriel.logpose.thamis.ThamisAssistant
 
 /**
  * Captura eventos de botones multimedia del intercomunicador (V6 Pro+)
@@ -41,7 +41,7 @@ class MediaButtonTrigger(private val context: Context) {
                             KeyEvent.KEYCODE_HEADSETHOOK,
                             KeyEvent.KEYCODE_CALL -> {
                                 LogPoseLogger.i("Intercom: Gatillo de activación reconocido.")
-                                VoiceManager.start()
+                                ThamisAssistant.start(context)
                                 return true
                             }
                             KeyEvent.KEYCODE_MEDIA_NEXT -> {

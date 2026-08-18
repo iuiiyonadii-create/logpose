@@ -34,10 +34,16 @@ Este es el glosario oficial de comandos optimizados para el casco. Thamis utiliz
 
 | Acción | Comandos de Voz |
 | :--- | :--- |
-| **Llamar** | "Llamar a [Nombre]", "Llamá a [Contacto]" |
+| **Llamar** | "Llamar a [Nombre]", "Llamá a [Contacto]", "Pegale un tubazo a [Nombre]" |
+| **Atender** | "Atendé", "Contestá", "Dale", "Sí", "Aceptá" |
+| **Rechazar** | "Rechazá", "Ignorá", "No atiendas", "No", "Colgale" |
+| **Finalizar** | "Cortá", "Cortar", "Colgá", "Colgar", "Terminá la llamada" |
+| **Silenciar Micro** | "Silenciá", "Mute", "Muteá", "Sacame el micrófono" |
+| **Activar Micro** | "Activá el micrófono", "Sacá el silencio" |
 | **Notificaciones** | "Leeme los mensajes", "Notificaciones", "¿Qué avisos tengo?" |
 | **Responder** | "Responder [Tu mensaje]", "Contestá [Tu mensaje]" |
-| **Confirmación** | "Sí", "Dale", "Mándalo", "No", "Borralo", "Cancelá" |
+| **Confirmación** | "Sí", "Dale", "Mándalo", "Hacelo", "Bueno", "Ok" |
+| **Cancelación** | "No", "Borralo", "Cancelá" |
 
 ---
 

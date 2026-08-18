@@ -148,6 +148,11 @@ public object MissionControlView {
                     border-radius: 8px; display: flex; flex-direction: column; max-width: 900px;
                 }
                 .chat-history { flex: 1; padding: 20px; overflow-y: auto; font-size: 13px; line-height: 1.6; }
+                .thinking-block { 
+                    background: rgba(0, 242, 255, 0.03); border-left: 2px solid var(--accent-cyan);
+                    padding: 10px 15px; margin-bottom: 15px; font-style: italic; color: var(--text-dim);
+                    font-size: 12px; display: none;
+                }
                 .msg { margin-bottom: 15px; border-bottom: 1px solid rgba(255, 255, 255, 0.02); padding-bottom: 10px; }
                 .msg.bot { color: var(--accent-cyan); }
                 .msg.user { color: #fff; }
@@ -239,10 +244,11 @@ public object MissionControlView {
                     <!-- VIEW 9: CHAT INTELIGENCIA -->
                     <div id="view-9" class="view-panel">
                         <div class="panel-header">
-                            <h2>Asistente Arquitecto Residente</h2>
+                            <h2>Asistente Arquitecto Residente (ClaudeCode Mode)</h2>
                         </div>
                         <div class="chat-box">
                             <div class="chat-history" id="chatHistory">
+                                <div id="thinkingBlock" class="thinking-block">🧠 Agente razonando...</div>
                                 <div class="msg bot">[THAMIS]: Sistema operativo de IA listo. Esperando entrada...</div>
                             </div>
                             <div class="input-row">
@@ -333,7 +339,16 @@ public object MissionControlView {
                     if (!text) return;
                     addMsg(text, 'user');
                     input.value = '';
-                    // ... (rest of bot logic)
+                    
+                    const thinking = document.getElementById('thinkingBlock');
+                    thinking.style.display = 'block';
+                    thinking.innerHTML = '🧠 Agente analizando archivos del proyecto...';
+                    
+                    // Simulación de respuesta agéntica v60.0
+                    setTimeout(() => {
+                        thinking.style.display = 'none';
+                        addMsg("He analizado el contexto de <b>" + text + "</b>. Aplicando principios SOLID y revisando contratos en :core:contracts...", 'bot');
+                    }, 1500);
                 }
 
                 function startResearch() {

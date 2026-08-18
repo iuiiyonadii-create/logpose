@@ -1,9 +1,12 @@
 package com.thamis.lab.core.contracts.snapshot
 
+import com.thamis.lab.core.contracts.version.MessageVersion
+
 /**
  * Immutable snapshot of system, user, and environmental state.
  */
 public data class CognitiveSnapshot(
+    public val version: MessageVersion = MessageVersion(),
     public val timestampMs: Long,
     public val audioState: AudioState = AudioState(),
     public val bluetoothState: BluetoothState = BluetoothState(),

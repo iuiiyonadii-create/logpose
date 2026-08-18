@@ -13,7 +13,7 @@ object SafetyEngine {
      * Valida si un comando es seguro dadas las condiciones actuales.
      */
     fun isActionAllowed(command: LogPoseCommand, isMoving: Boolean): Boolean {
-        if (isMoving && command is LogPoseCommand.Call) {
+        if (isMoving && command is LogPoseCommand.Communication.Call) {
             LogPoseLogger.w("SafetyEngine: Bloqueando llamada directa durante movimiento rápido.")
             return false
         }

@@ -21,6 +21,6 @@ object ProbeLogger {
     }
 
     fun e(message: String, throwable: Throwable? = null) {
-        if (enabled) LogPoseLogger.e(TAG, message, throwable)
+        if (enabled) LogPoseLogger.e(TAG, if (throwable != null) "$message: ${throwable.message}" else message)
     }
 }

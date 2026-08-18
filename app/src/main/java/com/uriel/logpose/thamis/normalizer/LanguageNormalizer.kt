@@ -1,6 +1,7 @@
 package com.uriel.logpose.thamis.normalizer
 
 import java.text.Normalizer
+import com.thamis.lab.core.common.phonetic.PhoneticUtils
 
 /**
  * THAMIS v22.23 (Acoustic Singularity) — LanguageNormalizer.
@@ -12,23 +13,16 @@ object LanguageNormalizer {
     // 1. KERNEL DE COLAPSO MORFOLÓGICO RIOPLATENSE
     // =========================================================================
 
+    // v57.0: Regex pre-compilados (Misión #057)
+    private val ARTICLES_REGEX = Regex("\\b(el|la|los|las|un|una|unos|unas|de|del)\\b")
+    private val SPACES_REGEX = Regex("\\s+")
+
     /**
      * Proceso de Colapso Rioplatense (The Kernel).
      * Transforma cualquier cadena escuchada a ADN fonético puro.
      */
     fun normalizeToDNA(text: String): String {
-        return text.lowercase()
-            .replace("á", "a").replace("é", "e").replace("í", "i").replace("ó", "o").replace("ú", "u")
-            .replace("ü", "u").replace("ñ", "n")
-            // 1. Yeísmo: y/ll -> j
-            .replace("ll", "j").replace("y", "j")
-            // 2. Aspiración de S: Ignorar S final o antes de consonante
-            .replace(Regex("s\\b"), "")
-            .replace(Regex("s(?=[bcdfghjklmnpqrstvwxyz])"), "")
-            // 3. Colapso de Oclusivas (v->b, z/c->s)
-            .replace("v", "b").replace("z", "s").replace("c", "s")
-            // 4. Limpieza final alfanumérica
-            .replace(Regex("[^a-z0-9]"), "")
+        return PhoneticUtils.normalizeToDNA(text)
     }
 
     /**
@@ -65,17 +59,27 @@ object LanguageNormalizer {
     }
 
     private fun levenshtein(s1: String, s2: String): Int {
-        val dp = Array(s1.length + 1) { IntArray(s2.length + 1) }
-        for (i in 0..s1.length) dp[i][0] = i
-        for (j in 0..s2.length) dp[0][j] = j
+        val n = s1.length
+        val m = s2.length
+        if (n == 0) return m
+        if (m == 0) return n
 
-        for (i in 1..s1.length) {
-            for (j in 1..s2.length) {
+        var prev = IntArray(m + 1)
+        var curr = IntArray(m + 1)
+
+        for (j in 0..m) prev[j] = j
+
+        for (i in 1..n) {
+            curr[0] = i
+            for (j in 1..m) {
                 val cost = if (s1[i - 1] == s2[j - 1]) 0 else 1
-                dp[i][j] = minOf(dp[i - 1][j] + 1, dp[i][j - 1] + 1, dp[i - 1][j - 1] + cost)
+                curr[j] = minOf(curr[j - 1] + 1, prev[j] + 1, prev[j - 1] + cost)
             }
+            val temp = prev
+            prev = curr
+            curr = temp
         }
-        return dp[s1.length][s2.length]
+        return prev[m]
     }
 
     // =========================================================================
@@ -86,8 +90,8 @@ object LanguageNormalizer {
      * Agnosticismo de Artículos ("el", "la", "un", "una", "de").
      */
     fun stripArticles(text: String): String {
-        return text.replace(Regex("\\b(el|la|los|las|un|una|unos|unas|de|del)\\b"), "")
-            .replace("\\s+".toRegex(), " ")
+        return text.replace(ARTICLES_REGEX, "")
+            .replace(SPACES_REGEX, " ")
             .trim()
     }
 

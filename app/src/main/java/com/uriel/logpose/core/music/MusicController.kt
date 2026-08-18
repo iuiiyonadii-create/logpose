@@ -14,15 +14,15 @@ class MusicController(private val context: Context) {
 
     fun execute(command: LogPoseCommand): Boolean {
         return when (command) {
-            is LogPoseCommand.PlayMusic -> sendMediaKey(KeyEvent.KEYCODE_MEDIA_PLAY)
-            LogPoseCommand.PauseMusic -> sendMediaKey(KeyEvent.KEYCODE_MEDIA_PAUSE)
-            LogPoseCommand.NextTrack -> sendMediaKey(KeyEvent.KEYCODE_MEDIA_NEXT)
-            LogPoseCommand.PreviousTrack -> sendMediaKey(KeyEvent.KEYCODE_MEDIA_PREVIOUS)
-            LogPoseCommand.VolumeUp -> {
+            is LogPoseCommand.Media.PlayMusic -> sendMediaKey(KeyEvent.KEYCODE_MEDIA_PLAY)
+            LogPoseCommand.Media.PauseMusic -> sendMediaKey(KeyEvent.KEYCODE_MEDIA_PAUSE)
+            LogPoseCommand.Media.NextTrack -> sendMediaKey(KeyEvent.KEYCODE_MEDIA_NEXT)
+            LogPoseCommand.Media.PreviousTrack -> sendMediaKey(KeyEvent.KEYCODE_MEDIA_PREVIOUS)
+            LogPoseCommand.System.VolumeUp -> {
                 audioManager.adjustStreamVolume(AudioManager.STREAM_MUSIC, AudioManager.ADJUST_RAISE, AudioManager.FLAG_SHOW_UI)
                 true
             }
-            LogPoseCommand.VolumeDown -> {
+            LogPoseCommand.System.VolumeDown -> {
                 audioManager.adjustStreamVolume(AudioManager.STREAM_MUSIC, AudioManager.ADJUST_LOWER, AudioManager.FLAG_SHOW_UI)
                 true
             }

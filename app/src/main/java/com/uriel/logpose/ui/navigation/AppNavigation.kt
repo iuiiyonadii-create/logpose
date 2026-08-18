@@ -4,7 +4,7 @@ import androidx.compose.runtime.Composable
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import com.uriel.logpose.presentation.home.LogPoseScreen
+import com.uriel.logpose.ui.screen.LogPoseScreen
 
 /**
  * Main navigation controller for the application.

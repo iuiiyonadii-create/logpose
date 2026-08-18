@@ -4,6 +4,8 @@ import com.uriel.logpose.thamis.navigation.confidence.ConfidenceDecayEngine
 import com.uriel.logpose.thamis.navigation.memory.NavigationExperience
 import com.uriel.logpose.thamis.navigation.memory.NavigationMemory
 import com.uriel.logpose.thamis.navigation.model.NavigationGoal
+import com.uriel.logpose.thamis.intent.IntentDetector
+import com.thamis.lab.core.contracts.intent.Intent
 import org.junit.Test
 import org.junit.Assert.*
 import org.junit.Before
@@ -58,15 +60,15 @@ class NavigationMemoryStressTest {
     @Test
     fun testInsufficientInformation() {
         println("\nTEST 2: Llevame (Sin destino)")
-        val intent = RouteIntentClassifier.classify("llevame")
-        assertEquals(RouteIntentClassifier.RouteIntent.UNKNOWN, intent)
+        val intent = IntentDetector.detect("llevame").intent
+        assertEquals(Intent.NAVIGATE, intent) // 'llevame' es una raíz de NAVIGATE
     }
 
     @Test
     fun testIntentClassification() {
         println("\nTEST 6: Clasificación de intenciones")
-        assertEquals(RouteIntentClassifier.RouteIntent.GO_HOME, RouteIntentClassifier.classify("llevame a casa"))
-        assertEquals(RouteIntentClassifier.RouteIntent.GO_WORK, RouteIntentClassifier.classify("vamos al trabajo"))
-        assertEquals(RouteIntentClassifier.RouteIntent.STOP_ROUTE, RouteIntentClassifier.classify("cancela la ruta"))
+        assertEquals(Intent.NAVIGATE, IntentDetector.detect("llevame a casa").intent)
+        assertEquals(Intent.NAVIGATE, IntentDetector.detect("vamos al trabajo").intent)
+        assertEquals(Intent.STOP_NAVIGATION, IntentDetector.detect("cancela la ruta").intent)
     }
 }

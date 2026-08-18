@@ -1,6 +1,6 @@
 package com.thamis.lab.orchestrator
 
-import com.thamis.lab.intelligence.theory.ThamisGrandEngineeringTheoryEngine
+import com.thamis.lab.intelligence.evolution.ThamisGrandEngineeringTheoryEngine
 import com.thamis.lab.orchestrator.master1000.ThamisMasterSystem1000UltimateCore
 import com.thamis.lab.orchestrator.prime.ThamisPrimeSpecificationEngine
 import org.junit.Assert.assertEquals

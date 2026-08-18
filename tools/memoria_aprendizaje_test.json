@@ -1,0 +1,182 @@
+[
+  {
+    "iteration": 1,
+    "raw": "che si podes de onda poneme ese tema de duque el de canistan",
+    "nlu": {
+      "intent": "PLAY_MUSIC",
+      "entity": "che podes onda ese tema duki uzbekistan",
+      "original": "che si podes de onda poneme ese tema de duque el de canistan"
+    }
+  },
+  {
+    "iteration": 2,
+    "raw": "uh la puta madre chocaron en la esquina llamá a la cana",
+    "nlu": {
+      "intent": "UNKNOWN",
+      "entity": "uh puta madre chocaron esquina llamá cana",
+      "original": "uh la puta madre chocaron en la esquina llamá a la cana"
+    }
+  },
+  {
+    "iteration": 3,
+    "raw": "posta ruta a estacionamiento del shopping abasto rápido",
+    "nlu": {
+      "intent": "NAVIGATE",
+      "entity": "posta estacionamiento del shopping abasto rápido",
+      "original": "posta ruta a estacionamiento del shopping abasto rápido"
+    }
+  },
+  {
+    "iteration": 4,
+    "raw": "pasame trueno con el viza si tenés ahí",
+    "nlu": {
+      "intent": "PLAY_MUSIC",
+      "entity": "trueno bizarrap tenés ahí",
+      "original": "pasame trueno con el viza si tenés ahí"
+    }
+  },
+  {
+    "iteration": 5,
+    "raw": "pone la musica de luck ji",
+    "nlu": {
+      "intent": "PLAY_MUSIC",
+      "entity": "musica duki ji",
+      "original": "pone la musica de luck ji"
+    }
+  },
+  {
+    "iteration": 6,
+    "raw": "llevame a maccdonald",
+    "nlu": {
+      "intent": "NAVIGATE",
+      "entity": "maccdonald",
+      "original": "llevame a maccdonald"
+    }
+  },
+  {
+    "iteration": 7,
+    "raw": "mandale el tema de pakistan de ysy",
+    "nlu": {
+      "intent": "PLAY_MUSIC",
+      "entity": "tema uzbekistan ysy",
+      "original": "mandale el tema de pakistan de ysy"
+    }
+  },
+  {
+    "iteration": 8,
+    "raw": "ey guarda que hay operativo mas adelante",
+    "nlu": {
+      "intent": "UNKNOWN",
+      "entity": "ey guarda khea hay operativo mas adelante",
+      "original": "ey guarda que hay operativo mas adelante"
+    }
+  },
+  {
+    "iteration": 9,
+    "raw": "reproducime la cancion de biza con quevedo",
+    "nlu": {
+      "intent": "PLAY_MUSIC",
+      "entity": "cancion bizarrap quevedo",
+      "original": "reproducime la cancion de biza con quevedo"
+    }
+  },
+  {
+    "iteration": 10,
+    "raw": "llegar a avenida corrientes y nueve de julio",
+    "nlu": {
+      "intent": "NAVIGATE",
+      "entity": "avenida corrientes nueve julio",
+      "original": "llegar a avenida corrientes y nueve de julio"
+    }
+  },
+  {
+    "iteration": 11,
+    "raw": "poneme algo de duki duki duki",
+    "nlu": {
+      "intent": "PLAY_MUSIC",
+      "entity": "algo duki duki duki",
+      "original": "poneme algo de duki duki duki"
+    }
+  },
+  {
+    "iteration": 12,
+    "raw": "tira la musica de mercedes sosa",
+    "nlu": {
+      "intent": "PLAY_MUSIC",
+      "entity": "musica mercedes sosa",
+      "original": "tira la musica de mercedes sosa"
+    }
+  },
+  {
+    "iteration": 13,
+    "raw": "ojo que hay un choque en la autopista",
+    "nlu": {
+      "intent": "UNKNOWN",
+      "entity": "ojo khea hay choque autopista",
+      "original": "ojo que hay un choque en la autopista"
+    }
+  },
+  {
+    "iteration": 14,
+    "raw": "quiero ir al shopping abasto",
+    "nlu": {
+      "intent": "UNKNOWN",
+      "entity": "quiero ir shopping abasto",
+      "original": "quiero ir al shopping abasto"
+    }
+  },
+  {
+    "iteration": 15,
+    "raw": "largame un duki de una",
+    "nlu": {
+      "intent": "PLAY_MUSIC",
+      "entity": "duki",
+      "original": "largame un duki de una"
+    }
+  },
+  {
+    "iteration": 16,
+    "raw": "che biza pone duki",
+    "nlu": {
+      "intent": "PLAY_MUSIC",
+      "entity": "che bizarrap duki",
+      "original": "che biza pone duki"
+    }
+  },
+  {
+    "iteration": 17,
+    "raw": "llamá a la policia que me afanaron",
+    "nlu": {
+      "intent": "UNKNOWN",
+      "entity": "llamá policia khea me afanaron",
+      "original": "llamá a la policia que me afanaron"
+    }
+  },
+  {
+    "iteration": 18,
+    "raw": "reproducime el tema de la renga",
+    "nlu": {
+      "intent": "PLAY_MUSIC",
+      "entity": "tema la renga",
+      "original": "reproducime el tema de la renga"
+    }
+  },
+  {
+    "iteration": 19,
+    "raw": "andá a la shell mas cercana",
+    "nlu": {
+      "intent": "NAVIGATE",
+      "entity": "shell mas cercana",
+      "original": "andá a la shell mas cercana"
+    }
+  },
+  {
+    "iteration": 20,
+    "raw": "pone el tema de duki el de rockstar",
+    "nlu": {
+      "intent": "PLAY_MUSIC",
+      "entity": "tema duki rockstar",
+      "original": "pone el tema de duki el de rockstar"
+    }
+  }
+]

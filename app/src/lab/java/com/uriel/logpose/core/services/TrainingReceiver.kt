@@ -17,6 +17,9 @@ class TrainingReceiver : BroadcastReceiver() {
     private val scope = CoroutineScope(Dispatchers.Default)
 
     override fun onReceive(context: Context, intent: Intent) {
+        // v57.0: Telemetría de Auditoría de Intrusión
+        LogPoseLogger.w("🛡️ SECURITY", "Audit: Intent received from PID: ${android.os.Binder.getCallingPid()}")
+        
         when (intent.action) {
             "com.uriel.logpose.INJECT_COGNITIVE_TEST" -> {
                 val text = intent.getStringExtra("text") ?: return

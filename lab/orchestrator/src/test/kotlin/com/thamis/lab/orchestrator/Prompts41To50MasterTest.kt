@@ -1,8 +1,8 @@
 package com.thamis.lab.orchestrator
 
-import com.thamis.lab.intelligence.dependency.DependencyCleanerEngine
-import com.thamis.lab.intelligence.enforcer.ArchitectureEnforcerEngine
-import com.thamis.lab.intelligence.review.CodeReviewEngine
+import com.thamis.lab.intelligence.engineering.DependencyCleanerEngine
+import com.thamis.lab.intelligence.engineering.ArchitectureEnforcerEngine
+import com.thamis.lab.intelligence.engineering.CodeReviewEngine
 import com.thamis.lab.orchestrator.evolution.ProjectEvolutionEngine
 import com.thamis.lab.performance.memory.MemoryOptimizerEngine
 import com.thamis.lab.performance.thread.ThreadAnalyzerEngine

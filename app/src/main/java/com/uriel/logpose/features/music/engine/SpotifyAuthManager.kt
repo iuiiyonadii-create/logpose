@@ -11,8 +11,11 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.withTimeoutOrNull
 
+import androidx.security.crypto.EncryptedSharedPreferences
+import androidx.security.crypto.MasterKey
+
 /**
- * Gestor de Autenticación v7.0: Ahora con StateFlow para sincronizar con el MusicManager.
+ * Gestor de Autenticación v8.0: Con Cifrado de Hardware (Misión #058).
  */
 object SpotifyAuthManager {
     private const val TAG = "SpotifyAuth"
@@ -21,15 +24,30 @@ object SpotifyAuthManager {
     private val _tokenFlow = MutableStateFlow<String?>(null)
     val tokenFlow: StateFlow<String?> = _tokenFlow
 
-    private const val PREF_NAME = "spotify_prefs"
+    private const val PREF_NAME = "spotify_secure_prefs_v8"
     private const val KEY_TOKEN = "access_token"
 
     fun init(context: android.content.Context) {
-        val prefs = context.getSharedPreferences(PREF_NAME, android.content.Context.MODE_PRIVATE)
-        val savedToken = prefs.getString(KEY_TOKEN, null)
-        if (savedToken != null) {
-            _tokenFlow.value = savedToken
-            LogPoseLogger.d(TAG, "Token recuperado de memoria.")
+        try {
+            val masterKey = MasterKey.Builder(context)
+                .setKeyScheme(MasterKey.KeyScheme.AES256_GCM)
+                .build()
+
+            val prefs = EncryptedSharedPreferences.create(
+                context,
+                PREF_NAME,
+                masterKey,
+                EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
+                EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM
+            )
+            
+            val savedToken = prefs.getString(KEY_TOKEN, null)
+            if (savedToken != null) {
+                _tokenFlow.value = savedToken
+                LogPoseLogger.d(TAG, "Token seguro recuperado.")
+            }
+        } catch (e: Exception) {
+            LogPoseLogger.e(TAG, "Error inicializando cifrado Spotify: ${e.message}")
         }
     }
 
@@ -57,13 +75,24 @@ object SpotifyAuthManager {
                 val token = response.accessToken
                 _tokenFlow.value = token
                 
-                // Persistencia local
-                context.getSharedPreferences(PREF_NAME, android.content.Context.MODE_PRIVATE)
-                    .edit()
-                    .putString(KEY_TOKEN, token)
-                    .apply()
-                
-                LogPoseLogger.i(TAG, "Token obtenido y guardado con éxito.")
+                // Persistencia Cifrada
+                try {
+                    val masterKey = MasterKey.Builder(context)
+                        .setKeyScheme(MasterKey.KeyScheme.AES256_GCM)
+                        .build()
+
+                    EncryptedSharedPreferences.create(
+                        context,
+                        PREF_NAME,
+                        masterKey,
+                        EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
+                        EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM
+                    ).edit().putString(KEY_TOKEN, token).apply()
+                    
+                    LogPoseLogger.i(TAG, "Token guardado con cifrado de hardware.")
+                } catch (e: Exception) {
+                    LogPoseLogger.e(TAG, "Fallo al guardar token cifrado.")
+                }
             }
             AuthorizationResponse.Type.ERROR -> {
                 LogPoseLogger.e(TAG, "Error de Spotify Auth: ${response.error}")

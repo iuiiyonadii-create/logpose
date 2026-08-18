@@ -1,6 +1,6 @@
 package com.thamis.lab.orchestrator
 
-import com.thamis.lab.intelligence.genome.SoftwareGenomeEngine
+import com.thamis.lab.intelligence.evolution.SoftwareGenomeEngine
 import com.thamis.lab.orchestrator.hypervisor.ThamisHypervisorCore
 import com.thamis.lab.orchestrator.platform.UniversalEngineeringPlatformCore
 import org.junit.Assert.assertEquals

@@ -1,5 +1,7 @@
 package com.uriel.logpose.logcore.core.intent
 
+import com.thamis.lab.core.contracts.intent.Intent
+
 /**
  * Describe un patrón de reconocimiento para una intención.
  */

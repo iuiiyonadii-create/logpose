@@ -1,11 +1,7 @@
 package com.uriel.logpose.logcore.tools
 
-/**
- * Utilidades puras relacionadas con el tiempo de ejecución (no de calendario).
- *
- * Todas las funciones trabajan sobre [System.nanoTime] / [System.currentTimeMillis]
- * y no dependen de Android ni de ningún framework de UI.
- */
+import com.uriel.logpose.core.compat.core.LogPoseLogger
+
 object TimeTools {
 
     /**

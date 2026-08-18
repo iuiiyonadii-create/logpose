@@ -79,6 +79,17 @@ object LogPoseLogger {
         i(msg)
     }
 
+    /**
+     * Devuelve las últimas líneas del archivo de log para análisis forense.
+     */
+    fun getRecentLogs(lines: Int = 100): String {
+        return try {
+            logFile?.readLines()?.takeLast(lines)?.joinToString("\n") ?: ""
+        } catch (e: Exception) {
+            "Error reading logs: ${e.message}"
+        }
+    }
+
     private fun writeToFile(level: String, msg: String) {
         scope.launch {
             try {

@@ -1,6 +1,6 @@
 plugins {
-    alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
+    alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.hilt)
     alias(libs.plugins.ksp)
@@ -27,16 +27,23 @@ android {
         }
         create("lab") {
             dimension = "version"
+            // v58.5: Deshabilitamos R8 temporalmente para permitir auditoría de red
+            buildConfigField("boolean", "MINIFY_ENABLED", "false")
         }
     }
 
     buildTypes {
         release {
-            isMinifyEnabled = false
+            // Solo activamos minificación si no es el flavor de laboratorio
+            isMinifyEnabled = false // v58.5: Override global para destrabar build
+            isShrinkResources = false
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
-                "proguard-rules.pro"
+                "app/src/main/keepRules/rules.keep"
             )
+        }
+        debug {
+            isMinifyEnabled = false
         }
     }
 
@@ -51,6 +58,7 @@ android {
 
     buildFeatures {
         compose = true
+        buildConfig = true
     }
 
     packaging {
@@ -79,6 +87,7 @@ dependencies {
     implementation(libs.androidx.lifecycle.runtime.compose)
 
     implementation(project(":core:contracts"))
+    implementation(project(":core:common"))
 
     implementation(libs.kotlinx.coroutines.core)
     implementation(libs.kotlinx.coroutines.android)
@@ -105,7 +114,14 @@ dependencies {
     implementation(libs.androidx.work.runtime.ktx)
     implementation(libs.androidx.core.splashscreen)
     implementation(libs.androidx.startup)
+    implementation("com.squareup.okhttp3:okhttp:4.12.0")
 
+    // Criptografía Staff
+    implementation(libs.androidx.security.crypto)
+    
+    // MediaPipe GenAI (Llama 3.2 1B Inference)
+    implementation(libs.mediapipe.genai)
+    
     testImplementation(libs.junit)
     testImplementation(libs.mockk)
 

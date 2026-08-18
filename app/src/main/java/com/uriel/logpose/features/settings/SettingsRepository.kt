@@ -12,7 +12,7 @@ import kotlinx.coroutines.flow.asStateFlow
  * Orquesta [SettingsSession] (estado en memoria) y [SettingsStore]
  * (persistencia) y produce [SettingsState]/[SettingsCoreEvent] para las
  * capas superiores, siguiendo el mismo patron que
- * `features.notifications.NotificationRepository`.
+ * `features.notifications.NotificationCoreRepository`.
  *
  * Depende de la interfaz [SettingsStore] (no de
  * `data.preferences.SettingsPreferences` directamente), lo que permite

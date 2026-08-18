@@ -2,8 +2,8 @@ package com.uriel.logpose.core.session
 
 import com.uriel.logpose.core.compat.core.LogPoseLogger
 import com.uriel.logpose.features.music.MusicManager
-import com.uriel.logpose.features.voice.VoiceManager
 import com.uriel.logpose.features.voice.FeedbackManager
+import com.uriel.logpose.thamis.ThamisAssistant
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -63,7 +63,7 @@ object SessionManager {
         
         // Limpieza de servicios (Sector 8.2)
         MusicManager.pause()
-        VoiceManager.stop()
+        ThamisAssistant.stop()
         com.uriel.logpose.thamis.thamis_final.ThamisCore.getInstance(com.uriel.logpose.core.app.LogPoseApplication.instance).shutdown()
         
         _state.value = SessionState.BLUETOOTH_DISCONNECTED

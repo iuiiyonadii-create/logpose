@@ -36,6 +36,9 @@ object WorldModelEngine {
             latencyMs = System.currentTimeMillis() - startTime
         ))
 
+        // v66.5: Actualizar HUD en tiempo real con el nuevo estado del mundo
+        com.uriel.logpose.core.services.LogPoseHudService.updateWorld(newSnapshot)
+
         LogPoseLogger.d("[THAMIS_WORLD] Model updated by $domain. Snapshot ID: ${newSnapshot.id}")
         
         saveCheckpoint(newSnapshot)

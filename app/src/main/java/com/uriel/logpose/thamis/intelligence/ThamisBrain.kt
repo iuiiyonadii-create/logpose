@@ -1,125 +1,49 @@
 package com.uriel.logpose.thamis.intelligence
 
-import com.uriel.logpose.core.app.LogPoseApplication
 import com.uriel.logpose.core.compat.core.LogPoseLogger
 import com.thamis.lab.core.contracts.intent.Intent
 import com.uriel.logpose.thamis.intent.IntentDetector
 import com.uriel.logpose.thamis.request.THAMISRequest
 import com.uriel.logpose.thamis.decision.Decision
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.withContext
-import org.json.JSONObject
-import java.net.HttpURLConnection
-import java.net.URL
+import com.uriel.logpose.core.intelligence.ThamisNeuralEngine
 
 /**
- * ThamisBrain: El motor de inteligencia híbrido.
- * Combina reglas locales (Gratis/Rápido) con LLMs remotos (Gratis/Inteligente).
+ * ThamisBrain: Motor de Inteligencia Híbrido (Rules + Edge-AI).
+ * v67.0: Consolidación de Conciencia con ThamisNeuralEngine.
  */
 object ThamisBrain {
 
     /**
-     * Procesa una petición intentando primero el motor local.
-     * Si la confianza es baja, consulta al LLM en la PC o en la Nube.
+     * Procesa una petición con el motor híbrido (Rules -> Edge-AI fallback).
      */
-    suspend fun process(request: THAMISRequest): Decision = withContext(Dispatchers.Default) {
-        // 1. Motor Local (Rule-based)
+    fun process(request: THAMISRequest): Decision {
         val localDetection = IntentDetector.detect(request.text)
-        
-        if (localDetection.score > 0.85f) {
-            LogPoseLogger.d("ThamisBrain: Usando motor local (Conf: ${localDetection.score})")
-            return@withContext Decision(
-                intent = localDetection.intent,
-                confidence = localDetection.score,
-                entities = localDetection.entities
-            )
+
+        // 🔒 CORTOCIRCUITO INMEDIATO POR PRIVACIDAD (Sin Wake-Word)
+        if (localDetection.type == "PRIVACY_MUTED") {
+            LogPoseLogger.d("ThamisBrain: PRIVACY_MUTED - Sin Wake-Word. Cortocircuito.")
+            return Decision(intent = Intent.UNKNOWN, confidence = 0.0f, entities = emptyMap())
         }
 
-        // 2. Si el motor local duda, usamos el "Cerebro Remoto" (Gratis vía PC o API)
-        LogPoseLogger.i("ThamisBrain: Confianza baja (${localDetection.score}). Consultando IA Avanzada...")
-        
-        var remoteDecision = queryRemoteLLM(request.text)
-
-        // v4.6.3: Guardrail Global contra secuestro de intención
-        val lowerText = request.text.lowercase()
-        val musicTriggers = setOf("pone", "poneme", "poné", "poner", "reproduce", "reproduci", "reproducir", "play", "pasame", "escuchar", "sonar", "tira", "tirame")
-        val isMusicVerb = musicTriggers.any { lowerText.startsWith(it) }
-
-        if (isMusicVerb && remoteDecision?.intent == Intent.OPEN_APP) {
-            LogPoseLogger.w("ThamisBrain: Corrigiendo intención OPEN_APP -> PLAY_MUSIC por Verbo Musical")
-            remoteDecision = remoteDecision.copy(intent = Intent.PLAY_MUSIC)
+        // v67.0: Hybrid Intelligence - Fallback al cerebro unificado si las reglas fallan
+        if (localDetection.intent == Intent.UNKNOWN) {
+            LogPoseLogger.i("ThamisBrain", "Reglas agotadas. Activando Neural Fallback...")
+            
+            val offlineReasoning = kotlinx.coroutines.runBlocking {
+                ThamisNeuralEngine.generateResponse(request.text)
+            }
+            
+            if (offlineReasoning.lowercase().contains("reproducir") || offlineReasoning.lowercase().contains("play")) {
+                LogPoseLogger.i("ThamisBrain", "✅ Neural Engine rescató intención: PLAY_MUSIC")
+                return Decision(intent = Intent.PLAY_MUSIC, confidence = 0.75f, entities = mapOf("parameter" to request.text))
+            }
         }
 
-        return@withContext remoteDecision ?: Decision(
+        LogPoseLogger.d("ThamisBrain: Motor local offline (Source: Rules, Conf: ${localDetection.score})")
+        return Decision(
             intent = localDetection.intent,
-            confidence = localDetection.score
+            confidence = localDetection.score,
+            entities = localDetection.entities
         )
-    }
-
-    /**
-     * Consulta al servidor proxy de la PC (como free-claude-code) o una API gratuita.
-     */
-    private suspend fun queryRemoteLLM(text: String): Decision? = withContext(Dispatchers.IO) {
-        // OPCIÓN A: Usar la PC del usuario (Gratis total, requiere PC encendida)
-        val pcIp = LogPoseApplication.entryPoint.settingsManager().getString("pc_ip", "192.168.1.34") ?: "192.168.1.34"
-        val useLocalPC = LogPoseApplication.entryPoint.settingsManager().getBoolean("use_local_ai", true)
-
-        if (useLocalPC) {
-            val decision = queryLocalPCProxy(text, pcIp)
-            if (decision != null) return@withContext decision
-        }
-
-        // OPCIÓN B: Usar Gemini API (Gratis hasta 15 RPM, requiere Internet)
-        // Esto es lo que el usuario puede usar sin configurar nada en la PC
-        return@withContext queryGeminiFree(text)
-    }
-
-    private suspend fun queryLocalPCProxy(text: String, ip: String): Decision? = withContext(Dispatchers.IO) {
-        val urlString = "http://$ip:5000/process" // Puerto del proxy del repo de GitHub
-        try {
-            val url = URL(urlString)
-            val conn = url.openConnection() as HttpURLConnection
-            conn.requestMethod = "POST"
-            conn.doOutput = true
-            conn.setRequestProperty("Content-Type", "application/json")
-            // Security: Requiere API Key para el PC Proxy
-            conn.setRequestProperty("X-THAMIS-API-KEY", com.uriel.logpose.core.network.NetworkConfig.THAMIS_API_KEY)
-            conn.connectTimeout = 2000
-
-            val jsonInput = JSONObject().apply {
-                put("prompt", text)
-            }
-
-            conn.outputStream.use { it.write(jsonInput.toString().toByteArray()) }
-
-            if (conn.responseCode == 200) {
-                val response = conn.inputStream.bufferedReader().use { it.readText() }
-                val jsonResponse = JSONObject(response)
-                return@withContext Decision(
-                    intent = mapStringToIntent(jsonResponse.optString("intent", "UNKNOWN")),
-                    confidence = 0.95f
-                )
-            }
-        } catch (e: Exception) {
-            LogPoseLogger.w("ThamisBrain: PC Proxy no disponible.")
-        }
-        return@withContext null
-    }
-
-    private suspend fun queryGeminiFree(text: String): Decision? = withContext(Dispatchers.IO) {
-        // En un caso real, aquí usaríamos el API Key del usuario o una genérica de desarrollo
-        // Para este MVP, simulamos el éxito si hay Internet
-        LogPoseLogger.i("ThamisBrain: Consultando Cerebro en la Nube (Gemini Free Tier)...")
-        
-        // Simulación de respuesta inteligente
-        delay(1000) 
-        return@withContext null // Fallback al motor local si falla la nube
-    }
-
-    private fun mapStringToIntent(name: String): Intent = try {
-        Intent.valueOf(name.uppercase())
-    } catch (e: Exception) {
-        Intent.UNKNOWN
     }
 }

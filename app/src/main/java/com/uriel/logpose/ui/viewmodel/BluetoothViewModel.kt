@@ -8,7 +8,6 @@ import androidx.lifecycle.viewModelScope
 import com.uriel.logpose.core.services.LogPoseCallService
 import com.uriel.logpose.domain.repositories.BluetoothRepository
 import com.uriel.logpose.domain.models.LogPoseDevice
-import com.uriel.logpose.features.voice.VoiceManager
 import com.uriel.logpose.thamis.thamis_final.ThamisCore
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -40,14 +39,18 @@ class BluetoothViewModel @Inject constructor(
                 "android.bluetooth.device.action.BATTERY_LEVEL_CHANGED" -> {
                     val level = intent.getIntExtra("android.bluetooth.device.extra.BATTERY_LEVEL", -1)
                     if (level != -1) {
-                        _state.update { it.copy(deviceBattery = level) }
+                        viewModelScope.launch(kotlinx.coroutines.Dispatchers.Main) {
+                            _state.update { it.copy(deviceBattery = level) }
+                        }
                     }
                 }
                 Intent.ACTION_BATTERY_CHANGED -> {
                     val level = intent.getIntExtra(BatteryManager.EXTRA_LEVEL, -1)
                     val scale = intent.getIntExtra(BatteryManager.EXTRA_SCALE, -1)
                     val batteryPct = (level * 100 / scale.toFloat()).toInt()
-                    _state.update { it.copy(phoneBattery = batteryPct) }
+                    viewModelScope.launch(kotlinx.coroutines.Dispatchers.Main) {
+                        _state.update { it.copy(phoneBattery = batteryPct) }
+                    }
                 }
             }
         }
@@ -59,14 +62,15 @@ class BluetoothViewModel @Inject constructor(
                 addAction("android.bluetooth.device.action.BATTERY_LEVEL_CHANGED")
                 addAction(Intent.ACTION_BATTERY_CHANGED)
             }
+            val appContext = context.applicationContext
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                context.applicationContext.registerReceiver(batteryReceiver, filter, Context.RECEIVER_EXPORTED)
+                appContext.registerReceiver(batteryReceiver, filter, Context.RECEIVER_EXPORTED)
             } else {
-                context.applicationContext.registerReceiver(batteryReceiver, filter)
+                appContext.registerReceiver(batteryReceiver, filter)
             }
-            registeredContext = context.applicationContext
+            registeredContext = appContext
             
-            val bm = context.getSystemService(Context.BATTERY_SERVICE) as BatteryManager
+            val bm = appContext.getSystemService(Context.BATTERY_SERVICE) as BatteryManager
             val level = bm.getIntProperty(BatteryManager.BATTERY_PROPERTY_CAPACITY)
             _state.update { it.copy(phoneBattery = level) }
         }
@@ -130,7 +134,7 @@ class BluetoothViewModel @Inject constructor(
     }
 
     fun refresh(){
-        viewModelScope.launch {
+        viewModelScope.launch(kotlinx.coroutines.Dispatchers.IO) {
             if (!repository.hasPermission()) {
                 LogPoseLogger.w("LOGPOSE_BT", "BluetoothViewModel: Postponing refresh due to lack of permissions")
                 _state.update { it.copy(loading = false) }
@@ -207,7 +211,7 @@ class BluetoothViewModel @Inject constructor(
                     }
                     context.startForegroundService(intent)
                 }
-                VoiceManager.start()
+                com.uriel.logpose.thamis.ThamisAssistant.start(context ?: registeredContext ?: return@launch)
             } else {
                 _state.update { it.copy(serviceRunning = false, error = "Bluetooth no conectado.") }
             }
@@ -221,7 +225,7 @@ class BluetoothViewModel @Inject constructor(
             action = LogPoseCallService.ACTION_START_TRIP
         }
         context.startForegroundService(intent)
-        VoiceManager.start()
+        com.uriel.logpose.thamis.ThamisAssistant.start(context)
     }
 
     fun stopLogPose(context: android.content.Context){

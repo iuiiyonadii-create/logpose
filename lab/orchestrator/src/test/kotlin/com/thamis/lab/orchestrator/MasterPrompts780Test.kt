@@ -1,6 +1,6 @@
 package com.thamis.lab.orchestrator
 
-import com.thamis.lab.intelligence.genome.SystemGenomeEngine
+import com.thamis.lab.intelligence.evolution.SystemGenomeEngine
 import com.thamis.lab.orchestrator.charter.ThamisInfiniteEngineeringCharterEngine
 import com.thamis.lab.orchestrator.vision.ThamisContinuousEngineeringVisionCore
 import org.junit.Assert.assertEquals

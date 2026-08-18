@@ -20,7 +20,7 @@ class AppLauncherImpl @Inject constructor(
     @ApplicationContext private val context: Context
 ) : AppLauncher {
 
-    private val APP_REGISTRY = listOf(
+    private val BASE_APP_REGISTRY = listOf(
         AppEntry("com.whatsapp", listOf("whatsapp", "wasap", "guasap", "wpp", "sapo", "wasapp")),
         AppEntry("com.google.android.apps.maps", listOf("google maps", "maps", "mapas", "waze", "gps", "navegador", "camino")),
         AppEntry("com.google.android.youtube", listOf("youtube", "yt", "iutub", "yutu")),
@@ -35,6 +35,38 @@ class AppLauncherImpl @Inject constructor(
         AppEntry("com.twitter.android", listOf("twitter", "tuiter", "equis", "x")),
         AppEntry("com.facebook.katana", listOf("facebook", "feibu", "caralibro"))
     )
+
+    private val dynamicRegistry = mutableListOf<AppEntry>()
+
+    init {
+        // v75.0: Escaneo inicial proactivo
+        refreshDynamicRegistry()
+    }
+
+    private fun refreshDynamicRegistry() {
+        LogPoseLogger.d("AppLauncher", "Actualizando registro dinámico de aplicaciones...")
+        try {
+            val pm = context.packageManager
+            val apps = pm.queryIntentActivities(Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_LAUNCHER), 0)
+            
+            val newEntries = apps.map { app ->
+                val label = app.loadLabel(pm).toString().lowercase()
+                AppEntry(app.activityInfo.packageName, listOf(label))
+            }
+            
+            synchronized(dynamicRegistry) {
+                dynamicRegistry.clear()
+                dynamicRegistry.addAll(BASE_APP_REGISTRY)
+                dynamicRegistry.addAll(newEntries)
+            }
+        } catch (e: Exception) {
+            LogPoseLogger.e("AppLauncher", "Error al actualizar registro dinámico: ${e.message}")
+            synchronized(dynamicRegistry) {
+                dynamicRegistry.clear()
+                dynamicRegistry.addAll(BASE_APP_REGISTRY)
+            }
+        }
+    }
 
     private data class AppEntry(val packageId: String, val aliases: List<String>)
 
@@ -80,24 +112,26 @@ class AppLauncherImpl @Inject constructor(
     private fun resolveAppName(input: String): String? {
         val normalized = MusicVocabulary.normalize(input)
         
-        // 1. Exact match in aliases
-        APP_REGISTRY.forEach { entry ->
-            if (entry.aliases.contains(normalized)) return entry.packageId
-        }
+        // 1. Exact match in registry (Fusión de estático + dinámico)
+        synchronized(dynamicRegistry) {
+            dynamicRegistry.forEach { entry ->
+                if (entry.aliases.contains(normalized)) return entry.packageId
+            }
 
-        // 2. Fuzzy match
-        var bestMatch: String? = null
-        var bestScore = 0.75
-        APP_REGISTRY.forEach { entry ->
-            entry.aliases.forEach { alias ->
-                val score = levenshteinRatio(normalized, MusicVocabulary.normalize(alias))
-                if (score > bestScore) {
-                    bestScore = score
-                    bestMatch = entry.packageId
+            // 2. Fuzzy match
+            var bestMatch: String? = null
+            var bestScore = 0.75
+            dynamicRegistry.forEach { entry ->
+                entry.aliases.forEach { alias ->
+                    val score = levenshteinRatio(normalized, MusicVocabulary.normalize(alias))
+                    if (score > bestScore) {
+                        bestScore = score
+                        bestMatch = entry.packageId
+                    }
                 }
             }
+            return bestMatch
         }
-        return bestMatch
     }
 
     private fun launchViaTrampoline(packageName: String) {
@@ -138,6 +172,31 @@ class AppLauncherImpl @Inject constructor(
 
     override fun closeApp(appName: String) {
         LogPoseLogger.d("AppLauncher: Cerrar app $appName (No implementado - requiere root/accessibility)")
+    }
+
+    companion object {
+        private val STATIC_APP_ALIASES = setOf(
+            "whatsapp", "wasap", "guasap", "wpp", "sapo", "wasapp",
+            "maps", "mapas", "waze", "gps", "navegador",
+            "youtube", "yt", "yutu",
+            "spotify", "spoty", "música", "musica",
+            "gmail", "correo", "mail",
+            "instagram", "insta", "ig", "instagran",
+            "chrome", "google",
+            "tiktok", "tictoc", "tito",
+            "discord", "discor",
+            "twitter", "tuiter", "equis", "x",
+            "facebook", "feibu"
+        )
+
+        /**
+         * v67.0: Chequeo estático de Apps para desambiguar entre Música y Aplicaciones (Misión #067).
+         */
+        fun isAppPossible(name: String): Boolean {
+            val clean = name.lowercase().trim()
+            if (clean.isBlank()) return false
+            return STATIC_APP_ALIASES.contains(clean) || clean.contains("whatsapp") || clean.contains("instagram")
+        }
     }
 
     private fun levenshteinRatio(s1: String, s2: String): Double {

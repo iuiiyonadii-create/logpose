@@ -1,6 +1,6 @@
 package com.thamis.lab.orchestrator
 
-import com.thamis.lab.intelligence.brain.ProjectBrainEngine
+import com.thamis.lab.intelligence.core.ProjectBrainEngine
 import com.thamis.lab.orchestrator.os.ThamisOperatingSystemCore
 import com.thamis.lab.orchestrator.registry.RegisteredServiceDescriptor
 import com.thamis.lab.orchestrator.registry.ServiceRegistryEngine

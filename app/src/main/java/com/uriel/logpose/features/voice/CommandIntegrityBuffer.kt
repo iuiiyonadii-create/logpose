@@ -1,6 +1,5 @@
 package com.uriel.logpose.features.voice
 
-import android.util.Log
 import com.uriel.logpose.core.compat.core.LogPoseLogger
 import com.uriel.logpose.core.parser.EntitySanitizer
 import kotlinx.coroutines.*
@@ -20,7 +19,7 @@ class CommandIntegrityBuffer(
     private var bufferJob: Job? = null
     private var firstStartTime = 0L
 
-    private val ANCHOR_KEYWORDS = setOf("pone", "pon", "play", "reproduce", "reproduci", "abrir", "abri", "abre")
+    private val ANCHOR_KEYWORDS = setOf("pone", "pon", "play", "reproduce", "reproduci", "abrir", "abri", "abre", "buscá", "busca", "sacá")
 
     fun feed(text: String, isFinal: Boolean, startTime: Long = 0L) {
         if (text.isBlank()) return
@@ -38,12 +37,12 @@ class CommandIntegrityBuffer(
             val current = accumulatedText.toString()
             if (isAnchorOnly(current)) {
                 state.set(State.ANCHOR_WAITING)
-                startTimer(3500L) // Sherlock v5.0 Fix: Espera extendida para moto/Bluetooth SCO
+                startTimer(2000L) // Sherlock v5.1: Reducido de 3.5s a 2s para mejorar agilidad
             } else {
                 finalizeBuffer()
             }
         } else {
-            startTimer(1000L) // Parcial normal
+            startTimer(1000L) // Sherlock v5.1: Reducido de 1.5s a 1s
         }
     }
 

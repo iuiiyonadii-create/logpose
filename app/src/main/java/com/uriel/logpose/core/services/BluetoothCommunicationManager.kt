@@ -142,10 +142,11 @@ class BluetoothCommunicationManager(private var context: Context) {
     }
 
     fun prepareForMusic() {
-        if (audioManager.mode != AudioManager.MODE_NORMAL) {
-            LogPoseLogger.i("AudioEngine: Bajando a MODE_NORMAL para dar paso a Spotify.")
-            audioManager.mode = AudioManager.MODE_NORMAL
-        }
+        // Misión #036: Bloqueado para mantener el micrófono SCO abierto durante la reproducción.
+        // if (audioManager.mode != AudioManager.MODE_NORMAL) {
+        //    LogPoseLogger.i("AudioEngine: Bajando a MODE_NORMAL para dar paso a Spotify.")
+        //    audioManager.mode = AudioManager.MODE_NORMAL
+        // }
     }
 
     fun restoreCommunication() {
@@ -155,8 +156,17 @@ class BluetoothCommunicationManager(private var context: Context) {
         }
     }
 
+    /**
+     * SINCRO CLAUDE: Bloqueo de cierre de canal durante el viaje.
+     * Misión #036: Canal persistente para eliminar el lag de reconexión del Ejeas.
+     */
     fun stopCommunication() {
-        LogPoseLogger.i("AudioEngine: Cerrando canal de comunicación.")
+        if (LogPoseCallService.instance?.isTripActive == true) {
+            LogPoseLogger.d("AudioEngine", "Ignorando stopCommunication: Manteniendo canal vivo por viaje activo.")
+            return
+        }
+
+        LogPoseLogger.i("AudioEngine", "Cerrando canal de comunicación.")
         
         communicationJob?.cancel()
 

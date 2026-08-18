@@ -42,173 +42,193 @@ object NeuroEvolutionSimulator {
         "perito moreno", "dellepiane", "melo", "chiclana", "saenz", "amancio alcorta", "patricios", "montes de oca"
     )
 
-    private val dailyWordsPool = listOf(
-        "amigazo", "ndeah", "buenardo", "nashe", "mandale mecha", "de ruta", "re cheto", "posta",
-        "que hora es", "como esta el clima", "buen dia", "buenas noches", "chau", "hasta luego",
-        "tengo hambre", "que puedo comer", "llamame mas tarde", "recordame comprar pan",
-        "música", "estación", "película", "español", "niño", "chamba", "laburo", "bondi"
+    private val criticalTestCases = mapOf(
+        "poné música" to Intent.PLAY_MUSIC,
+        "abrí instagram" to Intent.OPEN_APP,
+        "cancelar viaje" to Intent.STOP_NAVIGATION,
+        "vamos al obelisco" to Intent.NAVIGATE,
+        "llamame a mama" to Intent.CALL_CONTACT,
+        "enviá un mensaje a juancito" to Intent.SEND_MESSAGE,
+        "consultar estado" to Intent.VEHICLE_STATUS,
+        "cuanto falta" to Intent.NAVIGATE,
+        // v67.5: Misión de Entrenamiento Intensivo (Los fallos reportados)
+        "lo abrí whatsapp" to Intent.OPEN_APP,
+        "lo mandan un mensaje a a" to Intent.SEND_MESSAGE,
+        "dojo mandarle un mensaje a a" to Intent.SEND_MESSAGE,
+        "lujo mandarle mensajes a" to Intent.SEND_MESSAGE,
+        "lo va a llover hoy" to Intent.WEATHER,
+        "los paso ver hoy" to Intent.WEATHER,
+        "los dama el clima" to Intent.WEATHER,
+        "log dame el clima" to Intent.WEATHER,
+        "lo pone fuera de la órbita" to Intent.PLAY_MUSIC
     )
 
+    // Misión #042: Pool dinámico de fallos reportados en tiempo real desde la ruta
+    private val dynamicFailuresPool = java.util.concurrent.ConcurrentHashMap<String, Intent>()
+
+    fun addRealWorldFailure(text: String, suspectedIntent: Intent = Intent.UNKNOWN) {
+        if (text.isBlank() || text.length < 3) return
+        dynamicFailuresPool[text] = suspectedIntent
+        LogPoseLogger.i("LogPose", " Matrix Ingest: Agregado fallo real para simulación -> '$text'")
+    }
+
+    private val dictionaryFullCache = mutableListOf<String>()
+    private var isDictionaryCached = false
+
+    private fun getDictionaryFull(): List<String> {
+        if (!isDictionaryCached) {
+            dictionaryFullCache.clear()
+            dictionaryFullCache.addAll((dictionary.listaDe("apps") + 
+                                       dictionary.listaDe("comandos") +
+                                       dictionary.listaDe("musica.artistas") +
+                                       dictionary.listaDe("modismos") +
+                                       mainStreets).distinct())
+            isDictionaryCached = true
+        }
+        return dictionaryFullCache
+    }
+
     fun startInfiniteTraining() {
-        // Misión #027.4: Separación total de arquitectura.
-        // El motor de entrenamiento y generación de escenarios corre 100% en la PC (THAMIS LAB).
-        // La app móvil permanece limpia, liviana y en reposo absoluto de CPU para el usuario.
-        LogPoseLogger.i("LogPose", "NeuroEvolutionSimulator: Entrenamiento delegado 100% a THAMIS LAB PC.")
+        LogPoseLogger.i("LogPose", "NeuroEvolutionSimulator: Iniciando Ciclo de Evolución Staff v25.0.")
         if (trainingJob?.isActive == true) return
         
         trainingJob = scope.launch {
             var cycle = 1
             while (isActive) {
-                MusicVocabulary.clearCache()
+                // v58.0: Cache de Registro para evitar GC Churn masivo
+                val userRegistry = LearningEngine.getUserRegistry()
+                val dictionaryFull = getDictionaryFull()
                 
-                val dictionaryFull = (dictionary.listaDe("apps") + 
-                                     dictionary.listaDe("comandos") +
-                                     dictionary.listaDe("musica.artistas") +
-                                     dictionary.listaDe("modismos")).distinct()
-
-                // Alturas de graduación para Nivel 10
-                val graduationHeights = listOf(100, 500, 1200, 2500, 4000, 8000, 11000)
-                val graduationStreets = mainStreets.map { street -> "$street ${graduationHeights.random()}" }
-
-                val fullPool = (dictionaryFull + dailyWordsPool + graduationStreets).distinct()
-                val needLearning = fullPool.filter { !LearningEngine.isGraduated(it) }.shuffled()
+                // Filtrado optimizado
+                val pending = dictionaryFull.filter { !LearningEngine.isGraduated(it) }.shuffled()
                 
-                if (needLearning.isNotEmpty()) {
-                    for (input in needLearning) {
-                        if (!isActive) break
-                        ejecutarExamen(input, cycle)
-                        delay(35) // Velocidad Matrix
-                        cycle++
+                // Prioridad 1: EL REGISTRO (Blitz de Stress + Correcciones del Usuario)
+                val combinedRegistry = (userRegistry + criticalTestCases).toList()
+                LogPoseLogger.i("LogPose", "💎 MATRIX: Procesando registro de ${combinedRegistry.size} frases críticas.")
+
+                // v55.0: Ejecutamos el registro COMPLETO en cada ciclo para máxima visibilidad
+                combinedRegistry.forEach { (phrase, intent) ->
+                    ejecutarExamen(phrase, intent, cycle++, isFromRegistry = true)
+                    delay(120) // v58.0: Aumento de delay para evitar saturación de CPU/Red
+                }
+
+                // Prioridad 2: Fallos Reales detectados en ESTA sesión
+                if (dynamicFailuresPool.isNotEmpty()) {
+                    val failures = dynamicFailuresPool.keys.toList().shuffled().take(3)
+                    failures.forEach {
+                        if (!LearningEngine.isGraduated(it)) {
+                            ejecutarExamen(it, dynamicFailuresPool[it] ?: Intent.UNKNOWN, cycle++)
+                            delay(50) 
+                        }
                     }
-                } else {
-                    LogPoseLogger.i("LogPose", "💎 ESTATUS: Mente Maestra Urbana Alcanzada. Patrullando Argentina...")
-                    LogPoseHudService.updateStatus("👑 MENTE MAESTRA")
-                    
-                    val patrolSample = List(20) { "${mainStreets.random()} ${Random.nextInt(100, 15000)}" }
-                    for (input in patrolSample) {
-                        if (!isActive) break
-                        ejecutarExamen(input, cycle)
-                        delay(1000) 
-                        cycle++
+                }
+
+                // Prioridad 2: Barrido de Diccionario Pendiente (SOLO LO NO GRADUADO)
+                if (pending.isNotEmpty()) {
+                    // Tomamos un bloque pequeño para no saturar
+                    pending.take(10).forEach {
+                        if (!LearningEngine.isGraduated(it)) {
+                            ejecutarExamen(it, Intent.UNKNOWN, cycle++)
+                            delay(20)
+                        }
                     }
-                    delay(5000) 
+                }
+                
+                if (cycle % 50 == 0) {
+                    LogPoseLogger.i("LogPose", "💎 ESTATUS MATRIX: $cycle pruebas completadas.")
+                    LogPoseHudService.updateStatus("👑 MASTER: $cycle")
                 }
             }
         }
     }
 
-    private suspend fun ejecutarExamen(input: String, cycle: Int) {
-        val speed = (0..140).random().toFloat()
-        val distortedInput = distortPhonetically(input, speed)
-        
-        val maturity = LearningEngine.getMaturityLevel(input)
-        val expected = applyStaffLogic(input)
-        
-        // El sistema intenta normalizar lo que "oyó" con ruido
-        val currentTranslation = MusicVocabulary.normalize(distortedInput)
-        
-        fun String.dna(): String {
-            return this.lowercase()
-                .replace("á", "a").replace("é", "e").replace("í", "i").replace("ó", "o").replace("ú", "u")
-                .replace("ü", "u").replace("ñ", "n")
-                .replace(Regex("[^a-z0-9]"), "")
+    private suspend fun ejecutarExamen(input: String, expectedIntent: Intent, cycle: Int, isFromRegistry: Boolean = false) {
+        // v66.0: Bypass de Wake-word si el input ya es un caso de choque conocido o viene del registro
+        val prefixes = listOf("lo ", "now ", "ola ", "yo ", "dojo ", "lujo ", "los ", "log ")
+        val inputWithWake = if (prefixes.any { input.startsWith(it) }) {
+            input 
+        } else {
+            "log $input"
         }
         
-        val targetDna = expected.dna()
-        val heardDna = currentTranslation.dna()
+        // v67.5: Reducción de distorsión para registro crítico (Queremos ver el éxito)
+        val distortionLevel = if (isFromRegistry) 10f else 140f 
+        val distortedInput = distortPhonetically(inputWithWake, distortionLevel)
         
-        val testSuccess = heardDna == targetDna || (targetDna.length > 5 && heardDna.contains(targetDna))
+        val request = com.uriel.logpose.thamis.request.THAMISRequest(text = distortedInput)
+        val decision = com.uriel.logpose.thamis.intelligence.ThamisBrain.process(request)
+        
+        val isIntentCorrect = decision.intent == expectedIntent || (expectedIntent == Intent.UNKNOWN && decision.intent != Intent.UNKNOWN)
 
-        if (testSuccess) {
-            if (maturity < 10) {
-                LogPoseLogger.i("LogPose", "LAB_EXITO #$cycle: '$input' (Oído: '$distortedInput') -> '$currentTranslation' [Nivel $maturity/10]")
-            }
+        if (isIntentCorrect) {
             LearningEngine.updateMaturity(input, true)
+            val status = if (isFromRegistry) "🟢 PASÓ (REGISTRO)" else "🟢 PASÓ (HARD)"
+            // Enviamos el input original para que el Monitor Ghost lo muestre descifrado
+            reportToLab(input, distortedInput, decision.intent.name, status, cycle)
         } else {
-            LogPoseLogger.e("LogPose", "LAB_FALLO #$cycle: '$input' (Oído: '$distortedInput') dio '$currentTranslation' (Esperaba '$expected')")
-            
-            // Auto-reparación fonética: THAMIS aprende que con ese ruido, significa 'expected'
-            LearningEngine.learn(distortedInput, expected, com.thamis.lab.core.contracts.intent.Intent.OPEN_APP)
-            LearningEngine.updateMaturity(input, false) 
-            delay(50)
+            // Un fallo en Evil Mode resetea la madurez de esa frase
+            LogPoseLogger.e("LogPose", "😈 EVIL_FALLO #$cycle: '$input' -> '${decision.intent}' con ruido extremo.")
+            LearningEngine.forget(input) // Reset total por error bajo carga
+            LearningEngine.updateMaturity(input, false)
+            reportToLab(input, distortedInput, decision.intent.name, "❌ QUEBRÓ", cycle)
         }
     }
 
-    /**
-     * Engine de Distorsión Acústica v1.0
-     * Simula errores de Vosk/Sherpa causados por viento y ruido de motor.
-     */
+    private var cachedGraduatedCount = -1
+    private var lastGraduationCheckTime = 0L
+
+    private fun reportToLab(original: String, heard: String, intent: String, status: String, cycle: Int) {
+        // v56.0: Cache de conteo Staff - Solo recalculamos cada 10 ciclos para ahorrar 90% de CPU
+        val totalGraduated = if (cycle % 10 == 0 || cachedGraduatedCount == -1) {
+            val dictionaryFull = getDictionaryFull()
+            cachedGraduatedCount = dictionaryFull.count { LearningEngine.isGraduated(it) }
+            cachedGraduatedCount
+        } else cachedGraduatedCount
+
+        val trace = org.json.JSONObject().apply {
+            put("type", "MATRIX_EXAM")
+            put("cycle", cycle)
+            put("detected_intent", intent)
+            put("status", status)
+            put("total_graduated", totalGraduated)
+            put("resolution_source", "MATRIX_EVIL")
+            // v67.5: Formateamos el texto para el Monitor Ghost
+            put("final_clean_text", "🧪 EXAM #$cycle: $original (Escuchó: $heard)")
+        }
+        com.uriel.logpose.thamis.cognitive.CognitivePipeline.sendTelemetryProxy(trace)
+    }
+
     private fun distortPhonetically(text: String, speedKmh: Float): String {
-        if (speedKmh < 30) return text // A baja velocidad la audición es perfecta
+        val tokens = text.split(" ").toMutableList()
         
-        val words = text.split(" ").toMutableList()
-        val distortedWords = words.map { word ->
+        // 1. Scrambler: Desordenar palabras al azar (Evil Mode)
+        if (Random.nextFloat() > 0.6) {
+            tokens.shuffle()
+        }
+
+        val distortedWords = tokens.map { word ->
             var w = word.lowercase()
             
-            // 1. Degradación de finales (Viento corta las palabras)
-            if (speedKmh > 80 && w.length > 4 && Random.nextFloat() > 0.7) {
-                w = w.substring(0, w.length - (1..2).random())
+            // 2. Wake-Word Mutilation (rog, no, o silencio)
+            if (w == "log") {
+                val mutations = listOf("rog", "no", "eh", "", "roc")
+                return@map mutations.random()
+            }
+
+            // 3. Degradación agresiva (Cortes de más del 40% de la palabra)
+            if (w.length > 3 && Random.nextFloat() > 0.5) {
+                w = w.substring(0, (w.length * 0.6).toInt())
             }
             
-            // 2. Confusión de consonantes Staff (b/v, c/s/z, p/b)
+            // 4. Confusión Staff Total
             w = w.replace("b", "v").replace("v", "b")
-                 .replace("c", "s").replace("z", "s")
-                 .replace("y", "ll").replace("ll", "y")
-            
-            // 3. Inyección de "Audición Fantasma" (Palabras vacías generadas por ruido)
-            if (speedKmh > 100 && Random.nextFloat() > 0.8) {
-                val ghosts = listOf("eh", "un", "de", "la")
-                w = "${ghosts.random()} $w"
-            }
+                 .replace("s", "z").replace("z", "s")
+                 .replace("c", "k").replace("k", "c")
             
             w
-        }
+        }.filter { it.isNotBlank() }
         
         return distortedWords.joinToString(" ")
-    }
-
-    private fun training_job_active(): Boolean = trainingJob?.isActive == true
-
-    private fun applyStaffLogic(input: String): String {
-        val base = input.lowercase()
-            .replace("á", "a").replace("é", "e").replace("í", "i").replace("ó", "o").replace("ú", "u")
-            .replace("ü", "u").replace("ñ", "n")
-            .replace(Regex("[^a-z0-9 ]"), " ")
-            .replace(Regex("\\s+"), " ")
-            .trim()
-        
-        var result = base
-        for (avenue in mainStreets.sortedByDescending { it.length }) {
-            if (base.contains(avenue)) {
-                if (!base.contains("avenida") && !base.contains("diagonal") && !base.contains("pasaje")) {
-                    result = "avenida $base"
-                } else if (base.contains("calle ")) {
-                    result = base.replace("calle ", "avenida ")
-                }
-                break
-            }
-        }
-
-        fun has(pattern: String) = result.contains(pattern, ignoreCase = true)
-        fun isExact(pattern: String) = result == pattern.lowercase()
-
-        return when {
-            isExact("recoleta") -> "recoleta"
-            isExact("palermo") -> "palermo"
-            isExact("belgrano") -> "belgrano"
-            isExact("caballito") -> "caballito"
-            has("mecha") -> "mandale mecha"
-            has("tifani") || has("tifi") -> "tiffany"
-            has("morfar") || has("hambre") -> "donde comer"
-            has("ypf") || has("shell") || has("axion") || has("nafta") -> "estacion de servicio"
-            result == "rock" -> "rock"
-            result == "malbe" -> "malbec"
-            has("youtube") || has("yutu") || has("yt music") || has("yu tub") -> "youtube music"
-            (has("duq") || has("duque") || has("doce") || has("cole")) && !has("recoleta") && !has("nicki") -> "duki"
-            has("true") || has("pudi") -> "trueno"
-            has("pisa") || has("viza") -> "bizarrap"
-            else -> result
-        }
     }
 
     fun stopTraining() {

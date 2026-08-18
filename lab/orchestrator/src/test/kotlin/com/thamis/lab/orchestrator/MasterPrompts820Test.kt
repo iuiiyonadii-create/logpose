@@ -1,6 +1,6 @@
 package com.thamis.lab.orchestrator
 
-import com.thamis.lab.intelligence.constitution.EngineeringPhilosophyConstitution
+import com.thamis.lab.intelligence.security.EngineeringPhilosophyConstitution
 import com.thamis.lab.orchestrator.destiny.ThamisEngineeringDestinyEngine
 import com.thamis.lab.orchestrator.os.AutonomousResearchOperatingSystemCore
 import org.junit.Assert.assertEquals

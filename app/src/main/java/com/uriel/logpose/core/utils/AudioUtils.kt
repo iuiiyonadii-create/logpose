@@ -8,7 +8,6 @@ object AudioUtils {
     /**
      * Filtro de Banda (Band-Pass): Combina un High-Pass y un Low-Pass.
      * Rango optimizado para Bluetooth SCO y voz en moto (Sherlock v5.0 Fix): 150Hz - 4000Hz.
-     * Preserva la armónica fundamental de voces masculinas y abarca el ancho de banda mSBC.
      */
     class VoiceBandPassFilter(
         lowCutoffHz: Double = 150.0,
@@ -18,9 +17,16 @@ object AudioUtils {
         private val hp = HighPassFilter(lowCutoffHz, sampleRate)
         private val lp = LowPassFilter(highCutoffHz, sampleRate)
 
+        fun applyInPlace(buffer: ShortArray, length: Int) {
+            hp.applyInPlace(buffer, length)
+            lp.applyInPlace(buffer, length)
+        }
+
+        // Mantenido por compatibilidad legacy, pero se recomienda usar applyInPlace
         fun apply(buffer: ShortArray, length: Int): ShortArray {
-            val hped = hp.apply(buffer, length)
-            return lp.apply(hped, length)
+            val result = buffer.copyOf(length)
+            applyInPlace(result, length)
+            return result
         }
     }
 
@@ -29,6 +35,15 @@ object AudioUtils {
         private val dt = 1.0 / sampleRate
         private val alpha = dt / (rc + dt)
         private var prevOutput = 0.0
+
+        fun applyInPlace(buffer: ShortArray, length: Int) {
+            for (i in 0 until length) {
+                val input = buffer[i].toDouble()
+                val output = prevOutput + alpha * (input - prevOutput)
+                buffer[i] = output.toInt().coerceIn(-32768, 32767).toShort()
+                prevOutput = output
+            }
+        }
 
         fun apply(buffer: ShortArray, length: Int): ShortArray {
             val out = ShortArray(length)
@@ -52,6 +67,16 @@ object AudioUtils {
         private var prevInput = 0.0
         private var prevOutput = 0.0
 
+        fun applyInPlace(buffer: ShortArray, length: Int) {
+            for (i in 0 until length) {
+                val input = buffer[i].toDouble()
+                val output = alpha * (prevOutput + input - prevInput)
+                buffer[i] = output.toInt().coerceIn(-32768, 32767).toShort()
+                prevInput = input
+                prevOutput = output
+            }
+        }
+
         fun apply(buffer: ShortArray, length: Int): ShortArray {
             val out = ShortArray(length)
             for (i in 0 until length) {
@@ -68,22 +93,23 @@ object AudioUtils {
     /**
      * VAD (Voice Activity Detection) mejorado: Energía RMS + Tasa de Cruce por Cero (ZCR).
      */
-    class EnergyVad(private var thresholdRms: Double = 450.0) {
+    class EnergyVad(private var thresholdRms: Double = 600.0) {
         private var noiseFloor = thresholdRms
-        private val alpha = 0.98 
+        private val alpha = 0.99 // v71.7: Adaptación más lenta para no "comerse" finales de frase
         private val maxNoiseRms = 8000.0 
 
-        fun hasVoice(buffer: ShortArray, length: Int): Boolean {
-            var sum = 0.0
+        fun hasVoice(buffer: ShortArray, length: Int, multiplier: Float = 1.0f): Boolean {
+            var sum = 0L
             var zeroCrossings = 0
             
             for (i in 0 until length) {
-                sum += buffer[i].toDouble() * buffer[i].toDouble()
+                val sample = buffer[i].toLong()
+                sum += sample * sample
                 if (i > 0 && ((buffer[i] >= 0 && buffer[i-1] < 0) || (buffer[i] < 0 && buffer[i-1] >= 0))) {
                     zeroCrossings++
                 }
             }
-            val rms = Math.sqrt(sum / length)
+            val rms = Math.sqrt(sum.toDouble() / length)
             val zcr = zeroCrossings.toDouble() / length
             
             // Adaptamos el noiseFloor cuando detectamos "silencio"
@@ -91,12 +117,13 @@ object AudioUtils {
                 noiseFloor = alpha * noiseFloor + (1.0 - alpha) * rms
             }
 
-            // Sherlock v5.0 Fix: Umbral dinámico optimizado para moto (2.2x noiseFloor)
-            val dynamicThreshold = Math.max(thresholdRms, noiseFloor * 2.2)
+            // Sherlock v5.1 Adaptive Moto Fix: Umbral dinámico calibrado para señal normalizada por AGC
+            // v71.7: Umbral más permisivo (1.35x) para captar decaimiento de voz al final
+            val dynamicThreshold = Math.min(1800.0, Math.max(thresholdRms, noiseFloor * 1.35)) * multiplier
             
             // La voz humana tiene un ZCR moderado (0.05 - 0.25). 
             // El ruido de viento puro tiene ZCR muy alto (>0.4).
-            val isNotPureWind = zcr < 0.35
+            val isNotPureWind = zcr < 0.40 // v71.7: Tolerancia aumentada para cascos abiertos
             
             return rms > dynamicThreshold && isNotPureWind
         }

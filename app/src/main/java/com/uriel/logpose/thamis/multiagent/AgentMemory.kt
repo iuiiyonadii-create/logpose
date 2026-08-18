@@ -71,6 +71,8 @@ class AgentMemory(private val agentName: String) {
             scope.launch {
                 LogPoseApplication.entryPoint.agentMemoryDao().clearAgent(agentName)
             }
-        } catch (_: Exception) {}
+        } catch (e: Exception) {
+            LogPoseLogger.w("AgentMemory", "Clear memory error: ${e.message}")
+        }
     }
 }

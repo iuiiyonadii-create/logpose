@@ -1,16 +1,17 @@
 package com.uriel.logpose.thamis.tests
 
 import com.uriel.logpose.core.compat.core.LogPoseLogger
-import com.uriel.logpose.thamis.THAMIS
+import com.uriel.logpose.thamis.intelligence.ThamisBrain
 import com.uriel.logpose.thamis.request.THAMISRequest
 import com.uriel.logpose.thamis.decision.Decision
+import kotlinx.coroutines.runBlocking
 
 /**
  * Suite de validación interna para THAMIS v1.1.
  */
 object ThamisTestCases {
 
-    fun runAll() {
+    fun runAll() = runBlocking {
         LogPoseLogger.i("THAMIS_TEST", "--- INICIANDO VALIDACIÓN DE CEREBRO ---")
         
         test("pone duki")
@@ -20,9 +21,9 @@ object ThamisTestCases {
         LogPoseLogger.i("THAMIS_TEST", "--- VALIDACIÓN FINALIZADA ---")
     }
 
-    private fun test(text: String) {
+    private suspend fun test(text: String) {
         val request = THAMISRequest(text = text)
-        val decision = THAMIS.process(request)
+        val decision = ThamisBrain.process(request)
         
         LogPoseLogger.d("THAMIS_TEST", "Input: '$text' -> Decision: ${decision.intent} (Conf: ${decision.confidence})")
         if (decision.entities.isNotEmpty()) {

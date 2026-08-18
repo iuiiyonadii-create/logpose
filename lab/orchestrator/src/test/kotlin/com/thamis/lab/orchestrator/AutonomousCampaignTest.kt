@@ -1,7 +1,7 @@
 package com.thamis.lab.orchestrator
 
-import com.thamis.lab.intelligence.learning.HistoricalExecutionRecord
-import com.thamis.lab.intelligence.learning.HistoricalLearningStore
+import com.thamis.lab.intelligence.training.HistoricalExecutionRecord
+import com.thamis.lab.intelligence.training.HistoricalLearningStore
 import com.thamis.lab.orchestrator.campaign.AutonomousCampaignEngine
 import com.thamis.lab.performance.command.RealCommandRunner
 import com.thamis.lab.simulation.validation.RealValidationEngine

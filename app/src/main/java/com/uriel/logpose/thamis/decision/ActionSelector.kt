@@ -11,10 +11,12 @@ object ActionSelector {
 
     fun selectAction(command: LogPoseCommand): Action {
         return when (command) {
-            is LogPoseCommand.PlayMusic, LogPoseCommand.PauseMusic, 
-            LogPoseCommand.NextTrack, LogPoseCommand.PreviousTrack -> Action.MediaAction(command)
+            is LogPoseCommand.Media.PlayMusic, 
+            LogPoseCommand.Media.PauseMusic, 
+            LogPoseCommand.Media.NextTrack, 
+            LogPoseCommand.Media.PreviousTrack -> Action.MediaAction(command)
             
-            is LogPoseCommand.Call -> Action.CallAction(command.contact)
+            is LogPoseCommand.Communication.Call -> Action.CallAction(command.contact)
             
             LogPoseCommand.StopListening -> Action.StopService
             

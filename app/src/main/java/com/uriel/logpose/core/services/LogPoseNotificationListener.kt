@@ -9,7 +9,6 @@ import android.os.Looper
 import android.service.notification.NotificationListenerService
 import android.service.notification.StatusBarNotification
 import com.uriel.logpose.core.compat.core.LogPoseLogger
-import com.uriel.logpose.core.compat.core.LogPoseLogger
 import java.util.concurrent.atomic.AtomicLong
 
 /**

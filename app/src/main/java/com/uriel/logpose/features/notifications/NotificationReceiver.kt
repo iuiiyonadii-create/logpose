@@ -10,7 +10,7 @@ import com.uriel.logpose.logprobe.notification.NotificationParser
  * sistema.
  */
 class NotificationReceiver(
-    private val repository: NotificationRepository
+    private val repository: NotificationCoreRepository
 ) : NotificationEventListener {
 
     override fun onNotificationEvent(

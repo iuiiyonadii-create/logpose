@@ -1,7 +1,7 @@
 package com.thamis.lab.orchestrator
 
-import com.thamis.lab.intelligence.cache.CacheEngine
-import com.thamis.lab.intelligence.quality.CodeQualityEngine
+import com.thamis.lab.intelligence.core.CacheEngine
+import com.thamis.lab.intelligence.engineering.CodeQualityEngine
 import com.thamis.lab.orchestrator.evolution.ContinuousEvolutionEngine
 import com.thamis.lab.orchestrator.observability.ObservabilityPlatformEngine
 import org.junit.Assert.assertEquals

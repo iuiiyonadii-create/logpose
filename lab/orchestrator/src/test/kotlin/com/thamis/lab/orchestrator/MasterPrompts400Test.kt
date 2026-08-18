@@ -1,6 +1,6 @@
 package com.thamis.lab.orchestrator
 
-import com.thamis.lab.intelligence.dna.RepositoryDnaEngine
+import com.thamis.lab.intelligence.evolution.RepositoryDnaEngine
 import com.thamis.lab.orchestrator.singularity.ThamisEngineeringSingularityCore
 import com.thamis.lab.orchestrator.singularity.ThamisPrimeDirectiveEngine
 import org.junit.Assert.assertEquals

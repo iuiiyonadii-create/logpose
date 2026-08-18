@@ -81,12 +81,12 @@ fun LogPoseScreen(
         containerColor = Color.Transparent // Para que use el fondo del Box
     ) { padding ->
         DisposableEffect(Unit) {
-        viewModel.refresh()
-        viewModel.registerBatteryReceiver(context)
-        onDispose {
-            viewModel.unregisterBatteryReceiver()
+            // El refresh inicial ya se hace en el init del ViewModel
+            viewModel.registerBatteryReceiver(context)
+            onDispose {
+                viewModel.unregisterBatteryReceiver()
+            }
         }
-    }
 
         LogPoseScreenContent(
             modifier = modifier.padding(padding),

@@ -13,7 +13,7 @@ object LogPoseProjectAnalyzer {
         LogPoseLogger.i("LogPoseProjectAnalyzer: Iniciando auditoría interna de LogPose...")
         
         // 1. Escaneo de seguridad
-        val report = SecurityScanner.scan("C:/projects/LogPose4/app")
+        val report = SecurityScanner.scan("J:/projects/LogPose4/app")
         LogPoseLogger.i("LogPoseProjectAnalyzer: Rating de Privacidad: ${report.privacyRating}")
 
         // 2. Análisis de arquitectura

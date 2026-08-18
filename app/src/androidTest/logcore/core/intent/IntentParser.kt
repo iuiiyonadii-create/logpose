@@ -1,5 +1,7 @@
 package com.uriel.logpose.logcore.core.intent
 
+import com.thamis.lab.core.contracts.intent.Intent
+
 /**
  * Convierte una VoiceRequest en un Intent utilizando
  * los patrones registrados en IntentPatterns.

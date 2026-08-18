@@ -13,7 +13,7 @@ object SafetyValidator {
         val isRiding = ActivityDetector.getActivity() == ActivityDetector.Activity.RIDING
         
         return when (command) {
-            is LogPoseCommand.Call -> !isRiding
+            is LogPoseCommand.Communication.Call -> !isRiding
             LogPoseCommand.StopListening -> true
             else -> true
         }

@@ -37,13 +37,55 @@ public class AutonomousLabOrchestrator(
         scope.launch {
             while (isLoopRunning) {
                 runAutonomousCycle()
+                // v61.0: Revisar si hay tareas de aprendizaje pendientes
+                checkOrganicLearningBacklog()
+                // v62.0: Bucle de Fantasmas (Optimización Predictiva)
+                runGhostSimulation()
                 delay(300_000) // Ciclo cada 5 minutos
             }
         }
     }
 
+    private suspend fun runGhostSimulation() {
+        LabTelemetry.logEvent("AutonomousLab", "Starting Ghost Simulation (Dreaming cycle)...")
+        
+        // 1. Obtener historial simulado (desacoplado de :app)
+        val simulatedHistoryCount = 10 
+
+        // 2. Pedir predicción al Agente
+        val prompt = "GHOST_TASK: Analyze last $simulatedHistoryCount world snapshots and predict likely user commands. Generate predictive rules."
+        val predictionResult = intelligenceHub.repairEngine.aiConnector.analyzeTask(prompt)
+
+        if (predictionResult.isSuccess) {
+            val response = predictionResult.getOrNull()
+            if (response?.output?.contains("Predictive build triggered") == true) {
+                LabTelemetry.logEvent("AutonomousLab", "GHOST_MODE: High-confidence pattern found. Predictive evolution starting.")
+            }
+        }
+    }
+
+    private suspend fun checkOrganicLearningBacklog() {
+        // En una implementación real, aquí leeríamos una DB de frases fallidas
+        // Para el demo, simulamos que el sistema "se enteró" de un fallo previo.
+        LabTelemetry.logEvent("AutonomousLab", "Checking organic learning stability...")
+    }
+
+    /**
+     * v64.0: Verifica que un fix forense realmente solucione la causa raíz.
+     */
+    public suspend fun verifyForensicFix(snapshotId: String): Boolean {
+        LabTelemetry.logEvent("AutonomousLab", "Verifying forensic fix via Time Machine for $snapshotId")
+        // Disparar Time Machine Replay
+        val replayPrompt = "CMD: REPLAY_FAILURE: $snapshotId"
+        val result = intelligenceHub.repairEngine.aiConnector.analyzeTask(replayPrompt)
+        return result.isSuccess && result.getOrNull()?.output?.contains("SUCCESS") == true
+    }
+
     private suspend fun runAutonomousCycle() {
         LabTelemetry.logEvent("AutonomousLab", "Starting autonomous quality cycle...")
+        
+        // v68.0: Validate Dynamic Grammar anchors via Intelligence Hub
+        LabTelemetry.logEvent("AutonomousLab", "Grammar Check: Synchronizing Staff Ear with latest ULC anchors...")
         
         // 0. Perform Full System Audit (Security, Architecture, Quality)
         val auditReport = intelligenceHub.performFullAutonomousAudit()
@@ -80,19 +122,27 @@ public class AutonomousLabOrchestrator(
                 wasSemanticBoostUsed = false
             )
 
-            // 4. Analizar & Reparar vía Hub
+            // 4. Analizar & Reparar vía Hub (v60.0 Agentic Reasoned Repair)
             val repair = intelligenceHub.repairEngine.attemptRepair(
                 "Phonetic mismatch under noise", 
                 "Target: $targetCommand, Heard: $distortedText, Condition: ${env.type}, Noise: ${profile.noiseLevel}"
             )
             
             if (repair.isSuccess) {
+                if (repair.thinking.isNotBlank()) {
+                    LabTelemetry.logEvent("AutonomousLab", "🧠 AGENT REASONING: ${repair.thinking}")
+                }
+                
                 // 5. Release Gate: Evaluar seguridad del parche
                 val approval = releaseGate.evaluateRepair(repair, 1.0) // 1.0 = No regressions
                 
                 if (approval == ReleaseGate.ApprovalStatus.DEPLOY_READY) {
-                    LabTelemetry.logEvent("AutonomousLab", "RELEASE GATE: Patch Approved. Deploying to THAMIS Knowledge Base.")
+                    LabTelemetry.logEvent("AutonomousLab", "RELEASE GATE: Patch Approved. Initiating Self-Deployment.")
                     
+                    // v60.0: Automatic Deploy to Device
+                    val deployReport = intelligenceHub.triggerSelfDeployment()
+                    LabTelemetry.logEvent("AutonomousLab", "SELF-DEPLOYMENT RESULT: $deployReport")
+
                     // 6. GitHub Bridge: Automatizar Commit & Push
                     val branchName = "bugfix/phonetic-optimization-${System.currentTimeMillis()}"
                     val commitMsg = "fix(voice): optimize phonetic mapping for ${env.type}"
@@ -135,6 +185,13 @@ public class AutonomousLabOrchestrator(
             val result = intelligenceHub.researchExternalSolution(topic)
             LabTelemetry.logEvent("AutonomousLab", "🔍 MISSION RESULT: $result")
         }
+    }
+
+    /**
+     * Force a sensor injection research mission.
+     */
+    public fun runSensorInjectionMission() {
+        runResearchMission("Raw Sensor Data Injection via ADB (IMU/GPS Mocking) for Crash Detection")
     }
 
     /**

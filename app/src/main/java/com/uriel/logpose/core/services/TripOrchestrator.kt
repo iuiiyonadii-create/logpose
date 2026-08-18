@@ -47,6 +47,9 @@ class TripOrchestrator @Inject constructor(
         pcBridge.startRemoteServer()
         pcBridge.sendCommand("RIDER_ONLINE:¡Listo para el reparto!")
 
+        // Misión #036: Silent Pilot (Comfort Noise) para mantener canal SCO caliente
+        com.uriel.logpose.core.services.ComfortNoiseManager.start(context, true)
+
         ThamisAssistant.start(context)
         
         batteryGuardian.startMonitoring { pct ->
@@ -70,6 +73,7 @@ class TripOrchestrator @Inject constructor(
 
         NavigationManager.stopNavigation()
         ThamisAssistant.stop()
+        com.uriel.logpose.core.services.ComfortNoiseManager.stop()
         pcBridge.stopRemoteServer()
         batteryGuardian.stopMonitoring()
         overlayController.hideOverlay()

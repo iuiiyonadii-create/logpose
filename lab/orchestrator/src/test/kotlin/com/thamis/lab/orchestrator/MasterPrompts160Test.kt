@@ -1,6 +1,6 @@
 package com.thamis.lab.orchestrator
 
-import com.thamis.lab.intelligence.regression.LogPoseRegressionEngine
+import com.thamis.lab.intelligence.engineering.LogPoseRegressionEngine
 import com.thamis.lab.orchestrator.command.EngineeringCommandCenter
 import com.thamis.lab.orchestrator.nextgen.ThamisNextGenCore
 import org.junit.Assert.assertEquals

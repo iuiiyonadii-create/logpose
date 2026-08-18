@@ -17,4 +17,8 @@ class PCBridgeProdImpl @Inject constructor() : PCBridge {
     override fun stopRemoteServer() {
         // No-Op
     }
+
+    override fun setHeartbeatEnabled(enabled: Boolean) {
+        // No-Op
+    }
 }

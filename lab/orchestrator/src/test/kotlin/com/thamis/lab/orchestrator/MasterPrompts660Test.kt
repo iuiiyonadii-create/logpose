@@ -1,6 +1,6 @@
 package com.thamis.lab.orchestrator
 
-import com.thamis.lab.intelligence.entropy.SoftwareEntropyEngine
+import com.thamis.lab.intelligence.evolution.SoftwareEntropyEngine
 import com.thamis.lab.orchestrator.loop.ThamisInfiniteEngineeringLoopCore
 import com.thamis.lab.orchestrator.meta.ThamisFinalMetaDirectiveEngine
 import org.junit.Assert.assertEquals

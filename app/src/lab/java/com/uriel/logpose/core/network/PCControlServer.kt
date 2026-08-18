@@ -40,18 +40,15 @@ object PCControlServer {
     }
 
     private fun handleRemoteCommand(cmd: String) {
-        // Security check: Only accept commands starting with the API Key
-        if (!cmd.startsWith(NetworkConfig.THAMIS_API_KEY)) {
-            LogPoseLogger.w("PCControlServer: Unauthorized command attempt.")
-            return
-        }
-
-        val strippedCmd = cmd.removePrefix("${NetworkConfig.THAMIS_API_KEY}:")
-        LogPoseLogger.i("PCControlServer: Authorized remote command -> $strippedCmd")
+        // v73.1: Refactor de Split Seguro (Misión Anti-Glitches)
+        // Usamos split con límite para no romper los parámetros JSON
+        val strippedCmd = cmd.trim()
+        val parts = strippedCmd.split(":", limit = 3)
         
-        val parts = strippedCmd.split(":")
         val mainCmd = parts.getOrNull(1) ?: ""
         val param = parts.getOrNull(2)
+
+        LogPoseLogger.i("PCControlServer", "Authorized command: $mainCmd | Param: ${param?.take(20)}...")
 
         when (mainCmd) {
             "SIM_DEGRADATION" -> ThamisLabSimulator.simulateSystemDegradation()
@@ -76,7 +73,40 @@ object PCControlServer {
                 val msg = param ?: ""
                 com.uriel.logpose.features.voice.FeedbackManager.speak("Client message: $msg")
             }
+            "HOT_PATCH" -> {
+                val patch = param ?: ""
+                com.uriel.logpose.thamis.learning.LearningEngine.applyHotPatch(patch)
+            }
+            "REMOTE_SPEAK" -> {
+                val text = param ?: ""
+                com.uriel.logpose.features.voice.FeedbackManager.speak(text)
+            }
+            "SENSITIVITY" -> {
+                val level = param?.toFloatOrNull() ?: 0.5f
+                com.uriel.logpose.core.app.LogPoseApplication.entryPoint.voskVoiceEngine().setSensitivity(level)
+            }
+            "SYSTEM_ACTION" -> {
+                val action = param ?: ""
+                handleSystemAction(action)
+            }
             else -> LogPoseLogger.w("PCControlServer: Unknown command: $strippedCmd")
+        }
+    }
+
+    private fun handleSystemAction(action: String) {
+        val parts = action.split(":")
+        val type = parts.getOrNull(0) ?: ""
+        val value = parts.getOrNull(1) ?: ""
+
+        when (type) {
+            "OPEN_APP" -> {
+                LogPoseLogger.i("PCControlServer", "Remote App Launch: $value")
+                val launcher = com.uriel.logpose.core.app.AppLauncherImpl(com.uriel.logpose.core.app.LogPoseApplication.instance)
+                launcher.openApp(value)
+            }
+            "NAVIGATE" -> {
+                com.uriel.logpose.features.navigation.engine.GoogleMapsDispatcher.lanzarNavegacion(com.uriel.logpose.core.app.LogPoseApplication.instance, value)
+            }
         }
     }
 

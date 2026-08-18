@@ -1,6 +1,6 @@
 package com.thamis.lab.orchestrator
 
-import com.thamis.lab.intelligence.civilization.EngineeringCivilizationEngine
+import com.thamis.lab.intelligence.evolution.EngineeringCivilizationEngine
 import com.thamis.lab.orchestrator.charter.ThamisEternalEngineeringCharterEngine
 import com.thamis.lab.orchestrator.civilization.ThamisEngineeringCivilizationCore
 import org.junit.Assert.assertEquals

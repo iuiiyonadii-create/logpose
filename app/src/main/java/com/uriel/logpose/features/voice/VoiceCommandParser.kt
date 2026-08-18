@@ -19,14 +19,14 @@ object VoiceCommandParser {
         if (!cleanText.contains(TRIGGER)) return LogPoseCommand.Unknown
 
         return when {
-            cleanText.contains("reproducir") || cleanText.contains("play") -> LogPoseCommand.PlayMusic("")
-            cleanText.contains("pausa") || cleanText.contains("parar") -> LogPoseCommand.PauseMusic
-            cleanText.contains("siguiente") -> LogPoseCommand.NextTrack
-            cleanText.contains("subir volumen") -> LogPoseCommand.VolumeUp
-            cleanText.contains("bajar volumen") -> LogPoseCommand.VolumeDown
-            cleanText.contains("llamar") -> LogPoseCommand.Call("")
+            cleanText.contains("reproducir") || cleanText.contains("play") -> LogPoseCommand.Media.PlayMusic("")
+            cleanText.contains("pausa") || cleanText.contains("parar") -> LogPoseCommand.Media.PauseMusic
+            cleanText.contains("siguiente") -> LogPoseCommand.Media.NextTrack
+            cleanText.contains("subir volumen") -> LogPoseCommand.System.VolumeUp
+            cleanText.contains("bajar volumen") -> LogPoseCommand.System.VolumeDown
+            cleanText.contains("llamar") -> LogPoseCommand.Communication.Call("")
             cleanText.contains("detener") -> LogPoseCommand.StopListening
-            cleanText.contains("notificaciones") -> LogPoseCommand.ReadNotifications
+            cleanText.contains("notificaciones") -> LogPoseCommand.Communication.ReadNotifications
             else -> LogPoseCommand.Unknown
         }
     }

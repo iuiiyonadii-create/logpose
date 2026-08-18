@@ -13,8 +13,11 @@ object SafetyBoundaryManager {
      */
     fun isSafeForAutonomousExecution(command: LogPoseCommand): Boolean {
         return when (command) {
-            is LogPoseCommand.PlayMusic, LogPoseCommand.PauseMusic, LogPoseCommand.NextTrack -> true
-            is LogPoseCommand.Call, is LogPoseCommand.SendMessage -> false // Requiere permiso explícito siempre
+            is LogPoseCommand.Media.PlayMusic, 
+            LogPoseCommand.Media.PauseMusic, 
+            LogPoseCommand.Media.NextTrack -> true
+            is LogPoseCommand.Communication.Call, 
+            is LogPoseCommand.Communication.SendMessage -> false // Requiere permiso explícito siempre
             LogPoseCommand.EndTrip -> false // Acción crítica
             else -> false
         }

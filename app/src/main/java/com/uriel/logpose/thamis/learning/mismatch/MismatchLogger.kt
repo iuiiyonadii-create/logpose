@@ -1,7 +1,6 @@
 package com.uriel.logpose.thamis.learning.mismatch
 
 import com.uriel.logpose.core.compat.core.LogPoseLogger
-import com.uriel.logpose.core.compat.core.LogPoseLogger
 
 /**
  * Encargado de mostrar las divergencias fonéticas en el Logcat para auditoría.

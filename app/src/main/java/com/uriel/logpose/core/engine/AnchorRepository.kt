@@ -84,4 +84,6 @@ class AnchorRepository {
     }
     
     fun getAllNames(): List<String> = activeAnchors.get().keys.toList()
+
+    fun getNavigationNames(): List<String> = navigationAnchors.keys().toList()
 }

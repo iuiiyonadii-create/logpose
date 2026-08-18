@@ -2,7 +2,6 @@ package com.uriel.logpose.thamis.validation
 
 import com.thamis.lab.core.contracts.intent.Intent
 import com.uriel.logpose.core.compat.core.LogPoseLogger
-import com.uriel.logpose.core.compat.core.LogPoseLogger
 
 /**
  * Registra la actividad de validación en tiempo real para Logcat.

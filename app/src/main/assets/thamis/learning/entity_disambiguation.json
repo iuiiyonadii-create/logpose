@@ -1,9 +1,0 @@
-{
-  "disambiguations": [
-    {
-      "term": "rock",
-      "preferred_type": "SONG",
-      "context_required": "MUSIC_PLAYING"
-    }
-  ]
-}

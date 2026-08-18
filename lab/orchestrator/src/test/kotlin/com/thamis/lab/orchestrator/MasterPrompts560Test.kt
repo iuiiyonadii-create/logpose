@@ -1,6 +1,6 @@
 package com.thamis.lab.orchestrator
 
-import com.thamis.lab.intelligence.hive.EngineeringHiveMindEngine
+import com.thamis.lab.intelligence.evolution.EngineeringHiveMindEngine
 import com.thamis.lab.orchestrator.meta.ThamisMetaOrchestratorEngine
 import com.thamis.lab.orchestrator.supreme.ThamisSupremeEngineeringCore
 import org.junit.Assert.assertEquals

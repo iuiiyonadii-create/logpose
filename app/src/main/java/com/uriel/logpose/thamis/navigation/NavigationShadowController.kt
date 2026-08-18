@@ -1,6 +1,7 @@
 package com.uriel.logpose.thamis.navigation
 
 import com.uriel.logpose.core.compat.core.LogPoseLogger
+import com.uriel.logpose.thamis.intent.IntentDetector
 import com.uriel.logpose.thamis.navigation.model.*
 import com.uriel.logpose.thamis.navigation.audit.NavigationTrace
 import com.uriel.logpose.thamis.navigation.confidence.ConfidenceDecayEngine
@@ -16,8 +17,9 @@ object NavigationShadowController {
     private const val TAG = "THAMIS_NAVIGATION"
 
     fun observe(text: String, context: NavigationContext, isCallActive: Boolean = false) {
-        // 1. Clasificar y Resolver Objetivo
-        val intentCategory = RouteIntentClassifier.classify(text)
+        // 1. Clasificar y Resolver Objetivo Unificado
+        val detection = IntentDetector.detect(text)
+        val intentCategory = detection.intent
         val goalType = DestinationResolver.resolve(text)
         
         // 2. Calcular Confianza con Memoria

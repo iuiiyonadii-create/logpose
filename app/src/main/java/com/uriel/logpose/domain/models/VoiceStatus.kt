@@ -1,5 +1,7 @@
 package com.uriel.logpose.domain.models
 
+import com.thamis.lab.core.contracts.command.LogPoseCommand
+
 /**
  * Domain model representing the voice recognition state.
  */

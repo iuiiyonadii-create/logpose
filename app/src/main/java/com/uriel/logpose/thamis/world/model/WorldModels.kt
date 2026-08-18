@@ -26,6 +26,8 @@ data class UserState(
 data class VehicleState(
     val speedKmh: Float = 0f,
     val acceleration: Float = 0f,
+    val gForce: Float = 0f, // v66.8: Fuerza G detectada
+    val leanAngle: Float = 0f, // v66.7: Grados de inclinación (L/R)
     val moving: Boolean = false,
     val riskLevel: RiskLevel = RiskLevel.LOW,
     val fuelLevelPct: Int = 100,

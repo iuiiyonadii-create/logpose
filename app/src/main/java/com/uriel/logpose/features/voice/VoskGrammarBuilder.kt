@@ -16,30 +16,27 @@ object VoskGrammarBuilder {
     }
 
     fun buildMinimalGrammar(): String {
-        val phrases = mutableListOf<String>()
+        val phrases = linkedSetOf<String>()
 
-        // --- ESTRATEGIA HÍBRIDA v4.6: GRAMÁTICA DE CENTINELA ---
-        // 1. Palabras de Activación
+        // --- ESTRATEGIA STAFF v5.0: SÓLO ANCLAS DE ACTIVACIÓN ---
+        // 1. Palabras de Activación (Wake words)
         phrases.addAll(dictionary.listaDe("fonetica.wake_words").map { normalizeForVosk(it) })
 
-        // 2. Verbos de Disparo (Causa de Handover)
-        val triggerCategories = listOf("abrir", "reproducir", "enviar_mensaje", "navegar", "sistema")
-        for (cat in triggerCategories) {
-            phrases.addAll(dictionary.listaDe("verbos.$cat").map { normalizeForVosk(it) })
-        }
+        // 2. Verbos Críticos (Short-Circuit)
+        val essentialVerbs = listOf("pone", "llama", "abri", "ir", "cancela", "viaje", "musica")
+        phrases.addAll(essentialVerbs)
         
-        // 3. Muletillas y Fillers para mantener el contexto
-        phrases.addAll(dictionary.listaDe("muletillas_a_ignorar").map { normalizeForVosk(it) })
-        phrases.addAll(listOf("de", "con", "a", "por", "el", "la").map { normalizeForVosk(it) })
+        // 3. Muletillas mínimas para no perder el ritmo
+        phrases.addAll(listOf("de", "el", "la", "a").map { normalizeForVosk(it) })
 
         phrases.add("[unk]")
-        val result = JSONArray(phrases.distinct()).toString()
-        com.uriel.logpose.core.compat.core.LogPoseLogger.d("VoskGrammar: Centinela v4.6 cargado con ${phrases.distinct().size} anclas.")
+        val result = JSONArray(phrases.toList()).toString()
+        com.uriel.logpose.core.compat.core.LogPoseLogger.d("VoskGrammar: Sentinela v5.0 cargado (Modo Protegido).")
         return result
     }
 
     fun buildFullGrammar(): String {
-        val phrases = mutableListOf<String>()
+        val phrases = linkedSetOf<String>()
 
         // 1. Base Gramática (Wake words, Verbos, Muletillas)
         phrases.addAll(dictionary.listaDe("fonetica.wake_words").map { normalizeForVosk(it) })
@@ -53,17 +50,21 @@ object VoskGrammarBuilder {
         // 2. ENTIDADES MUSICALES (Misión #027 / Sherlock v5.0 Fix)
         // Inyectamos tanto frases completas como tokens individuales para mantener contexto n-gram y fidelidad
         val musicEntities = (MusicVocabulary.getAllArtists() + MusicVocabulary.getAllSongs() + MusicVocabulary.getAllPlaylists())
-        phrases.addAll(musicEntities.map { normalizeForVosk(it) })
-        phrases.addAll(musicEntities.flatMap { it.split(" ") }.map { normalizeForVosk(it) })
+        musicEntities.forEach { entity ->
+            phrases.add(normalizeForVosk(entity))
+            entity.split(" ").forEach { token -> phrases.add(normalizeForVosk(token)) }
+        }
 
         // 3. CONTACTOS (Agenda del usuario)
         val contactNames = ContactResolver.getAllNames()
-        phrases.addAll(contactNames.map { normalizeForVosk(it) })
-        phrases.addAll(contactNames.flatMap { it.split(" ") }.map { normalizeForVosk(it) })
+        contactNames.forEach { name ->
+            phrases.add(normalizeForVosk(name))
+            name.split(" ").forEach { token -> phrases.add(normalizeForVosk(token)) }
+        }
 
         phrases.add("[unk]")
-        val result = JSONArray(phrases.distinct()).toString()
-        com.uriel.logpose.core.compat.core.LogPoseLogger.i("VoskGrammar: Full v4.7 cargado con ${phrases.distinct().size} anclas.")
+        val result = JSONArray(phrases.toList()).toString()
+        com.uriel.logpose.core.compat.core.LogPoseLogger.i("VoskGrammar: Full v4.7 cargado con ${phrases.size} anclas.")
         return result
     }
 
@@ -79,42 +80,21 @@ object VoskGrammarBuilder {
             .replace(Regex("[^a-z0-9 ]"), "")
             .trim()
             
-        // --- MAPEO DE TRADUCCIÓN ACÚSTICA (Misión #021.1 / #029 / Sherlock v5.0 Fix) ---
-        // Se removió el mapeo destructivo de artistas (duki, wos, ysy, bizarrap) para preservar su identidad real.
+        // v5.1: Mapeo estricto solo a palabras que el modelo SI tiene en su words.txt
         return when (lower) {
-            "uzbekistan" -> "un tan"
-            "kuelgue" -> "colgué"
+            "largame", "lárgame", "poneme", "ponete", "ponele", "poned", "pon", "ponéme" -> "pone"
+            "mandale", "mándale", "mandala", "manda" -> "manda"
+            "tirame", "tiráme", "tirale", "tira", "tirá" -> "pone"
+            "kuelgue" -> "colgue"
             "wasap", "wasapp", "guasap", "wasa", "guasa" -> "whatsapp"
             "insta", "instagran", "ig" -> "instagram"
             "spoti", "spoty", "espotifai" -> "spotify"
-            "temon", "temazo" -> "tema"
-            "morfar", "morfi" -> "comer"
-            "cana", "ratis", "cobani", "yuta" -> "policia"
-            "bondi", "colectivo" -> "autobus"
-            "laburo", "chamba" -> "trabajo"
-            "jermu" -> "mujer"
-            "nafta" -> "gasolina"
-            "service" -> "servicio"
             "atende", "atendeme" -> "atiende"
-            "rechaza", "rechazalo" -> "rechaza"
-            "llama", "llamalo", "llamala" -> "llama"
-            "desperta", "despertate" -> "despierta"
             "abrime", "abrite" -> "abrir"
-            "poneme", "ponete" -> "pone"
-            "mandale", "mandala" -> "manda"
             "reproduci", "reproducime" -> "reproduce"
-            "tirame", "tirale" -> "tira"
-            "avisale", "decile" -> "dile"
-            "contale", "contestale" -> "contesta"
-            "leeme" -> "lee"
             "para", "pará", "detene", "detené" -> "para"
-            "escuchame" -> "escucha"
-            "buscame" -> "busca"
             "llevame" -> "lleva"
-            "guiame" -> "guia"
             "anda", "andá" -> "ve"
-            "luego" -> "luego"
-            "despues", "después" -> "después"
             else -> lower
         }
     }

@@ -1,7 +1,6 @@
 package com.uriel.logpose.thamis.shadow
 
 import com.uriel.logpose.core.compat.core.LogPoseLogger
-import com.uriel.logpose.core.compat.core.LogPoseLogger
 
 /**
  * Encargado de persistir y mostrar los resultados del Shadow Mode.

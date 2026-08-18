@@ -9,12 +9,12 @@ object VoiceResponseGenerator {
 
     fun generate(command: LogPoseCommand): String {
         return when (command) {
-            is LogPoseCommand.PlayMusic -> "Reproduciendo música."
-            LogPoseCommand.PauseMusic -> "Música pausada."
-            LogPoseCommand.NextTrack -> "Siguiente canción."
-            LogPoseCommand.PreviousTrack -> "Canción anterior."
-            LogPoseCommand.VolumeUp -> "Volumen aumentado."
-            LogPoseCommand.VolumeDown -> "Volumen disminuido."
+            is LogPoseCommand.Media.PlayMusic -> "Reproduciendo música."
+            LogPoseCommand.Media.PauseMusic -> "Música pausada."
+            LogPoseCommand.Media.NextTrack -> "Siguiente canción."
+            LogPoseCommand.Media.PreviousTrack -> "Canción anterior."
+            LogPoseCommand.System.VolumeUp -> "Volumen aumentado."
+            LogPoseCommand.System.VolumeDown -> "Volumen disminuido."
             LogPoseCommand.Unknown -> "No entendí ese comando."
             else -> ""
         }

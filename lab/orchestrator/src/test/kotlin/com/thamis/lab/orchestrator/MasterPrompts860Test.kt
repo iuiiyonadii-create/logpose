@@ -1,6 +1,6 @@
 package com.thamis.lab.orchestrator
 
-import com.thamis.lab.intelligence.framework.MetaEngineeringFrameworkEngine
+import com.thamis.lab.intelligence.engineering.MetaEngineeringFrameworkEngine
 import com.thamis.lab.orchestrator.charter.ThamisScientificEvolutionCharterEngine
 import com.thamis.lab.orchestrator.science.ThamisContinuousScientificEngineeringCore
 import org.junit.Assert.assertEquals

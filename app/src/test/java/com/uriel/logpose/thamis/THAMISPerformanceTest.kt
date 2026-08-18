@@ -1,6 +1,8 @@
 package com.uriel.logpose.thamis
 
 import com.uriel.logpose.thamis.request.THAMISRequest
+import com.uriel.logpose.thamis.intelligence.ThamisBrain
+import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import kotlin.system.measureTimeMillis
@@ -8,7 +10,7 @@ import kotlin.system.measureTimeMillis
 class THAMISPerformanceTest {
 
     @Test
-    fun `test THAMIS processing speed`() {
+    fun `test THAMIS processing speed`() = runBlocking {
         val requests = listOf(
             THAMISRequest("log pone musica"),
             THAMISRequest("log abrir whatsapp"),
@@ -23,11 +25,11 @@ class THAMISPerformanceTest {
         val times = mutableListOf<Long>()
 
         // Warm up
-        repeat(10) { THAMIS.process(requests[0]) }
+        repeat(10) { ThamisBrain.process(requests[0]) }
 
         requests.forEach { request ->
             val time = measureTimeMillis {
-                THAMIS.process(request)
+                ThamisBrain.process(request)
             }
             times.add(time)
             println("THAMIS processing time for '${request.text}': ${time}ms")
@@ -41,14 +43,14 @@ class THAMISPerformanceTest {
     }
 
     @Test
-    fun `test THAMIS under heavy load`() {
+    fun `test THAMIS under heavy load`() = runBlocking {
         val request = THAMISRequest("log pone algo de cumbia santafesina")
         
         val startTime = System.currentTimeMillis()
         val iterations = 1000
         
         repeat(iterations) {
-            THAMIS.process(request)
+            ThamisBrain.process(request)
         }
         
         val totalTime = System.currentTimeMillis() - startTime

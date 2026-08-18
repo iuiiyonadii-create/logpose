@@ -30,7 +30,7 @@ class StructuralUnificationTest {
         
         val command = ActionMapper.map(decision, "Pone Uzbekistan")
         
-        assertTrue(command is LogPoseCommand.PlayMusic)
-        assertEquals("uzbekistan", (command as LogPoseCommand.PlayMusic).query)
+        assertTrue(command is LogPoseCommand.Media.PlayMusic)
+        assertEquals("uzbekistan", (command as LogPoseCommand.Media.PlayMusic).query)
     }
 }
