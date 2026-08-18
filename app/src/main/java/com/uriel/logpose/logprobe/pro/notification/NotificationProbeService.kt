@@ -1,4 +1,4 @@
-package com.uriel.logpose.logprobe.notification
+package com.uriel.logpose.logprobe.pro.notification
 
 import android.service.notification.NotificationListenerService
 import android.service.notification.StatusBarNotification

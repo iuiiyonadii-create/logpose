@@ -1,4 +1,4 @@
-package com.uriel.logpose.logprobe.accessibility
+package com.uriel.logpose.logprobe.pro.accessibility
 
 import android.accessibilityservice.AccessibilityService
 import android.view.accessibility.AccessibilityEvent

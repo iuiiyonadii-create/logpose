@@ -9,7 +9,8 @@ import android.content.Context
 import com.uriel.logpose.core.compat.core.LogPoseLogger
 import androidx.annotation.RequiresPermission
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.delay
+import kotlinx.coroutines.CompletableDeferred
+import kotlinx.coroutines.withTimeout
 import kotlinx.coroutines.withContext
 
 
@@ -44,282 +45,62 @@ class BluetoothConnectionManager(
 
 
 
-    @RequiresPermission(
-        Manifest.permission.BLUETOOTH_CONNECT
-    )
-    suspend fun connect(
-        device: BluetoothDevice
-    ): Boolean =
-        withContext(
-            Dispatchers.IO
-        ) {
-
-
-
-            val adapter =
-                BluetoothAdapter.getDefaultAdapter()
-                    ?: return@withContext false
-
-
-
-
-
-            connectedDevice =
-                device
-
-
-
-
-
-            LogPoseLogger.d(
-                "LOGPOSE_BT",
-                "CHECK CONNECTION ${device.name}"
-            )
-
-
-
-
-
-
-            adapter.getProfileProxy(
-
-                appContext,
-
-                object : BluetoothProfile.ServiceListener {
-
-
-
-                    override fun onServiceConnected(
-                        profile: Int,
-                        proxy: BluetoothProfile
-                    ) {
-
-
-
-                        val connected =
-                            proxy.connectedDevices.any {
-
-
-                                it.address ==
-                                        device.address
-
-
-                            }
-
-
-
-
-
-                        when(profile){
-
-
-
-                            BluetoothProfile.A2DP -> {
-
-
-                                a2dpConnected =
-                                    connected
-
-
-
-                                LogPoseLogger.d(
-                                    "LOGPOSE_BT",
-                                    "A2DP=$connected"
-                                )
-
-
-                            }
-
-
-
-
-
-                            BluetoothProfile.HEADSET -> {
-
-
-                                headsetConnected =
-                                    connected
-
-
-
-                                LogPoseLogger.d(
-                                    "LOGPOSE_BT",
-                                    "HEADSET=$connected"
-                                )
-
-
-                            }
-
-
-
-                        }
-
-
-
-                    }
-
-
-
-
-
-
-
-                    override fun onServiceDisconnected(
-                        profile: Int
-                    ) {
-
-
-
-                        when(profile){
-
-
-
-                            BluetoothProfile.A2DP -> {
-
-
-                                a2dpConnected =
-                                    false
-
-
-                            }
-
-
-
-                            BluetoothProfile.HEADSET -> {
-
-
-                                headsetConnected =
-                                    false
-
-
-                            }
-
-
-
-                        }
-
-
-
-                    }
-
-
-
-                },
-
-                BluetoothProfile.A2DP
-
-            )
-
-
-
-
-
-
-
-
-
-            adapter.getProfileProxy(
-
-                appContext,
-
-                object : BluetoothProfile.ServiceListener {
-
-
-
-                    override fun onServiceConnected(
-                        profile: Int,
-                        proxy: BluetoothProfile
-                    ) {
-
-
-
-                        headsetConnected =
-                            proxy.connectedDevices.any {
-
-
-                                it.address ==
-                                        device.address
-
-
-                            }
-
-
-
-                        LogPoseLogger.d(
-                            "LOGPOSE_BT",
-                            "HEADSET=$headsetConnected"
-                        )
-
-
-
-                    }
-
-
-
-
-
-
-
-                    override fun onServiceDisconnected(
-                        profile: Int
-                    ) {
-
-
-
-                        headsetConnected =
-                            false
-
-
-                    }
-
-
-
-                },
-
-                BluetoothProfile.HEADSET
-
-            )
-
-
-
-
-
-
-
-
-            // Esperar respuesta de Android Bluetooth
-            delay(2000)
-
-
-
-
-
-
-
-            val result =
-                a2dpConnected ||
-                        headsetConnected
-
-
-
-
-
-
-
-            LogPoseLogger.d(
-                "LOGPOSE_BT",
-                "FINAL RESULT=$result"
-            )
-
-
-
-
-
-            result
-
-
-
+    @RequiresPermission(Manifest.permission.BLUETOOTH_CONNECT)
+    suspend fun connect(device: BluetoothDevice): Boolean = withContext(Dispatchers.IO) {
+        val adapter = BluetoothAdapter.getDefaultAdapter() ?: return@withContext false
+        connectedDevice = device
+
+        LogPoseLogger.d("LOGPOSE_BT", "Verificando estado de conexión para ${device.name}")
+
+        val a2dpDeferred = CompletableDeferred<Boolean>()
+        val headsetDeferred = CompletableDeferred<Boolean>()
+
+        val a2dpListener = object : BluetoothProfile.ServiceListener {
+            override fun onServiceConnected(profile: Int, proxy: BluetoothProfile) {
+                val isConnected = proxy.connectedDevices.any { it.address == device.address }
+                a2dpConnected = isConnected
+                LogPoseLogger.d("LOGPOSE_BT", "A2DP conectado: $isConnected")
+                adapter.closeProfileProxy(BluetoothProfile.A2DP, proxy)
+                a2dpDeferred.complete(isConnected)
+            }
+
+            override fun onServiceDisconnected(profile: Int) {
+                a2dpConnected = false
+                a2dpDeferred.complete(false)
+            }
         }
+
+        val headsetListener = object : BluetoothProfile.ServiceListener {
+            override fun onServiceConnected(profile: Int, proxy: BluetoothProfile) {
+                val isConnected = proxy.connectedDevices.any { it.address == device.address }
+                headsetConnected = isConnected
+                LogPoseLogger.d("LOGPOSE_BT", "HEADSET conectado: $isConnected")
+                adapter.closeProfileProxy(BluetoothProfile.HEADSET, proxy)
+                headsetDeferred.complete(isConnected)
+            }
+
+            override fun onServiceDisconnected(profile: Int) {
+                headsetConnected = false
+                headsetDeferred.complete(false)
+            }
+        }
+
+        adapter.getProfileProxy(appContext, a2dpListener, BluetoothProfile.A2DP)
+        adapter.getProfileProxy(appContext, headsetListener, BluetoothProfile.HEADSET)
+
+        try {
+            withTimeout(3000) {
+                a2dpDeferred.await()
+                headsetDeferred.await()
+            }
+        } catch (e: Exception) {
+            LogPoseLogger.w("LOGPOSE_BT", "Timeout esperando perfiles BT: ${e.message}")
+        }
+
+        val result = a2dpConnected || headsetConnected
+        LogPoseLogger.i("LOGPOSE_BT", "Resultado final de verificación: $result")
+        result
+    }
 
 
 
