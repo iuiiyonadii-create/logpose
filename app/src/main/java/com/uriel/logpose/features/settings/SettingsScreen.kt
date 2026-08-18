@@ -32,7 +32,7 @@ fun SettingsScreen(
     val variant = Color(0xFFB2BEC3)
     
     var showIpDialog by remember { mutableStateOf(false) }
-    var tempIp by remember { mutableStateOf(settings.getString("pc_ip", "192.168.1.33") ?: "192.168.1.33") }
+    var tempIp by remember { mutableStateOf(settings.getString("pc_ip", "") ?: "") }
 
     Column(
         modifier = Modifier
@@ -85,7 +85,7 @@ fun SettingsScreen(
 
         // Sección PC
         SettingsGroup("LOGPOSE PC BRIDGE", variant) {
-            val pcIp = settings.getString("pc_ip", "192.168.1.33") ?: "192.168.1.33"
+            val pcIp = settings.getString("pc_ip", "") ?: ""
             SettingsItem(Icons.Default.Computer, "IP de la PC", pcIp, text) {
                 tempIp = pcIp
                 showIpDialog = true

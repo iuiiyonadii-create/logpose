@@ -30,29 +30,8 @@ public open class ThamisHttpConnector : AiProviderConnector {
     override val providerName: String = "Thamis Neural Brain (Http)"
 
     override fun analyzeTask(prompt: String): LabResult<AgenticResponse> {
-        return try {
-            val url = URL("http://localhost:5000/chat")
-            val conn = url.openConnection() as HttpURLConnection
-            conn.requestMethod = "POST"
-            conn.setRequestProperty("Content-Type", "application/json")
-            conn.doOutput = true
-
-            val jsonInputString = "{\"msg\": \"$prompt\"}"
-            conn.outputStream.use { os ->
-                os.write(jsonInputString.toByteArray(charset("utf-8")))
-            }
-
-            if (conn.responseCode == 200) {
-                val response = conn.inputStream.bufferedReader().use { it.readText() }
-                val thinking = response.substringAfter("\"thinking\": \"").substringBefore("\"")
-                val result = response.substringAfter("\"claude\": \"").substringBefore("\"")
-                LabResult.Success(AgenticResponse(output = result, thinking = thinking))
-            } else {
-                LabResult.Failure(LabError.SystemError("Brain error: ${conn.responseCode}"))
-            }
-        } catch (e: Exception) {
-            LabResult.Failure(LabError.SystemError("Connection failed", e))
-        }
+        // v79.0: Eliminamos URL de debug. En modo producto esto se ignora si no hay bridge.
+        return LabResult.Failure(com.thamis.lab.core.common.error.LabError.SystemError("Bridge offline"))
     }
 
     override fun reviewArchitecture(moduleName: String): LabResult<String> {

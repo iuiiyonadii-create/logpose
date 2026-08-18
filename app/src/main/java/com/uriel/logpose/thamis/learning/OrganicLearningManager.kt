@@ -14,17 +14,18 @@ import java.net.URL
 object OrganicLearningManager {
 
     private val scope = CoroutineScope(Dispatchers.IO)
-    private const val BRAIN_URL = "http://localhost:5000/chat"
-
     /**
      * Request the PC Agent to analyze a phrase and inject a new rule into ActionMapper.kt.
      */
     fun requestRuleSynthesis(phrase: String) {
+        val pcIp = com.uriel.logpose.core.parser.LabDiscoveryService.pcIp.value ?: return
+        val brainUrl = "http://$pcIp:5000/chat"
+        
         LogPoseLogger.i("OrganicLearning", "Requesting Rule Synthesis for: '$phrase'")
         
         scope.launch {
             try {
-                val url = URL(BRAIN_URL)
+                val url = URL(brainUrl)
                 val conn = url.openConnection() as HttpURLConnection
                 conn.requestMethod = "POST"
                 conn.setRequestProperty("Content-Type", "application/json")

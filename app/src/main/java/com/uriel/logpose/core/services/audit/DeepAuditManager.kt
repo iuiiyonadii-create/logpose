@@ -14,13 +14,9 @@ import java.net.URL
 object DeepAuditManager {
 
     private val scope = CoroutineScope(Dispatchers.IO)
-    private const val BRAIN_URL = "http://localhost:5000/chat"
-
-    /**
-     * Captures current session logs and requests a Deep Forensic Audit from the PC Brain.
-     */
-    fun performFinalForensic() {
-        LogPoseLogger.w("DeepAudit", "SESSION END DETECTED. Starting final forensic analysis...")
+    private fun sendForensicToLab(report: String) {
+        val pcIp = com.uriel.logpose.core.parser.LabDiscoveryService.pcIp.value ?: return
+        val brainUrl = "http://$pcIp:5000/chat"
         
         scope.launch {
             try {
@@ -28,7 +24,7 @@ object DeepAuditManager {
                 val logcatDump = LogPoseLogger.getRecentLogs(200)
 
                 // 2. Send to Brain
-                val url = URL(BRAIN_URL)
+                val url = URL(brainUrl)
                 val conn = url.openConnection() as HttpURLConnection
                 conn.requestMethod = "POST"
                 conn.setRequestProperty("Content-Type", "application/json")
