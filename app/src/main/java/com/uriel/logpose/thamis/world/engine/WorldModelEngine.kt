@@ -8,15 +8,22 @@ import com.uriel.logpose.core.compat.core.LogPoseLogger
 import android.content.Context
 import com.google.gson.Gson
 import com.uriel.logpose.features.diagnostics.ProactiveDiagnosticsEngine
+import com.uriel.logpose.data.local.*
+import kotlinx.coroutines.*
+import javax.inject.Inject
+import javax.inject.Singleton
 
 /**
- * WorldModelEngine v1.2: Hardened Persistence (Misión #010).
- * Asegura la supervivencia del estado ante cierres forzados del SO.
+ * WorldModelEngine v2.0: Arquitectura Room + DI (Misión #115).
  */
-object WorldModelEngine {
+@Singleton
+class WorldModelEngine @Inject constructor(
+    private val logPoseDao: LogPoseDao
+) {
 
     private var currentSnapshot = WorldSnapshot()
     private val gson = Gson()
+    private val scope = CoroutineScope(Dispatchers.IO + SupervisorJob())
 
     fun update(domain: String, reducer: (WorldSnapshot) -> WorldSnapshot) {
         val startTime = System.currentTimeMillis()
@@ -24,9 +31,7 @@ object WorldModelEngine {
         
         currentSnapshot = newSnapshot
         
-        // --- PROACTIVE ENGINE v4.0 ---
         ProactiveDiagnosticsEngine.check(newSnapshot)
-        
         WorldHistory.add(newSnapshot)
         
         WorldAudit.record(WorldTrace(
@@ -36,48 +41,50 @@ object WorldModelEngine {
             latencyMs = System.currentTimeMillis() - startTime
         ))
 
-        // v66.5: Actualizar HUD en tiempo real con el nuevo estado del mundo
         com.uriel.logpose.core.services.LogPoseHudService.updateWorld(newSnapshot)
-
-        LogPoseLogger.d("[THAMIS_WORLD] Model updated by $domain. Snapshot ID: ${newSnapshot.id}")
-        
         saveCheckpoint(newSnapshot)
     }
 
     fun getCurrentSnapshot(): WorldSnapshot = currentSnapshot
 
     private fun saveCheckpoint(snapshot: WorldSnapshot) {
-        try {
-            val app = com.uriel.logpose.core.app.LogPoseApplication.instance
-            val prefs = app.getSharedPreferences("thamis_world_checkpoint", Context.MODE_PRIVATE)
-            
-            // Misión #010: Usamos commit() para garantizar escritura física antes de un posible crash
-            val json = gson.toJson(snapshot)
-            prefs.edit().putString("last_snapshot_json", json).commit()
-            LogPoseLogger.d("WorldModel: Checkpoint guardado físicamente (${json.length} bytes)")
-        } catch (e: Exception) {
-            LogPoseLogger.e("WorldModel: Error al guardar checkpoint: ${e.message}")
+        scope.launch {
+            try {
+                val json = gson.toJson(snapshot)
+                logPoseDao.saveCheckpoint(WorldSnapshotCheckpointEntity("last_snapshot", json))
+            } catch (e: Exception) {
+                LogPoseLogger.e("WorldModel", "Error al guardar checkpoint en Room: ${e.message}")
+            }
         }
     }
 
-    fun restoreFromCheckpoint(): Boolean {
-        try {
-            val app = com.uriel.logpose.core.app.LogPoseApplication.instance
-            val prefs = app.getSharedPreferences("thamis_world_checkpoint", Context.MODE_PRIVATE)
-            val json = prefs.getString("last_snapshot_json", null)
-            
-            if (json == null) {
-                LogPoseLogger.d("WorldModel: No se encontró checkpoint previo.")
-                return false
-            }
-            
-            val restored = gson.fromJson(json, WorldSnapshot::class.java)
-            currentSnapshot = restored
-            LogPoseLogger.i("WorldModel: Estado restaurado exitosamente (ID: ${restored.id})")
+    fun restoreFromCheckpoint(context: Context): Boolean {
+        // Migración desde SharedPreferences si existe
+        val prefs = context.getSharedPreferences("thamis_world_checkpoint", Context.MODE_PRIVATE)
+        val legacyJson = prefs.getString("last_snapshot_json", null)
+        
+        if (legacyJson != null) {
+            LogPoseLogger.w("WorldModel", "Migrando checkpoint de SharedPreferences a Room...")
+            currentSnapshot = gson.fromJson(legacyJson, WorldSnapshot::class.java)
+            saveCheckpoint(currentSnapshot)
+            prefs.edit().clear().apply()
             return true
-        } catch (e: Exception) {
-            LogPoseLogger.e("WorldModel: Fallo crítico al restaurar checkpoint: ${e.message}")
-            return false
+        }
+
+        // Carga normal desde Room (bloqueante para restauración inicial)
+        return runBlocking {
+            try {
+                val json = logPoseDao.getCheckpoint("last_snapshot")
+                if (json != null) {
+                    currentSnapshot = gson.fromJson(json, WorldSnapshot::class.java)
+                    LogPoseLogger.i("WorldModel", "Estado restaurado desde Room.")
+                    true
+                } else {
+                    false
+                }
+            } catch (e: Exception) {
+                false
+            }
         }
     }
 

@@ -24,7 +24,14 @@ object DatabaseModule {
             context,
             LogPoseDatabase::class.java,
             "logpose_db"
-        ).build()
+        ).fallbackToDestructiveMigration() // v82.7: Forcing fresh start for Room migration
+        .build()
+    }
+
+    @Provides
+    @Singleton
+    fun provideLogPoseDao(database: LogPoseDatabase): com.uriel.logpose.data.local.LogPoseDao {
+        return database.logPoseDao()
     }
 
     @Provides

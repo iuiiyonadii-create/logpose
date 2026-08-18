@@ -49,14 +49,14 @@ object CommandDispatcher {
         }
 
         registry.register(LogPoseCommand.Media.PauseMusic::class) {
-            MusicManager.pause()
+            LogPoseApplication.entryPoint.musicManager().pause()
         }
 
         registry.register(LogPoseCommand.Media.PlayMusic::class) { command ->
             val play = command as LogPoseCommand.Media.PlayMusic
             LogPoseLogger.i("Dispatcher: Reproduciendo música: '${play.query}'")
             CoroutineScope(Dispatchers.Main).launch {
-                MusicManager.play(play.query)
+                LogPoseApplication.entryPoint.musicManager().play(play.query)
             }
         }
 
@@ -96,7 +96,7 @@ object CommandDispatcher {
                     // Si ya tenemos el mensaje, pasamos directo a la confirmación
                     pendingMessage = send.message
                     FeedbackManager.speak("Le mando a ${resolution.resolvedContact.name}: '${send.message}'. ¿Dale?") {
-                        WorldModelEngine.update("Messaging") { it.copy(
+                        LogPoseApplication.entryPoint.worldModelEngine().update("Messaging") { it.copy(
                             cognitive = it.cognitive.copy(conversationState = "WAITING_CONFIRMATION")
                         )}
                     }
@@ -104,7 +104,7 @@ object CommandDispatcher {
                     // Si no hay mensaje, preguntamos
                     val prompt = "¿Qué le querés decir a ${resolution.resolvedContact.name}?"
                     FeedbackManager.speak(prompt) {
-                        WorldModelEngine.update("Messaging") { it.copy(
+                        LogPoseApplication.entryPoint.worldModelEngine().update("Messaging") { it.copy(
                             cognitive = it.cognitive.copy(conversationState = "WAITING_MESSAGE_CONTENT")
                         )}
                     }
@@ -121,7 +121,7 @@ object CommandDispatcher {
             val msg = (command as LogPoseCommand.MessageContent).content
             pendingMessage = msg
             FeedbackManager.speak("De una. Le mando: '$msg'. ¿Sale?") {
-                WorldModelEngine.update("Messaging") { it.copy(
+                LogPoseApplication.entryPoint.worldModelEngine().update("Messaging") { it.copy(
                     cognitive = it.cognitive.copy(conversationState = "WAITING_CONFIRMATION")
                 )}
             }
@@ -130,7 +130,7 @@ object CommandDispatcher {
         registry.register(LogPoseCommand.ConfirmAction::class) {
             val contact = pendingContact
             val msg = pendingMessage
-            val snapshot = WorldModelEngine.getCurrentSnapshot()
+            val snapshot = LogPoseApplication.entryPoint.worldModelEngine().getCurrentSnapshot()
             
             if (snapshot.cognitive.activeIntent == "NAVIGATE_TO_STATION") {
                 LogPoseLogger.i("Dispatcher: Navegando a estación de servicio por alerta proactiva.")
@@ -253,7 +253,7 @@ object CommandDispatcher {
     private fun resetMessagingState() {
         pendingContact = null
         pendingMessage = null
-        WorldModelEngine.update("Messaging") { it.copy(
+        LogPoseApplication.entryPoint.worldModelEngine().update("Messaging") { it.copy(
             cognitive = it.cognitive.copy(conversationState = "IDLE")
         )}
     }

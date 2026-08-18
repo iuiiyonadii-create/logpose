@@ -29,6 +29,7 @@ class AudioManagerController(private val context: Context) {
             
             audioManager.requestAudioFocus(focusRequest!!) == AudioManager.AUDIOFOCUS_REQUEST_GRANTED
         } else {
+            // v83.0: Justified DEPRECATION - Legacy API required for minSdk < 26 (Android Oreo).
             @Suppress("DEPRECATION")
             audioManager.requestAudioFocus(
                 { /* Handle change */ },
@@ -42,6 +43,7 @@ class AudioManagerController(private val context: Context) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             focusRequest?.let { audioManager.abandonAudioFocusRequest(it) }
         } else {
+            // v83.0: Justified DEPRECATION - Legacy API for minSdk support.
             @Suppress("DEPRECATION")
             audioManager.abandonAudioFocus { /* Handle change */ }
         }

@@ -90,8 +90,12 @@ object IntercomCaptureManager {
     private const val MAX_GAIN = 8.0f
     private const val MIN_GAIN = 0.8f
 
-    @SuppressLint("MissingPermission")
     private fun internalStart(context: Context) {
+        if (androidx.core.content.ContextCompat.checkSelfPermission(context, android.Manifest.permission.RECORD_AUDIO) != android.content.pm.PackageManager.PERMISSION_GRANTED) {
+            LogPoseLogger.e("Capture", "Aborting start: RECORD_AUDIO permission not granted.")
+            return
+        }
+        
         try {
             val minBufferSize = AudioRecord.getMinBufferSize(
                 SAMPLE_RATE,
@@ -117,6 +121,7 @@ object IntercomCaptureManager {
                     .setBufferSizeInBytes(alignedBufferSize * 2)
                     .build()
             } else {
+                // v83.0: Justified DEPRECATION - Legacy AudioRecord constructor for minSdk support.
                 @Suppress("DEPRECATION")
                 AudioRecord(
                     preferredSource,

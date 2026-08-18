@@ -24,6 +24,10 @@ class LogPoseApplication : Application() {
 
     @Inject lateinit var voiceRepository: VoiceRepository
     @Inject lateinit var voskEngine: VoskVoiceEngine
+    @Inject lateinit var learningEngine: com.uriel.logpose.thamis.learning.LearningEngine
+    @Inject lateinit var musicManager: com.uriel.logpose.features.music.MusicManager
+    @Inject lateinit var worldModelEngine: com.uriel.logpose.thamis.world.engine.WorldModelEngine
+    @Inject lateinit var driverProfileStore: com.uriel.logpose.core.data.DriverProfileStore
     
     // Arquitectura ALF-R v4.5 + Sherpa Local
     val anchorRepository = com.uriel.logpose.core.engine.AnchorRepository()
@@ -81,19 +85,20 @@ class LogPoseApplication : Application() {
                 
                 // PRIORIDAD 2: Managers de Feedback y Música
                 com.uriel.logpose.features.voice.FeedbackManager.initialize(this@LogPoseApplication)
-                com.uriel.logpose.features.music.MusicManager.initialize(this@LogPoseApplication)
+                musicManager.initialize(this@LogPoseApplication)
                 
                 delay(500)
                 
                 // PRIORIDAD 3: Pipeline de Voz y Aprendizaje
                 com.uriel.logpose.features.voice.CallManager.initialize(this@LogPoseApplication)
                 
-                com.uriel.logpose.thamis.learning.LearningEngine.initialize(this@LogPoseApplication)
-                com.uriel.logpose.thamis.learning.LearningEngine.cleanOldCache()
+                driverProfileStore.migrateIfNeeded(this@LogPoseApplication)
+                learningEngine.initialize(this@LogPoseApplication)
+                learningEngine.cleanOldCache()
                 
                 // v1.1: Limpieza de Misión #026 (Fix Secuestro Uzbekistan)
-                com.uriel.logpose.thamis.learning.LearningEngine.forget("con ubekistan ponle ube")
-                com.uriel.logpose.thamis.learning.LearningEngine.forget("con ubekistán ponle ube")
+                learningEngine.forget("con ubekistan ponle ube")
+                learningEngine.forget("con ubekistán ponle ube")
                 
                 delay(500)
                 
@@ -160,8 +165,8 @@ class LogPoseApplication : Application() {
     }
 
     private fun checkOrphanedSession() {
-        if (com.uriel.logpose.thamis.world.engine.WorldModelEngine.restoreFromCheckpoint()) {
-            val snapshot = com.uriel.logpose.thamis.world.engine.WorldModelEngine.getCurrentSnapshot()
+        if (worldModelEngine.restoreFromCheckpoint(this)) {
+            val snapshot = worldModelEngine.getCurrentSnapshot()
             if (snapshot.systems.navigation.isNavigating) {
                 LogPoseLogger.i("Application: Detectado viaje huérfano. Despertando Service...")
                 val intent = android.content.Intent(this, com.uriel.logpose.core.services.LogPoseCallService::class.java).apply {

@@ -12,6 +12,7 @@ object ContextBus {
         data[key] = value
     }
 
+    // v83.0: Justified UNCHECKED_CAST - Type safety provided by as? operator.
     @Suppress("UNCHECKED_CAST")
     fun <T> get(key: String): T? {
         return data[key] as? T

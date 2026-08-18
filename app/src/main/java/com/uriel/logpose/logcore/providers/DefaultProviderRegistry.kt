@@ -38,6 +38,7 @@ class DefaultProviderRegistry : ProviderRegistry {
         return getOrNull(type) ?: throw ProviderNotRegisteredException(type)
     }
 
+    // v83.0: Justified UNCHECKED_CAST - Required for generic type instantiation.
     @Suppress("UNCHECKED_CAST")
     override fun <T : Any> getOrNull(type: KClass<T>): T? {
         synchronized(lock) {

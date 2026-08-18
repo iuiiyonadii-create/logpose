@@ -2,19 +2,20 @@ package com.uriel.logpose.thamis.monitoring.telemetry
 
 import com.uriel.logpose.thamis.monitoring.model.PerformanceSnapshot
 import java.util.concurrent.ConcurrentHashMap
+import javax.inject.Inject
+import javax.inject.Singleton
 
 /**
- * Colector de datos brutos de ejecución de todos los módulos.
+ * TelemetryCollector v2.0: Arquitectura DI (Misión #115).
  */
-object TelemetryCollector {
+@Singleton
+class TelemetryCollector @Inject constructor() {
     private val performanceLogs = ConcurrentHashMap<String, MutableList<PerformanceSnapshot>>()
     private val errorLogs = ConcurrentHashMap<String, Int>()
 
     fun recordPerformance(module: String, timeMs: Long) {
         val snapshot = PerformanceSnapshot(module, timeMs)
         performanceLogs.getOrPut(module) { mutableListOf() }.add(snapshot)
-        
-        // Limitar historial por módulo
         if (performanceLogs[module]!!.size > 100) {
             performanceLogs[module]!!.removeAt(0)
         }

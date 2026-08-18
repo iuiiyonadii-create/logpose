@@ -25,7 +25,9 @@ class TripOrchestrator @Inject constructor(
     private val pcBridge: PCBridge,
     private val batteryGuardian: BatteryGuardian,
     private val overlayController: OverlayController,
-    private val communicationManager: BluetoothCommunicationManager
+    private val communicationManager: BluetoothCommunicationManager,
+    private val worldModelEngine: com.uriel.logpose.thamis.world.engine.WorldModelEngine,
+    private val comfortNoiseManager: com.uriel.logpose.core.services.ComfortNoiseManager
 ) {
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main)
     private var isTripActive = false
@@ -37,7 +39,7 @@ class TripOrchestrator @Inject constructor(
         LogPoseLogger.i("TripOrchestrator: Iniciando viaje...")
         
         // Sincronización con el modelo de mundo
-        WorldModelEngine.update("Orchestrator") {
+        worldModelEngine.update("Orchestrator") {
             it.copy(systems = it.systems.copy(
                 navigation = NavigationStateV1(isNavigating = true)
             ))
@@ -48,7 +50,7 @@ class TripOrchestrator @Inject constructor(
         pcBridge.sendCommand("RIDER_ONLINE:¡Listo para el reparto!")
 
         // Misión #036: Silent Pilot (Comfort Noise) para mantener canal SCO caliente
-        com.uriel.logpose.core.services.ComfortNoiseManager.start(context, true)
+        comfortNoiseManager.start(context, true)
 
         ThamisAssistant.start(context)
         
@@ -65,7 +67,7 @@ class TripOrchestrator @Inject constructor(
 
         LogPoseLogger.i("TripOrchestrator: Finalizando viaje...")
         
-        WorldModelEngine.update("Orchestrator") {
+        worldModelEngine.update("Orchestrator") {
             it.copy(systems = it.systems.copy(
                 navigation = NavigationStateV1(isNavigating = false)
             ))
@@ -73,7 +75,7 @@ class TripOrchestrator @Inject constructor(
 
         NavigationManager.stopNavigation()
         ThamisAssistant.stop()
-        com.uriel.logpose.core.services.ComfortNoiseManager.stop()
+        comfortNoiseManager.stop()
         pcBridge.stopRemoteServer()
         batteryGuardian.stopMonitoring()
         overlayController.hideOverlay()

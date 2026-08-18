@@ -30,4 +30,10 @@ interface AppEntryPoint {
     fun appLauncher(): com.uriel.logpose.core.app.AppLauncher
     fun actionManager(): ActionManager
     fun bluetoothCommunicationManager(): com.uriel.logpose.core.services.BluetoothCommunicationManager
+    fun learningEngine(): com.uriel.logpose.thamis.learning.LearningEngine
+    fun musicManager(): com.uriel.logpose.features.music.MusicManager
+    fun worldModelEngine(): com.uriel.logpose.thamis.world.engine.WorldModelEngine
+    fun comfortNoiseManager(): com.uriel.logpose.core.services.ComfortNoiseManager
+    fun telemetryCollector(): com.uriel.logpose.thamis.monitoring.telemetry.TelemetryCollector
+    fun driverProfileStore(): com.uriel.logpose.core.data.DriverProfileStore
 }

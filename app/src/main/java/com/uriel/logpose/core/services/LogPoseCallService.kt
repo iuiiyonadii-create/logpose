@@ -15,6 +15,7 @@ import android.os.Build
 import android.os.IBinder
 import androidx.core.app.NotificationCompat
 import com.uriel.logpose.R
+import com.uriel.logpose.core.app.LogPoseApplication
 import com.uriel.logpose.core.compat.core.LogPoseLogger
 import com.uriel.logpose.core.notifications.NotificationHelper
 import com.uriel.logpose.core.telecom.LogPoseTelecom
@@ -39,6 +40,7 @@ class LogPoseCallService : Service() {
     @Inject lateinit var micGate: PlaybackAwareMicGate
     @Inject lateinit var tripOrchestrator: TripOrchestrator
     @Inject lateinit var missionPowerManager: MissionPowerManager
+    @Inject lateinit var comfortNoiseManager: ComfortNoiseManager
 
     private lateinit var attributionContext: Context
     @Inject lateinit var scoStateManager: ScoStateManager
@@ -103,9 +105,9 @@ class LogPoseCallService : Service() {
     }
 
     private fun checkAndRestoreSession() {
-        val restored = com.uriel.logpose.thamis.world.engine.WorldModelEngine.restoreFromCheckpoint()
+        val restored = LogPoseApplication.entryPoint.worldModelEngine().restoreFromCheckpoint(this)
         if (restored) {
-            val snapshot = com.uriel.logpose.thamis.world.engine.WorldModelEngine.getCurrentSnapshot()
+            val snapshot = LogPoseApplication.entryPoint.worldModelEngine().getCurrentSnapshot()
             if (snapshot.systems.navigation.isNavigating) {
                 LogPoseLogger.i("Recovery: Detectada sesión de navegación previa. Restaurando viaje...")
                 startTrip()
@@ -204,13 +206,13 @@ class LogPoseCallService : Service() {
 
     fun yieldAudio() {
         if (!isTripActive) return
-        ComfortNoiseManager.duck()
+        comfortNoiseManager.duck()
         updateNotification("LogPose en segundo plano")
     }
 
     fun resumeAudio() {
         if (!isTripActive) return
-        ComfortNoiseManager.restoreVolume()
+        comfortNoiseManager.restoreVolume()
         updateNotification("Viaje activo — casco conectado")
     }
 

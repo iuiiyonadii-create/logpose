@@ -354,8 +354,8 @@ object CognitivePipeline {
                         put("failure_level", 3)
                         put("noise_level", noiseLevel)
                         put("confidence", speechConfidence)
-                        put("battery", WorldModelEngine.getCurrentSnapshot().systems.device.batteryPct)
-                        put("speed", WorldModelEngine.getCurrentSnapshot().vehicle.speedKmh)
+                        put("battery", LogPoseApplication.entryPoint.worldModelEngine().getCurrentSnapshot().systems.device.batteryPct)
+                        put("speed", LogPoseApplication.entryPoint.worldModelEngine().getCurrentSnapshot().vehicle.speedKmh)
                     }
                     sendTelemetry(trace)
                 }
@@ -394,7 +394,7 @@ object CognitivePipeline {
             // 7. TELEMETRÍA (Low Priority)
             if (isLabsOnline) {
                 scope.launch {
-                    val snapshot = WorldModelEngine.getCurrentSnapshot()
+                    val snapshot = LogPoseApplication.entryPoint.worldModelEngine().getCurrentSnapshot()
                     val trace = JSONObject().apply {
                         put("type", "COGNITIVE_PIPELINE_TRACE")
                         put("total_latency_ms", totalLatency)

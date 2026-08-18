@@ -64,8 +64,8 @@ class BluetoothRepositoryImpl @Inject constructor(
         bluetoothManager.disconnect()
     }
 
-    @Suppress("MissingPermission")
     override fun getPairedDevices(): List<LogPoseDevice> {
+        if (!hasPermission()) return emptyList()
         val btManager = context.getSystemService(Context.BLUETOOTH_SERVICE) as AndroidBluetoothManager
         return btManager.adapter?.bondedDevices?.map { BluetoothDeviceMapper.mapToDomain(it) } ?: emptyList()
     }

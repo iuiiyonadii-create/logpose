@@ -64,6 +64,7 @@ object AudioPathGuardian {
             am.adjustStreamVolume(AudioManager.STREAM_MUSIC, AudioManager.ADJUST_MUTE, 0)
             am.adjustStreamVolume(AudioManager.STREAM_NOTIFICATION, AudioManager.ADJUST_MUTE, 0)
         } else {
+            // v83.0: Justified DEPRECATION - Required for minSdk < 23 (Marshmallow).
             @Suppress("DEPRECATION")
             am.setStreamMute(AudioManager.STREAM_MUSIC, true)
             @Suppress("DEPRECATION")
@@ -77,6 +78,7 @@ object AudioPathGuardian {
             am.adjustStreamVolume(AudioManager.STREAM_MUSIC, AudioManager.ADJUST_UNMUTE, 0)
             am.adjustStreamVolume(AudioManager.STREAM_NOTIFICATION, AudioManager.ADJUST_UNMUTE, 0)
         } else {
+            // v83.0: Justified DEPRECATION - Legacy API support.
             @Suppress("DEPRECATION")
             am.setStreamMute(AudioManager.STREAM_MUSIC, false)
             @Suppress("DEPRECATION")

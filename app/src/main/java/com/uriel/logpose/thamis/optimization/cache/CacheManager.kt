@@ -14,6 +14,7 @@ object CacheManager {
         cache[key] = CacheEntry(data, System.currentTimeMillis(), ttlMs)
     }
 
+    // v83.0: Justified UNCHECKED_CAST - Type safety provided by as? operator.
     @Suppress("UNCHECKED_CAST")
     fun <T> get(key: String): T? {
         val entry = cache[key] ?: return null

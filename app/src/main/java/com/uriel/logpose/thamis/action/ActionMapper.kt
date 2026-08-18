@@ -140,7 +140,7 @@ object ActionMapper {
 
                 val finalQuery = if (cleanQuery.isNotBlank()) {
                     // v79.0: ADN Musical con prevención de duplicidad Staff
-                    val associatedArtist = com.uriel.logpose.thamis.learning.LearningEngine.getArtistForTrack(cleanQuery)
+                    val associatedArtist = LogPoseApplication.entryPoint.learningEngine().getArtistForTrack(cleanQuery)
                     val queryLower = cleanQuery.lowercase()
                     if (associatedArtist != null) {
                         val artistLower = associatedArtist.lowercase()
@@ -198,7 +198,7 @@ object ActionMapper {
                 // v11.4: Inyección de Preferencia de Estación (DriverProfile)
                 val searchTerms = listOf("nafta", "gasolinera", "estacion de servicio", "estación de servicio", "ypf", "shell", "axion", "suma", "puma")
                 if (searchTerms.any { normalizedText.contains(it) }) {
-                    val preferred = DriverProfileStore.getPreferredGasStation(LogPoseApplication.instance)
+                    val preferred = LogPoseApplication.entryPoint.driverProfileStore().getPreferredGasStation()
                     destination = when {
                         normalizedText.contains("shell") -> "shell"
                         normalizedText.contains("ypf") -> "ypf"
@@ -276,7 +276,7 @@ object ActionMapper {
                 }
                 // v6.1: Si el usuario dice "olvida eso" o "está mal", purgamos la memoria dinámica
                 else if (normalizedText.contains("olvida") || normalizedText.contains("borra") || normalizedText.contains("mal")) {
-                    com.uriel.logpose.thamis.learning.LearningEngine.forgetLast()
+                    LogPoseApplication.entryPoint.learningEngine().forgetLast()
                     LogPoseCommand.Feedback("Entendido, borré el último aprendizaje.")
                 } else {
                     LogPoseCommand.CancelAction
@@ -322,7 +322,7 @@ object ActionMapper {
             // --- DIAGNÓSTICO DE MOTO ---
             Intent.VEHICLE_STATUS -> {
                 if (normalizedText.contains("gustos") || normalizedText.contains("preferencias")) {
-                    val favs = com.uriel.logpose.thamis.learning.LearningEngine.getLearnedMusicEntities().take(5).joinToString(", ")
+                    val favs = LogPoseApplication.entryPoint.learningEngine().getLearnedMusicEntities().take(5).joinToString(", ")
                     LogPoseCommand.Feedback("Tus artistas Staff con prioridad son: $favs")
                 } else {
                     LogPoseCommand.System.GetVehicleStatus

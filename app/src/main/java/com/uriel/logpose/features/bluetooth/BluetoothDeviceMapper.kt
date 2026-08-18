@@ -4,6 +4,7 @@ import android.bluetooth.BluetoothDevice
 import com.uriel.logpose.domain.models.LogPoseDevice
 
 object BluetoothDeviceMapper {
+    // v83.0: MissingPermission justified as this is a pure mapping from an existing device object.
     @Suppress("MissingPermission")
     fun mapToDomain(device: BluetoothDevice): LogPoseDevice {
         return LogPoseDevice(

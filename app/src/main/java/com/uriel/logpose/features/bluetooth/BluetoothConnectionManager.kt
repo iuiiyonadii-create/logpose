@@ -60,7 +60,7 @@ class BluetoothConnectionManager(
                 val isConnected = proxy.connectedDevices.any { it.address == device.address }
                 a2dpConnected = isConnected
                 LogPoseLogger.d("LOGPOSE_BT", "A2DP conectado: $isConnected")
-                // v82.0: Cerramos el proxy SIEMPRE para evitar fugas, incluso si llegamos tarde
+                // v83.0: Cerramos el proxy SIEMPRE para evitar fugas.
                 adapter.closeProfileProxy(BluetoothProfile.A2DP, proxy)
                 if (!a2dpDeferred.isCompleted) a2dpDeferred.complete(isConnected)
             }
@@ -76,7 +76,7 @@ class BluetoothConnectionManager(
                 val isConnected = proxy.connectedDevices.any { it.address == device.address }
                 headsetConnected = isConnected
                 LogPoseLogger.d("LOGPOSE_BT", "HEADSET conectado: $isConnected")
-                // v82.0: Cerramos el proxy SIEMPRE para evitar fugas
+                // v83.0: Cerramos el proxy SIEMPRE para evitar fugas.
                 adapter.closeProfileProxy(BluetoothProfile.HEADSET, proxy)
                 if (!headsetDeferred.isCompleted) headsetDeferred.complete(isConnected)
             }
@@ -141,9 +141,15 @@ class BluetoothConnectionManager(
 
 
 
-    @Suppress("MissingPermission")
     fun isConnected(): Boolean {
-        // Actualizamos estado antes de responder (Fallback para Redmi/Xiaomi)
+        val hasPermission = if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.S) {
+            androidx.core.content.ContextCompat.checkSelfPermission(appContext, android.Manifest.permission.BLUETOOTH_CONNECT) == android.content.pm.PackageManager.PERMISSION_GRANTED
+        } else {
+            true // Legacy permissions handled by manifest
+        }
+
+        if (!hasPermission) return a2dpConnected || headsetConnected
+
         val adapter = BluetoothAdapter.getDefaultAdapter() ?: return false
         
         return try {

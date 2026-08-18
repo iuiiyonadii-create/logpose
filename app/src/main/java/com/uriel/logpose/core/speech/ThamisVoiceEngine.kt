@@ -6,6 +6,7 @@ import android.media.AudioFormat
 import android.media.AudioTrack
 import android.os.Environment
 import java.io.File
+import com.uriel.logpose.core.app.LogPoseApplication
 import com.uriel.logpose.core.compat.core.LogPoseLogger
 import com.uriel.logpose.core.services.LogPoseHudService
 import com.uriel.logpose.features.music.MusicManager
@@ -134,7 +135,7 @@ class ThamisVoiceEngine private constructor(context: Context) {
 
                 try {
                     // 1. Ducking Automático (Sincronizado v88.0)
-                    MusicManager.duck()
+                    LogPoseApplication.entryPoint.musicManager().duck()
                     
                     LogPoseLogger.d("ThamisVoiceEngine", "🧠 Maya procesando: '$text'")
                     
@@ -149,7 +150,7 @@ class ThamisVoiceEngine private constructor(context: Context) {
                         sampleRate = 22050 // Default for Sherpa
                     } else {
                         // v63.0: Modulación de velocidad según la marcha
-                        val currentSpeed = com.uriel.logpose.thamis.world.engine.WorldModelEngine.getCurrentSnapshot().vehicle.speedKmh
+                        val currentSpeed = LogPoseApplication.entryPoint.worldModelEngine().getCurrentSnapshot().vehicle.speedKmh
                         val speedFactor = if (currentSpeed > 80) 1.2f else 1.0f
                         
                         val audio = tts.generate(text, speed = speedFactor)
@@ -162,7 +163,7 @@ class ThamisVoiceEngine private constructor(context: Context) {
                     
                     if (samples.isEmpty()) {
                         LogPoseLogger.e("ThamisVoiceEngine", "Error: Síntesis vacía.")
-                        MusicManager.unduck()
+                        LogPoseApplication.entryPoint.musicManager().unduck()
                         onComplete()
                         return@withLock
                     }
@@ -171,12 +172,12 @@ class ThamisVoiceEngine private constructor(context: Context) {
                     playPcmStream(samples, sampleRate)
                     
                     // 4. Restauración de volumen
-                    MusicManager.unduck()
+                    LogPoseApplication.entryPoint.musicManager().unduck()
                     onComplete()
                     
                 } catch (e: Exception) {
                     LogPoseLogger.e("ThamisVoiceEngine", "Error en síntesis: ${e.message}")
-                    MusicManager.unduck()
+                    LogPoseApplication.entryPoint.musicManager().unduck()
                     onComplete()
                 }
             }

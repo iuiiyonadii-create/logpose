@@ -100,6 +100,42 @@ object EngineModule {
 
     @Provides
     @Singleton
+    fun provideLearningEngine(logPoseDao: com.uriel.logpose.data.local.LogPoseDao): com.uriel.logpose.thamis.learning.LearningEngine {
+        return com.uriel.logpose.thamis.learning.LearningEngine(logPoseDao)
+    }
+
+    @Provides
+    @Singleton
+    fun provideMusicManager(@ApplicationContext context: Context): com.uriel.logpose.features.music.MusicManager {
+        return com.uriel.logpose.features.music.MusicManager(context)
+    }
+
+    @Provides
+    @Singleton
+    fun provideWorldModelEngine(logPoseDao: com.uriel.logpose.data.local.LogPoseDao): com.uriel.logpose.thamis.world.engine.WorldModelEngine {
+        return com.uriel.logpose.thamis.world.engine.WorldModelEngine(logPoseDao)
+    }
+
+    @Provides
+    @Singleton
+    fun provideComfortNoiseManager(): com.uriel.logpose.core.services.ComfortNoiseManager {
+        return com.uriel.logpose.core.services.ComfortNoiseManager()
+    }
+
+    @Provides
+    @Singleton
+    fun provideTelemetryCollector(): com.uriel.logpose.thamis.monitoring.telemetry.TelemetryCollector {
+        return com.uriel.logpose.thamis.monitoring.telemetry.TelemetryCollector()
+    }
+
+    @Provides
+    @Singleton
+    fun provideDriverProfileStore(logPoseDao: com.uriel.logpose.data.local.LogPoseDao): com.uriel.logpose.core.data.DriverProfileStore {
+        return com.uriel.logpose.core.data.DriverProfileStore(logPoseDao)
+    }
+
+    @Provides
+    @Singleton
     fun provideScoStateManager(
         @ApplicationContext context: Context
     ): ScoStateManager {
