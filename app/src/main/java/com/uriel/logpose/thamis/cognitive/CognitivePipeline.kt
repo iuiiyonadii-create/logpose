@@ -300,27 +300,14 @@ object CognitivePipeline {
                     com.uriel.logpose.thamis.decision.Decision(forcedIntent, 1.0f, entities)
                 }
                 bypassWakeWordCheck -> {
-                    // v77.0 STAFF: Prioridad LOCAL (Gemma/Llama) para modo Producto.
-                    LogPoseLogger.i("Pipeline", "🧠 Consultando Juez Final (Gemma) para audio procesado...")
+                    // v80.0 STAFF: Prioridad LOCAL ABSOLUTA (Gemma/Llama).
+                    // Eliminamos el PC Bridge como Tier 0. La app debe decidir por sí misma.
+                    LogPoseLogger.i("Pipeline", "🧠 Cerebro Local (Gemma) analizando comando...")
                     val llmDecision = com.uriel.logpose.core.intelligence.llm.LLMDecisionEngine.think(cleanText)
                     
                     if (llmDecision != null && llmDecision.intent != Intent.UNKNOWN) {
                         LogPoseLogger.i("Pipeline", "✅ Gemma resolvió: ${llmDecision.intent}")
                         llmDecision
-                    } else if (isLabsOnline) {
-                        // Solo consultamos a la PC si el local falló y estamos en el Lab.
-                        val pcDecision = MotherbaseBridge.queryReasoning(cleanText)
-                        if (pcDecision != null) {
-                            LogPoseLogger.i("Pipeline", "✅ PC Bridge resolvió fallback: ${pcDecision.optString("claude")}")
-                            val intent = Intent.valueOf(pcDecision.optString("claude", "UNKNOWN"))
-                            val entities = mutableMapOf<String, String>()
-                            entities["parameter"] = pcDecision.optString("entity", "")
-                            if (intent == Intent.PLAY_MUSIC) entities["media"] = entities["parameter"] ?: ""
-                            com.uriel.logpose.thamis.decision.Decision(intent, 1.0f, entities, fromAi = true)
-                        } else {
-                            val detection = com.uriel.logpose.thamis.intent.IntentDetector.detect(cleanText, ignoreWakeWord = true)
-                            com.uriel.logpose.thamis.decision.Decision(detection.intent, detection.score, detection.entities)
-                        }
                     } else {
                         // Fallback a reglas (Safety Net)
                         val detection = com.uriel.logpose.thamis.intent.IntentDetector.detect(cleanText, ignoreWakeWord = true)

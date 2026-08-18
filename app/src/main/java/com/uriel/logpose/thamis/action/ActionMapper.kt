@@ -340,7 +340,9 @@ object ActionMapper {
             }
 
             else -> {
-                // v60.0: Bucle de Aprendizaje Orgánico
+                // v80.0 STAFF: Bucle de Aprendizaje Soberano (Offline-First)
+                // Ya no llama a la PC. El aprendizaje se delega al OrganicLearningManager 
+                // que ahora decide si registrar local o esperar al Lab.
                 if (normalizedText.length > 3) {
                     com.uriel.logpose.thamis.learning.OrganicLearningManager.requestRuleSynthesis(originalText)
                 }

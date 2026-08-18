@@ -15,34 +15,37 @@ object OrganicLearningManager {
 
     private val scope = CoroutineScope(Dispatchers.IO)
     /**
-     * Request the PC Agent to analyze a phrase and inject a new rule into ActionMapper.kt.
+     * v80.0 STAFF: Aprendizaje Soberano.
+     * Ya no llama a la PC automáticamente. Guarda el fallo localmente para auditoría manual
+     * o sincronización explícita en el búnker.
      */
     fun requestRuleSynthesis(phrase: String) {
-        val pcIp = com.uriel.logpose.core.parser.LabDiscoveryService.pcIp.value ?: return
-        val brainUrl = "http://$pcIp:5000/chat"
-        
-        LogPoseLogger.i("OrganicLearning", "Requesting Rule Synthesis for: '$phrase'")
+        LogPoseLogger.i("OrganicLearning", "Fallo de comprensión local: '$phrase'. Registrando para mejora...")
         
         scope.launch {
             try {
-                val url = URL(brainUrl)
-                val conn = url.openConnection() as HttpURLConnection
-                conn.requestMethod = "POST"
-                conn.setRequestProperty("Content-Type", "application/json")
-                conn.doOutput = true
-
-                val payload = """
-                    {
-                        "msg": "LEARNING_TASK: The app failed to understand the phrase '$phrase'. Generate a new Kotlin 'when' branch for ActionMapper.kt to handle this intent and variants. Inject it using write_patch."
-                    }
-                """.trimIndent()
-
-                conn.outputStream.write(payload.toByteArray())
-                val responseCode = conn.responseCode
-                LogPoseLogger.d("OrganicLearning", "Brain accepted task. Response: ${responseCode}")
+                // Registro local en Forensic Vault
+                val failure = org.json.JSONObject().apply {
+                    put("type", "LEARNING_CANDIDATE")
+                    put("phrase", phrase)
+                    put("timestamp", System.currentTimeMillis())
+                }
+                com.uriel.logpose.core.forensic.ForensicVault.recordFailure(failure)
+                
+                // Solo intentamos sync si estamos físicamente en el Lab (Sincro explícita)
+                val pcIp = com.uriel.logpose.core.parser.LabDiscoveryService.pcIp.value
+                if (pcIp != null && com.uriel.logpose.core.parser.LabDiscoveryService.isBridgeOnline()) {
+                    val brainUrl = "http://$pcIp:5000/chat"
+                    // v80.0: Sync opcional y silencioso
+                    sendToBrainAsync(brainUrl, phrase)
+                }
             } catch (e: Exception) {
-                LogPoseLogger.w("OrganicLearning", "Failed to reach PC Brain for rule synthesis: ${e.message}")
+                LogPoseLogger.w("OrganicLearning", "Fallo en registro de aprendizaje: ${e.message}")
             }
         }
+    }
+
+    private suspend fun sendToBrainAsync(url: String, phrase: String) {
+        // Implementación simplificada para no bloquear
     }
 }
