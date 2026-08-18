@@ -5,18 +5,20 @@ import com.uriel.logpose.core.app.LogPoseApplication
 import com.uriel.logpose.core.compat.core.LogPoseLogger
 import com.uriel.logpose.features.voice.VoskVoiceEngine
 import com.uriel.logpose.thamis.cognitive.CognitivePipeline
+import com.uriel.logpose.thamis.voice.filter.VoiceActivationGate
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
 
 /**
- * ThamisAssistant v75.0: MODO MICRO LIBRE STAFF (Oído Directo).
- * Se eliminaron TODOS los filtros de Wake-word y Rechazo preventivo.
+ * ThamisAssistant v82.0: CASCADA ESTRICTA STAFF.
+ * Implementación de compuerta de activación inteligente (VoiceActivationGate).
  */
 class ThamisAssistant private constructor() {
 
     private val scope = CoroutineScope(Dispatchers.Default + SupervisorJob())
+    private val activationGate = VoiceActivationGate()
 
     private val _lastResult = MutableSharedFlow<VoskVoiceEngine.RecognizedCommand>()
     val lastResult: SharedFlow<VoskVoiceEngine.RecognizedCommand> = _lastResult.asSharedFlow()
@@ -65,6 +67,15 @@ class ThamisAssistant private constructor() {
         if (isHandoverActive) return // Evitar ráfagas solapadas
 
         val noise = VoskVoiceEngine.getAmbientNoiseLevel()
+
+        // v82.0: Filtro de activación (VoiceActivationGate)
+        val shouldProcess = activationGate.shouldProcess(
+            text = command.text,
+            confidence = command.confidence,
+            noiseLevel = noise,
+            audioDurationMs = command.durationMs
+        )
+        if (!shouldProcess) return
         
         // v77.0: Si Vosk detectó algo con la gramática mínima, es un disparador potencial.
         LogPoseLogger.i("ThamisAssistant", "🚀 DISPARADOR DETECTADO: '${command.text}' (Handover -> Nivel 2)")

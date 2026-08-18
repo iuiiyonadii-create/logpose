@@ -14,15 +14,24 @@ import java.net.URL
 object DeepAuditManager {
 
     private val scope = CoroutineScope(Dispatchers.IO)
+    /**
+     * Captures current session logs and requests a Deep Forensic Audit from the PC Brain.
+     * v82.5: Restored wrapper for dispatcher compatibility.
+     */
+    fun performFinalForensic() {
+        LogPoseLogger.w("DeepAudit", "SESSION END DETECTED. Starting final forensic analysis...")
+        
+        // 1. Capture Real Session Logs
+        val logcatDump = LogPoseLogger.getRecentLogs(200)
+        sendForensicToLab(logcatDump)
+    }
+
     private fun sendForensicToLab(report: String) {
         val pcIp = com.uriel.logpose.core.parser.LabDiscoveryService.pcIp.value ?: return
         val brainUrl = "http://$pcIp:5000/chat"
         
         scope.launch {
             try {
-                // 1. Capture Real Session Logs
-                val logcatDump = LogPoseLogger.getRecentLogs(200)
-
                 // 2. Send to Brain
                 val url = URL(brainUrl)
                 val conn = url.openConnection() as HttpURLConnection
@@ -33,7 +42,7 @@ object DeepAuditManager {
                 val payload = """
                     {
                         "msg": "FORENSIC_TASK: Session ended. Perform deep root-cause analysis on logs. find real error, patch code and redeploy.",
-                        "logs": "$logcatDump"
+                        "logs": "$report"
                     }
                 """.trimIndent()
 

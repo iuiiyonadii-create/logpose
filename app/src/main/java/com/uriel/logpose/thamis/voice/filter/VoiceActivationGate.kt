@@ -80,7 +80,8 @@ class VoiceActivationGate {
 
         val firstToken = tokens[0]
         val hotwordsLog = setOf(
-            "log", "lujo", "lodge", "los", "logg", "lock", "loc", "look", "block", "bloc", "local", "lo", "yo", "no", "now", "hola", "ola", "rog", "dojo", "dog", "doc", "long"
+            "log", "lujo", "lodge", "los", "logg", "lock", "loc", "look", "block", "bloc", "local", "lo", "yo", "no", "now", "hola", "ola", "rog", "dojo", "dog", "doc", "long",
+            "lord", "low", "love", "loop", "road", "rock", "lote", "lone"
         )
         
         // 🔒 RADAR ELÁSTICO v10.9.8: Validación contextual expandida para mutaciones por viento

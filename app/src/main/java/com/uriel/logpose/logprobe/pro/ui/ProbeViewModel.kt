@@ -15,7 +15,7 @@ import com.uriel.logpose.logprobe.common.ProbeLogger
 import com.uriel.logpose.logprobe.common.ProbeSession
 import com.uriel.logpose.logprobe.common.ProbeUtils
 import com.uriel.logpose.logprobe.media.MediaProbe
-import com.uriel.logpose.logprobe.notification.NotificationProbeService
+import com.uriel.logpose.core.services.LogPoseNotificationListener
 import com.uriel.logpose.logprobe.reports.ProbeReportBuilder
 import com.uriel.logpose.logprobe.reports.ProbeTimeline
 import com.uriel.logpose.logprobe.storage.ProbeStorage
@@ -35,7 +35,7 @@ class ProbeViewModel(application: Application) : AndroidViewModel(application) {
     private val storage = ProbeStorage(application)
 
     private val notificationListenerComponent =
-        ComponentName(application, NotificationProbeService::class.java)
+        ComponentName(application, LogPoseNotificationListener::class.java)
 
     private val collectorManager = CollectorManager(
         pollingCollectors = listOf(
