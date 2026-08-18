@@ -79,9 +79,10 @@ class VoiceActivationGate {
         if (tokens.isEmpty()) return false
 
         val firstToken = tokens[0]
+        // v82.6 STAFF: Reducción de ruido fonético. Eliminamos palabras comunes (no, yo, lo, para)
+        // que causaban disparos accidentales en conversación normal.
         val hotwordsLog = setOf(
-            "log", "lujo", "lodge", "los", "logg", "lock", "loc", "look", "block", "bloc", "local", "lo", "yo", "no", "now", "hola", "ola", "rog", "dojo", "dog", "doc", "long",
-            "lord", "low", "love", "loop", "road", "rock", "lote", "lone"
+            "log", "logg", "lock", "loc", "look", "dojo", "dog", "doc", "long", "block", "bloc", "lujo", "lodge", "local", "rog", "lord", "loop"
         )
         
         // 🔒 RADAR ELÁSTICO v10.9.8: Validación contextual expandida para mutaciones por viento
@@ -100,14 +101,6 @@ class VoiceActivationGate {
                 "escribile", "abri", "abrí", "ojo", "guarda", "buscá", "busca", "pon", "sacá", "reproduci", "reproduce"
             )
             
-            // v10.9.9: Blindaje contra falsos positivos de "lo pone" (Exigir longitud mínima de payload si es 'lo')
-            if (firstToken == "lo" && nextToken.startsWith("pone")) {
-                if (tokens.size < 3) {
-                    LogPoseLogger.d("Gate", "Bloqueo preventivo: 'lo pone' sin payload suficiente.")
-                    return false
-                }
-            }
-
             val isValidContext = imperativeRoots.any { nextToken.startsWith(it) }
             
             if (isValidContext) {
@@ -117,15 +110,9 @@ class VoiceActivationGate {
             return false
         }
 
-        val otherTriggers = listOf(
-            "pone", "pon", "sube", "baja", "pausa", "siguiente", "anterior", 
-            "llama", "llamá", "llevarme", "navegar", "abrí", "abri", "reproducir", "vamos", "vamo", "vam",
-            "para", "detener", "mandá", "mandame", "escribí", "tan", "uzbekistan", "duki", "anuel", "renga", "luck",
-            "buscá", "busca", "sacá", "cancel", "cancela", "viaje", "estado", "consultar", "entrena", "entrenamiento", "simula", "simulación",
-            "inicia", "iniciar", "empeza", "empezá", "empezar", "activa", "activar"
-        )
-
-        return firstToken == "log" || otherTriggers.any { lowerText.contains(it) }
+        // v82.6: Eliminamos otherTriggers globales para forzar el uso de la wake-word "Log"
+        // fuera de la ventana de sesión activa.
+        return firstToken == "log"
     }
 
     fun destroy() {
