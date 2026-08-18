@@ -4,10 +4,13 @@ import android.accessibilityservice.AccessibilityService
 import android.view.accessibility.AccessibilityEvent
 import android.view.accessibility.AccessibilityNodeInfo
 import com.uriel.logpose.core.compat.core.LogPoseLogger
+import com.uriel.logpose.logprobe.collectors.AccessibilityCollector
+import com.uriel.logpose.logprobe.common.ProbeGuard
+import com.uriel.logpose.logprobe.common.ProbeLogger
 
 /**
  * LogPoseAccessibilityService: Automatiza interacciones en apps de terceros.
- * Específicamente diseñado para presionar el botón "Enviar" de WhatsApp.
+ * v82.0: Consolidado con LogProbe para recolección de datos de laboratorio.
  */
 class LogPoseAccessibilityService : AccessibilityService() {
 
@@ -17,6 +20,12 @@ class LogPoseAccessibilityService : AccessibilityService() {
     }
 
     override fun onAccessibilityEvent(event: AccessibilityEvent) {
+        // 1. Sonda de Laboratorio (LogProbe)
+        if (ProbeGuard.hasActiveSession()) {
+            AccessibilityCollector.onAccessibilityEvent(event)
+        }
+
+        // 2. Automatización de Producción
         if (!isPendingAutomation) return
         
         val packageName = event.packageName?.toString()

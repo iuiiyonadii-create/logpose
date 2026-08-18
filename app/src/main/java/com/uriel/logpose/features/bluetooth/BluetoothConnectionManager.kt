@@ -60,13 +60,14 @@ class BluetoothConnectionManager(
                 val isConnected = proxy.connectedDevices.any { it.address == device.address }
                 a2dpConnected = isConnected
                 LogPoseLogger.d("LOGPOSE_BT", "A2DP conectado: $isConnected")
+                // v82.0: Cerramos el proxy SIEMPRE para evitar fugas, incluso si llegamos tarde
                 adapter.closeProfileProxy(BluetoothProfile.A2DP, proxy)
-                a2dpDeferred.complete(isConnected)
+                if (!a2dpDeferred.isCompleted) a2dpDeferred.complete(isConnected)
             }
 
             override fun onServiceDisconnected(profile: Int) {
                 a2dpConnected = false
-                a2dpDeferred.complete(false)
+                if (!a2dpDeferred.isCompleted) a2dpDeferred.complete(false)
             }
         }
 
@@ -75,13 +76,14 @@ class BluetoothConnectionManager(
                 val isConnected = proxy.connectedDevices.any { it.address == device.address }
                 headsetConnected = isConnected
                 LogPoseLogger.d("LOGPOSE_BT", "HEADSET conectado: $isConnected")
+                // v82.0: Cerramos el proxy SIEMPRE para evitar fugas
                 adapter.closeProfileProxy(BluetoothProfile.HEADSET, proxy)
-                headsetDeferred.complete(isConnected)
+                if (!headsetDeferred.isCompleted) headsetDeferred.complete(isConnected)
             }
 
             override fun onServiceDisconnected(profile: Int) {
                 headsetConnected = false
-                headsetDeferred.complete(false)
+                if (!headsetDeferred.isCompleted) headsetDeferred.complete(false)
             }
         }
 

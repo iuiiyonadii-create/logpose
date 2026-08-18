@@ -107,8 +107,21 @@ class LogPoseNotificationListener : NotificationListenerService() {
     }
 
     override fun onNotificationPosted(sbn: StatusBarNotification) {
+        // 1. Sonda de Laboratorio (LogProbe)
+        if (com.uriel.logpose.logprobe.common.ProbeGuard.hasActiveSession()) {
+            com.uriel.logpose.logprobe.collectors.NotificationCollector.onPosted(sbn)
+        }
+
+        // 2. Procesamiento de Producción
         updateHeartbeat()
         com.uriel.logpose.features.notifications.NotificationReader.processNotification(this, sbn)
+    }
+
+    override fun onNotificationRemoved(sbn: StatusBarNotification) {
+        // Sonda de Laboratorio (LogProbe)
+        if (com.uriel.logpose.logprobe.common.ProbeGuard.hasActiveSession()) {
+            com.uriel.logpose.logprobe.collectors.NotificationCollector.onRemoved(sbn)
+        }
     }
 
     /**
