@@ -40,7 +40,7 @@ class MainActivity : ComponentActivity() {
         
         // v67.0: Despertar Conciencia Unificada
         lifecycleScope.launch {
-            com.uriel.logpose.core.intelligence.ThamisNeuralEngine.initialize(applicationContext)
+            com.uriel.logpose.thamis.intelligence.ThamisNeuralEngine.initialize(applicationContext)
         }
 
         setContent {

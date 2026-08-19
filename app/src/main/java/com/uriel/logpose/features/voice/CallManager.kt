@@ -73,9 +73,10 @@ object CallManager {
         
         // 1. Resolver contacto usando el motor de inteligencia
         val resolution = com.uriel.logpose.thamis.communication.resolver.ContactResolver.resolve(contactName)
+        val resolved = resolution.resolvedContact
         
-        if (resolution.resolvedContact != null) {
-            val contact = resolution.resolvedContact
+        if (resolved != null) {
+            val contact = resolved
             LogPoseLogger.i("CallManager: Contacto resuelto: ${contact.name} (${contact.phoneNumber})")
             executeCall(contact.phoneNumber)
             

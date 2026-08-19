@@ -65,19 +65,19 @@ class LogPoseApplication : Application() {
                 delay(800)
                 
                 LogPoseLogger.d("Startup", "Despertando Memoria Vectorial...")
-                com.uriel.logpose.core.intelligence.memory.VectorMemoryEngine.initialize(this@LogPoseApplication)
+                com.uriel.logpose.thamis.intelligence.memory.VectorMemoryEngine.initialize(this@LogPoseApplication)
                 delay(800)
                 
                 com.uriel.logpose.core.forensic.ForensicVault.initialize(this@LogPoseApplication)
                 
                 LogPoseLogger.d("Startup", "Despertando Cerebro Unificado...")
-                val neuralInit = com.uriel.logpose.core.intelligence.ThamisNeuralEngine.initialize(this@LogPoseApplication)
-                com.uriel.logpose.core.intelligence.llm.LLMDecisionEngine.initialize()
+                val neuralInit = com.uriel.logpose.thamis.intelligence.ThamisNeuralEngine.initialize(this@LogPoseApplication)
+                com.uriel.logpose.thamis.intelligence.llm.LLMDecisionEngine.initialize()
                 
                 // v73.0 STAFF: Reportamos salud a la Motherbase (PC) para auto-descarga de modelos
                 val whisperMissing = !File(getExternalFilesDir(null), "whisper/tiny.en-encoder.int8.onnx").exists()
                 val gemmaMissing = !neuralInit
-                com.uriel.logpose.core.intelligence.MotherbaseBridge.reportSystemHealth(whisperMissing, gemmaMissing)
+                com.uriel.logpose.thamis.intelligence.MotherbaseBridge.reportSystemHealth(whisperMissing, gemmaMissing)
                 
                 // v66.0: Glosario movido al IntentDetector blindado
                 
@@ -91,7 +91,6 @@ class LogPoseApplication : Application() {
                 // PRIORIDAD 3: Pipeline de Voz y Aprendizaje
                 com.uriel.logpose.features.voice.CallManager.initialize(this@LogPoseApplication)
                 
-                driverProfileStore.migrateIfNeeded(this@LogPoseApplication)
                 learningEngine.initialize(this@LogPoseApplication)
                 learningEngine.cleanOldCache()
                 
@@ -111,8 +110,8 @@ class LogPoseApplication : Application() {
                 hydrateMusicAnchors()
                 hydrateNavigationAnchors()
                 
-                com.uriel.logpose.thamis.navigation.provider.NavigationProviderFactory.registerProvider(
-                    com.uriel.logpose.thamis.navigation.provider.GoogleMapsProvider()
+                com.uriel.logpose.core.navigation.provider.NavigationProviderFactory.registerProvider(
+                    com.uriel.logpose.core.navigation.provider.GoogleMapsProvider()
                 )
                 
                 LogPoseLogger.i("LogPoseApplication: Sistemas de fondo listos (Xiaomi Staggered Active).")
@@ -191,7 +190,7 @@ class LogPoseApplication : Application() {
             voskEngine.stop()
             sherpaEngine.release()
             whisperEngine.release()
-            com.uriel.logpose.core.intelligence.ThamisNeuralEngine.release()
+            com.uriel.logpose.thamis.intelligence.ThamisNeuralEngine.release()
         } catch (e: Exception) {
             LogPoseLogger.e("LogPose", "Error en liberación: ${e.message}")
         }

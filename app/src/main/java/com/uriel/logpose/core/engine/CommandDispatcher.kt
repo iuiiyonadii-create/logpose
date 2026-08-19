@@ -88,21 +88,22 @@ object CommandDispatcher {
             }
 
             val resolution = ContactResolver.resolve(targetContactName)
+            val resolved = resolution.resolvedContact
             
-            if (resolution.resolvedContact != null) {
-                pendingContact = resolution.resolvedContact.phoneNumber
+            if (resolved != null) {
+                pendingContact = resolved.phoneNumber
                 
                 if (send.message.isNotBlank()) {
                     // Si ya tenemos el mensaje, pasamos directo a la confirmación
                     pendingMessage = send.message
-                    FeedbackManager.speak("Le mando a ${resolution.resolvedContact.name}: '${send.message}'. ¿Dale?") {
+                    FeedbackManager.speak("Le mando a ${resolved.name}: '${send.message}'. ¿Dale?") {
                         LogPoseApplication.entryPoint.worldModelEngine().update("Messaging") { it.copy(
                             cognitive = it.cognitive.copy(conversationState = "WAITING_CONFIRMATION")
                         )}
                     }
                 } else {
                     // Si no hay mensaje, preguntamos
-                    val prompt = "¿Qué le querés decir a ${resolution.resolvedContact.name}?"
+                    val prompt = "¿Qué le querés decir a ${resolved.name}?"
                     FeedbackManager.speak(prompt) {
                         LogPoseApplication.entryPoint.worldModelEngine().update("Messaging") { it.copy(
                             cognitive = it.cognitive.copy(conversationState = "WAITING_MESSAGE_CONTENT")
