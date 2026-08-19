@@ -8,7 +8,7 @@ import com.thamis.lab.intelligence.engineering.SelfRepairEngine
 import com.thamis.lab.intelligence.engineering.RootCauseEngine
 import com.thamis.lab.orchestrator.campaign.TestCampaign
 import com.thamis.lab.performance.device.DeviceInfo
-import com.thamis.lab.simulation.voice.AcousticStressSimulator
+import com.thamis.lab.core.common.speech.AcousticStressSimulator
 import com.thamis.lab.simulation.environment.DynamicEnvironmentSimulator
 import com.thamis.lab.simulation.scenario.generator.ScenarioMutator
 import com.thamis.lab.orchestrator.github.GitBridge

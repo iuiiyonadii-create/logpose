@@ -37,6 +37,36 @@ public class AcousticStressSimulator {
         }
     }
 
+    public fun simulateWindNoise(speedKmh: Int): StressProfile {
+        val scenario = when {
+            speedKmh > 100 -> AcousticScenario.WIND_EXTREME
+            speedKmh > 60 -> AcousticScenario.WIND_HEAVY
+            else -> AcousticScenario.WIND_LIGHT
+        }
+        return getCalibratedProfile(scenario)
+    }
+
+    public fun distortText(text: String, noiseLevel: Float): String {
+        if (noiseLevel < 0.3f) return text
+        val chars = text.toCharArray()
+        val random = java.util.Random(text.hashCode().toLong())
+        for (i in chars.indices) {
+            if (random.nextFloat() < noiseLevel * 0.35f && chars[i].isLetter()) {
+                chars[i] = when (chars[i].lowercaseChar()) {
+                    'p' -> 'b'
+                    'b' -> 'p'
+                    'd' -> 't'
+                    't' -> 'd'
+                    's' -> 'z'
+                    'm' -> 'n'
+                    'n' -> 'm'
+                    else -> chars[i]
+                }
+            }
+        }
+        return String(chars)
+    }
+
     public fun runPhoneticTest(transcription: String, target: String): Float {
         val s1 = transcription.lowercase().trim()
         val s2 = target.lowercase().trim()

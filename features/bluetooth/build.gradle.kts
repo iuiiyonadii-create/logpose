@@ -1,8 +1,8 @@
 plugins {
     alias(libs.plugins.android.library)
     alias(libs.plugins.kotlin.android)
-    alias(libs.plugins.hilt)
     alias(libs.plugins.ksp)
+    alias(libs.plugins.hilt)
 }
 
 android {
@@ -20,6 +20,8 @@ android {
 
     kotlinOptions {
         jvmTarget = "17"
+        languageVersion = "1.9"
+        apiVersion = "1.9"
     }
 }
 

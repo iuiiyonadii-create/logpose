@@ -1,9 +1,9 @@
 plugins {
-    alias(libs.plugins.kotlin.android)
     alias(libs.plugins.android.application)
+    alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
-    alias(libs.plugins.hilt)
     alias(libs.plugins.ksp)
+    alias(libs.plugins.hilt)
 }
 
 android {
@@ -54,6 +54,8 @@ android {
 
     kotlinOptions {
         jvmTarget = "17"
+        languageVersion = "1.9"
+        apiVersion = "1.9"
     }
 
     buildFeatures {
@@ -69,6 +71,10 @@ android {
             useLegacyPackaging = false
         }
     }
+}
+
+hilt {
+    enableAggregatingTask = false
 }
 
 dependencies {
