@@ -1,11 +1,13 @@
 package com.uriel.logpose.core.engine
 
 import com.uriel.logpose.core.compat.core.Command
+import com.uriel.logpose.core.compat.core.LogPoseCommand
 import com.uriel.logpose.core.compat.core.LogPoseLogger
 import com.uriel.logpose.core.context.CommandContext
 import com.uriel.logpose.core.context.CommandHistory
 import com.uriel.logpose.core.engine.registry.DefaultCommandRegistry
 import com.uriel.logpose.core.memory.CommandMemory
+import com.uriel.logpose.features.weather.WeatherManager
 
 object CommandDispatcher {
 
@@ -34,6 +36,10 @@ object CommandDispatcher {
         registry.register(Command.Call::class) { command ->
             val call = command as Command.Call
             LogPoseLogger.i("Llamar a: ${call.contact}")
+        }
+
+        registry.register(LogPoseCommand.System.GetWeather::class) {
+            WeatherManager.reportCurrentWeather()
         }
 
         registry.register(Command.Unknown::class) {

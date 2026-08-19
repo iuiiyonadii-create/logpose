@@ -103,7 +103,15 @@ object CommandParser {
                     )
                 )
 
+            value.startsWith("reproducir ") ||
+                    value.startsWith("play ") ||
+                    value.startsWith("pone ") ||
+                    value.startsWith("pon ") ||
+                    value.startsWith("poner ") ->
 
+                parseDirectMusic(
+                    value
+                )
 
             else ->
 
@@ -111,6 +119,26 @@ object CommandParser {
 
         }
 
+    }
+
+    private fun parseDirectMusic(
+        value: String
+    ): ParseResult {
+        val song = value
+            .removePrefix("reproducir")
+            .removePrefix("play")
+            .removePrefix("poner")
+            .removePrefix("pone")
+            .removePrefix("pon")
+            .trim()
+
+        if (song.isBlank()) {
+            return ParseResult.Unknown
+        }
+
+        return ParseResult.Success(
+            Command.PlayMusic(song)
+        )
     }
 
 

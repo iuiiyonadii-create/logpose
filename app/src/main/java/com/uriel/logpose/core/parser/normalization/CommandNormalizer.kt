@@ -47,14 +47,31 @@ object CommandNormalizer {
             .replace("\\s+".toRegex(), " ")
             .trim()
 
-        val normalized = cleaned
+        val tokens = cleaned
             .split(" ")
             .filter {
                 it.isNotBlank() &&
                         it !in stopWords
             }
-            .joinToString(" ")
+
+        val withoutWakeWord = stripWakeWordPrefix(tokens)
+
+        val normalized = withoutWakeWord.joinToString(" ")
 
         return CommandAliasRepository.resolve(normalized)
+    }
+
+    private fun stripWakeWordPrefix(tokens: List<String>): List<String> {
+        if (tokens.isEmpty()) return tokens
+
+        // Manejar prefijos fonéticos de wake-word como "log pose", "log", "pose", "los pose", etc.
+        val first = tokens.first()
+        if (tokens.size >= 2 && (first == "log" || first == "los" || first == "look") && (tokens[1] == "pose" || tokens[1] == "pone" || tokens[1] == "pos" || tokens[1] == "puse")) {
+            return tokens.drop(2)
+        }
+        if (first == "logpose" || first == "logpone" || first == "lospose" || first == "log") {
+            return tokens.drop(1)
+        }
+        return tokens
     }
 }

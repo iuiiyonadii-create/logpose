@@ -3,9 +3,12 @@ package com.uriel.logpose.features.bluetooth
 
 import android.Manifest
 import android.bluetooth.BluetoothAdapter
-import android.util.Log
-import androidx.annotation.RequiresPermission
+import android.bluetooth.BluetoothManager as AndroidBluetoothManager
 import android.content.Context
+import android.content.pm.PackageManager
+import android.os.Build
+import android.util.Log
+import androidx.core.content.ContextCompat
 import com.uriel.logpose.core.compat.core.DeviceClassifier
 import com.uriel.logpose.domain.models.LogPoseDevice
 
@@ -22,9 +25,11 @@ class BluetoothManager(
 
 
 
+    // minSdk actual no soporta BluetoothManager.adapter sin Context, requiere minSdk 31 para inyección directa
     @Suppress("DEPRECATION")
-    private val bluetoothAdapter =
-        BluetoothAdapter.getDefaultAdapter()
+    private val bluetoothAdapter: BluetoothAdapter? =
+        (appContext.getSystemService(Context.BLUETOOTH_SERVICE) as? AndroidBluetoothManager)?.adapter
+            ?: BluetoothAdapter.getDefaultAdapter()
 
 
 
@@ -45,20 +50,15 @@ class BluetoothManager(
 
 
 
-    @RequiresPermission(
-        anyOf = [
-            Manifest.permission.BLUETOOTH_CONNECT,
-            Manifest.permission.BLUETOOTH
-        ]
-    )
-    @Suppress("MissingPermission")
     fun isBluetoothEnabled(): Boolean {
-
 
         val adapter =
             bluetoothAdapter
 
-
+        if (!hasConnectPermission()) {
+            Log.w("LOGPOSE_BT", "Permiso Bluetooth no concedido para verificar isEnabled")
+            return false
+        }
 
         Log.d(
             "LOGPOSE_BT",
@@ -94,16 +94,13 @@ class BluetoothManager(
 
 
 
-    @RequiresPermission(
-        anyOf = [
-            Manifest.permission.BLUETOOTH_CONNECT,
-            Manifest.permission.BLUETOOTH
-        ]
-    )
-    @Suppress("MissingPermission")
+
     fun getPairedDevices(): List<LogPoseDevice> {
 
-
+        if (!hasConnectPermission()) {
+            Log.w("LOGPOSE_BT", "Permiso Bluetooth no concedido para getPairedDevices")
+            return emptyList()
+        }
 
         val devices =
             bluetoothAdapter
@@ -173,16 +170,13 @@ class BluetoothManager(
 
 
 
-    @RequiresPermission(
-        anyOf = [
-            Manifest.permission.BLUETOOTH_SCAN,
-            Manifest.permission.BLUETOOTH
-        ]
-    )
-    @Suppress("MissingPermission")
+
     fun startDiscovery(): Boolean {
 
-
+        if (!hasScanPermission()) {
+            Log.w("LOGPOSE_BT", "Permiso Bluetooth SCAN no concedido para startDiscovery")
+            return false
+        }
 
         val adapter =
             bluetoothAdapter
@@ -276,16 +270,12 @@ class BluetoothManager(
 
 
 
-    @RequiresPermission(
-        anyOf = [
-            Manifest.permission.BLUETOOTH_SCAN,
-            Manifest.permission.BLUETOOTH
-        ]
-    )
-    @Suppress("MissingPermission")
+
     fun cancelDiscovery() {
 
-
+        if (!hasScanPermission()) {
+            return
+        }
 
         val adapter =
             bluetoothAdapter
@@ -314,5 +304,32 @@ class BluetoothManager(
 
     }
 
+    private fun hasConnectPermission(): Boolean {
+        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            ContextCompat.checkSelfPermission(
+                appContext,
+                Manifest.permission.BLUETOOTH_CONNECT
+            ) == PackageManager.PERMISSION_GRANTED
+        } else {
+            ContextCompat.checkSelfPermission(
+                appContext,
+                Manifest.permission.BLUETOOTH
+            ) == PackageManager.PERMISSION_GRANTED
+        }
+    }
+
+    private fun hasScanPermission(): Boolean {
+        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            ContextCompat.checkSelfPermission(
+                appContext,
+                Manifest.permission.BLUETOOTH_SCAN
+            ) == PackageManager.PERMISSION_GRANTED
+        } else {
+            ContextCompat.checkSelfPermission(
+                appContext,
+                Manifest.permission.ACCESS_FINE_LOCATION
+            ) == PackageManager.PERMISSION_GRANTED
+        }
+    }
 
 }

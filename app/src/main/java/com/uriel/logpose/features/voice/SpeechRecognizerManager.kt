@@ -1,13 +1,9 @@
 package com.uriel.logpose.features.voice
 
 import android.content.Context
-import android.content.Intent
-import android.os.Bundle
 import android.speech.RecognitionListener
-import android.speech.RecognizerIntent
 import android.speech.SpeechRecognizer
 import com.uriel.logpose.core.compat.core.LogPoseLogger
-import java.util.Locale
 
 
 class SpeechRecognizerManager(
@@ -16,22 +12,29 @@ class SpeechRecognizerManager(
 
 
     private var recognizer: SpeechRecognizer? = null
+    private var currentConfig: VoiceConfiguration? = null
 
 
 
     fun initialize(
-        listener: RecognitionListener
+        listener: RecognitionListener,
+        config: VoiceConfiguration = VoiceConfiguration()
     ) {
 
+        // Si ya existe un recognizer con otra config, destruirlo primero
+        if (recognizer != null && currentConfig != config) {
+            destroy()
+        }
 
         if (recognizer != null) return
 
 
+        currentConfig = config
 
-        recognizer =
-            SpeechRecognizer.createSpeechRecognizer(
-                context
-            )
+
+        recognizer = SpeechRecognizerFactory.create(
+            context, config
+        )
 
 
         recognizer?.setRecognitionListener(
@@ -40,18 +43,21 @@ class SpeechRecognizerManager(
 
 
         LogPoseLogger.i(
-            "SpeechRecognizer inicializado"
+            "SpeechRecognizer inicializado" +
+                    (config.engineComponent?.let {
+                        " con motor: ${it.packageName}"
+                    } ?: " con motor predeterminado")
         )
 
     }
 
 
 
-
     fun start() {
 
+        val config = currentConfig
 
-        if (recognizer == null) {
+        if (recognizer == null || config == null) {
 
             LogPoseLogger.w(
                 "SpeechRecognizer no inicializado"
@@ -61,14 +67,13 @@ class SpeechRecognizerManager(
         }
 
 
+        val intent = VoiceIntentFactory.create(config)
 
-        recognizer?.startListening(
-            createIntent()
-        )
+        recognizer?.startListening(intent)
 
 
         LogPoseLogger.i(
-            "Escucha de voz iniciada"
+            "Escucha de voz iniciada (idioma: ${config.language})"
         )
 
     }
@@ -76,12 +81,9 @@ class SpeechRecognizerManager(
 
 
 
-
     fun stop() {
 
-
         recognizer?.stopListening()
-
 
         LogPoseLogger.i(
             "Escucha detenida"
@@ -92,12 +94,9 @@ class SpeechRecognizerManager(
 
 
 
-
     fun cancel() {
 
-
         recognizer?.cancel()
-
 
         LogPoseLogger.i(
             "Escucha cancelada"
@@ -108,14 +107,11 @@ class SpeechRecognizerManager(
 
 
 
-
     fun destroy() {
 
-
         recognizer?.destroy()
-
         recognizer = null
-
+        currentConfig = null
 
         LogPoseLogger.i(
             "SpeechRecognizer destruido"
@@ -124,53 +120,16 @@ class SpeechRecognizerManager(
     }
 
 
-
-
-
-    private fun createIntent(): Intent {
-
-
-        return Intent(
-            RecognizerIntent.ACTION_RECOGNIZE_SPEECH
-        ).apply {
-
-
-            putExtra(
-                RecognizerIntent.EXTRA_LANGUAGE_MODEL,
-                RecognizerIntent.LANGUAGE_MODEL_FREE_FORM
-            )
-
-
-
-            putExtra(
-                RecognizerIntent.EXTRA_LANGUAGE,
-                "es-AR"
-            )
-
-
-
-            putExtra(
-                RecognizerIntent.EXTRA_LANGUAGE_PREFERENCE,
-                "es-AR"
-            )
-
-
-
-            putExtra(
-                RecognizerIntent.EXTRA_PARTIAL_RESULTS,
-                true
-            )
-
-
-
-            putExtra(
-                RecognizerIntent.EXTRA_MAX_RESULTS,
-                5
-            )
-
-
-        }
-
+    /**
+     * Recrea el recognizer con una nueva configuración.
+     * Necesario cuando el usuario cambia de motor de voz.
+     */
+    fun reconfigure(
+        listener: RecognitionListener,
+        config: VoiceConfiguration
+    ) {
+        destroy()
+        initialize(listener, config)
     }
 
 }

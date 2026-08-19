@@ -9,7 +9,8 @@ import com.uriel.logpose.core.compat.core.LogPoseLogger
 class SpeechRecognitionListener(
     private val onTextReceived: (String) -> Unit,
     private val onReady: () -> Unit = {},
-    private val onError: (Int) -> Unit = {}
+    private val onError: (Int) -> Unit = {},
+    private val onTypedError: (VoiceError) -> Unit = {}
 ) : RecognitionListener {
 
 
@@ -72,11 +73,16 @@ class SpeechRecognitionListener(
         error: Int
     ) {
 
+        val voiceError = VoiceError.from(error)
+
         LogPoseLogger.w(
-            "Error reconocimiento: $error"
+            "Error reconocimiento: $error " +
+                    "(${voiceError.name}, " +
+                    "recuperable: ${voiceError.recoverable})"
         )
 
         onError(error)
+        onTypedError(voiceError)
 
     }
 

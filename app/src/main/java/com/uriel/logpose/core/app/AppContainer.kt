@@ -7,6 +7,7 @@ import com.uriel.logpose.features.bluetooth.BluetoothRepository
 import com.uriel.logpose.features.bluetooth.BluetoothSessionManager
 import com.uriel.logpose.features.settings.SettingsManager
 import com.uriel.logpose.features.voice.SpeechRecognizerManager
+import com.uriel.logpose.features.voice.VoiceConfiguration
 import com.uriel.logpose.features.voice.VoiceRepository
 import com.uriel.logpose.logcore.providers.DefaultProviderRegistry
 import com.uriel.logpose.logcore.providers.ProviderModule
@@ -136,6 +137,13 @@ object AppContainer {
 
 
 
+        val voiceConfig =
+            VoiceConfiguration.from(
+                settingsManager
+            )
+
+
+
         val speechRecognizerManager =
             SpeechRecognizerManager(
                 appContext
@@ -144,14 +152,8 @@ object AppContainer {
 
 
 
-
-
-
         voiceRepository =
             VoiceRepository()
-
-
-
 
 
 
@@ -163,10 +165,7 @@ object AppContainer {
 
 
 
-
-
-
-        voiceRepository.initialize()
+        voiceRepository.initialize(voiceConfig)
 
 
 

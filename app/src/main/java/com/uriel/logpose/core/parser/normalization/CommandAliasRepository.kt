@@ -46,6 +46,16 @@ object CommandAliasRepository {
         "musica" to "musica",
         "música" to "musica",
         "spotify" to "spotify",
+        "pone" to "pone",
+        "pon" to "pone",
+        "poner" to "pone",
+        "poneme" to "pone",
+        "ponete" to "pone",
+        "reproduce" to "reproducir",
+        "reproducir" to "reproducir",
+        "toca" to "reproducir",
+        "tocar" to "reproducir",
+        "play" to "play",
 
         // Conectores frecuentes
         "al" to "a",

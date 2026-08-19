@@ -1,8 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<testsuite name="com.thamis.lab.evidence.QualityGateTest" tests="1" skipped="0" failures="0" errors="0" timestamp="2026-08-01T19:21:10.838Z" hostname="DESKTOP-A234HEL" time="0.002">
-  <properties/>
-  <testcase name="testQualityGateEngine" classname="com.thamis.lab.evidence.QualityGateTest" time="0.002"/>
-  <system-out><![CDATA[[INFO] [QualityGateEngine] Evaluating strict quality gates for task 'task-999'...
-]]></system-out>
-  <system-err><![CDATA[]]></system-err>
-</testsuite>

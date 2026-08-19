@@ -18,6 +18,13 @@ sealed class Command {
         val contact: String
     ) : Command()
 
+    sealed class System : Command() {
+        object GetWeather : System()
+    }
+
     object Unknown : Command()
 
 }
+
+/** Alias para compatibilidad de nomenclatura LogPoseCommand.System.* */
+typealias LogPoseCommand = Command
