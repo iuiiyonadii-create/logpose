@@ -8,13 +8,17 @@ import org.json.JSONObject
 /**
  * Cargador dinámico del Unified Language Core (logpose_glosario.json).
  */
-class PhoneticDictionary(context: Context) {
+class PhoneticDictionary {
 
     private val root: JSONObject
 
-    init {
+    constructor(context: Context) {
         val jsonString = context.assets.open("logpose_glosario.json").bufferedReader().use { it.readText() }
-        root = JSONObject(jsonString)
+        this.root = JSONObject(jsonString)
+    }
+
+    constructor(jsonString: String) {
+        this.root = JSONObject(jsonString)
     }
 
     /**

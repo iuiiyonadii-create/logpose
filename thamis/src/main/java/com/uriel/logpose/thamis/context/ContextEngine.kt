@@ -64,6 +64,11 @@ object ContextEngine {
 
     fun getActiveContext(): SessionContext = activeContext
 
+    fun reset() {
+        activeContext = SessionContext()
+        traces.clear()
+    }
+
     private fun recordTrace(prev: ConversationState, next: ConversationState, reason: String, domain: FocusDomain) {
         val trace = ContextTrace(prev, next, reason, domain)
         traces.add(trace)

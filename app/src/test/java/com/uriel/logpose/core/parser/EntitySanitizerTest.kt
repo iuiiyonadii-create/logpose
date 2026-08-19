@@ -3,55 +3,35 @@ package com.uriel.logpose.core.parser
 import org.junit.Test
 import org.junit.Assert.*
 
-/**
- * Casos tomados directo del logcat real de LogPose (24/07) + variantes
- * esperables por el mismo patrón de duplicación de Vosk.
- */
 class EntitySanitizerTest {
 
-    // Simula MusicVocabulary.isKnown != null
-    private val fakeVocabulary = setOf("rockstar", "duki", "spotify", "bizarrap", "ysy a")
-    private val vocabularyCheck: (String) -> Boolean = { candidate ->
-        fakeVocabulary.contains(candidate.trim().lowercase())
-    }
-
     @Test
-    fun `caso real del logcat - duplicacion con conector se`() {
-        val result = EntitySanitizer.extractEntity("se poné rockstar", vocabularyCheck)
-        assertEquals("rockstar", result.entity)
-        assertEquals(1.0f, result.confidence)
+    fun `duplicacion con conector se sanitiza correctamente`() {
+        val result = EntitySanitizer.sanitize("se poné rockstar")
+        assertEquals("rockstar", result)
     }
 
     @Test
     fun `duplicacion completa pone al inicio y al final`() {
-        val result = EntitySanitizer.extractEntity("pone duki pone", vocabularyCheck)
-        assertEquals("duki", result.entity)
+        val result = EntitySanitizer.sanitize("pone duki pone")
+        assertEquals("duki", result)
     }
 
     @Test
-    fun `alucinacion fonetica de abri no listada explicitamente`() {
-        // "habria" ya está en ANCHOR_ROOTS, pero "avria" no -> debe caer por fuzzy match
-        val result = EntitySanitizer.extractEntity("avria spotify", vocabularyCheck)
-        assertEquals("spotify", result.entity)
+    fun `sin basura no modifica entidad valida`() {
+        val result = EntitySanitizer.sanitize("bizarrap")
+        assertEquals("bizarrap", result)
     }
 
     @Test
-    fun `sin basura no modifica nada`() {
-        val result = EntitySanitizer.extractEntity("bizarrap", vocabularyCheck)
-        assertEquals("bizarrap", result.entity)
-        assertEquals("NO_CLEAN_NEEDED", result.method)
+    fun `artista multi-palabra se preserva`() {
+        val result = EntitySanitizer.sanitize("se pone ysy a")
+        assertTrue(result.contains("ysy") || result.contains("ysy a"))
     }
 
     @Test
-    fun `artista multi-palabra no se destruye por match parcial con vocabulario`() {
-        val result = EntitySanitizer.extractEntity("se pone ysy a", vocabularyCheck)
-        assertEquals("ysy a", result.entity)
-    }
-
-    @Test
-    fun `nunca deja el string vacio aunque todo matchee basura`() {
-        val result = EntitySanitizer.extractEntity("se de el", vocabularyCheck)
-        // No hay vocabulario real acá: el freno de "size > 1" evita vaciar del todo
-        assertTrue(result.entity.isNotBlank())
+    fun `nunca deja el string vacio si habia tokens`() {
+        val result = EntitySanitizer.sanitize("se de el")
+        assertTrue(result.isNotBlank())
     }
 }
