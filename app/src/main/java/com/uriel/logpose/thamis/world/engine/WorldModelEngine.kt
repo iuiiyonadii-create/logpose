@@ -10,30 +10,75 @@ import com.google.gson.Gson
 import com.uriel.logpose.features.diagnostics.ProactiveDiagnosticsEngine
 import com.uriel.logpose.data.local.*
 import kotlinx.coroutines.*
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import javax.inject.Inject
 import javax.inject.Singleton
 
 /**
- * WorldModelEngine v2.0: Arquitectura Room + DI (Misión #115).
+ * WorldModelEngine v2.0: Arquitectura Room + DI (Misión #115) + Mutex de Concurrencia.
  */
 @Singleton
 class WorldModelEngine @Inject constructor(
     private val logPoseDao: LogPoseDao
 ) {
 
+    companion object {
+        private var instance: WorldModelEngine? = null
+
+        fun getCurrentSnapshot(): WorldSnapshot {
+            return instance?.getCurrentSnapshot() ?: WorldSnapshot()
+        }
+
+        fun update(domain: String, reducer: (WorldSnapshot) -> WorldSnapshot) {
+            instance?.update(domain, reducer)
+        }
+    }
+
+    init {
+        instance = this
+    }
+
+    private val mutex = Mutex()
     private var currentSnapshot = WorldSnapshot()
     private val gson = Gson()
     private val scope = CoroutineScope(Dispatchers.IO + SupervisorJob())
 
     fun update(domain: String, reducer: (WorldSnapshot) -> WorldSnapshot) {
-        val startTime = System.currentTimeMillis()
-        val newSnapshot = reducer(currentSnapshot).copy(timestamp = startTime)
-        
-        currentSnapshot = newSnapshot
-        
+        scope.launch {
+            val (newSnapshot, startTime) = mutex.withLock {
+                val start = System.currentTimeMillis()
+                val snapshot = reducer(currentSnapshot).copy(timestamp = start)
+                currentSnapshot = snapshot
+                Pair(snapshot, start)
+            }
+
+            ProactiveDiagnosticsEngine.check(newSnapshot)
+            WorldHistory.add(newSnapshot)
+
+            WorldAudit.record(WorldTrace(
+                snapshotId = newSnapshot.id,
+                affectedDomain = domain,
+                description = "Update from $domain",
+                latencyMs = System.currentTimeMillis() - startTime
+            ))
+
+            com.uriel.logpose.core.services.LogPoseHudService.updateWorld(newSnapshot)
+            saveCheckpoint(newSnapshot)
+        }
+    }
+
+    suspend fun updateAsync(domain: String, reducer: (WorldSnapshot) -> WorldSnapshot): WorldSnapshot {
+        val (newSnapshot, startTime) = mutex.withLock {
+            val start = System.currentTimeMillis()
+            val snapshot = reducer(currentSnapshot).copy(timestamp = start)
+            currentSnapshot = snapshot
+            Pair(snapshot, start)
+        }
+
         ProactiveDiagnosticsEngine.check(newSnapshot)
         WorldHistory.add(newSnapshot)
-        
+
         WorldAudit.record(WorldTrace(
             snapshotId = newSnapshot.id,
             affectedDomain = domain,
@@ -43,6 +88,7 @@ class WorldModelEngine @Inject constructor(
 
         com.uriel.logpose.core.services.LogPoseHudService.updateWorld(newSnapshot)
         saveCheckpoint(newSnapshot)
+        return newSnapshot
     }
 
     fun getCurrentSnapshot(): WorldSnapshot = currentSnapshot

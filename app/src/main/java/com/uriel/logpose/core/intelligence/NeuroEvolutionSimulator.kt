@@ -103,11 +103,13 @@ object NeuroEvolutionSimulator {
                 val pending = dictionaryFull.filter { !LearningEngine.isGraduated(it) }.shuffled()
                 
                 // Prioridad 1: EL REGISTRO (Blitz de Stress + Correcciones del Usuario)
-                val combinedRegistry = (userRegistry + criticalTestCases).toList()
+                val combinedRegistry = (userRegistry.map { it.key to Intent.UNKNOWN } + criticalTestCases.toList()).toList()
                 LogPoseLogger.i("LogPose", "💎 MATRIX: Procesando registro de ${combinedRegistry.size} frases críticas.")
 
                 // v55.0: Ejecutamos el registro COMPLETO en cada ciclo para máxima visibilidad
-                combinedRegistry.forEach { (phrase, intent) ->
+                combinedRegistry.forEach { entry ->
+                    val phrase = entry.first
+                    val intent = entry.second
                     ejecutarExamen(phrase, intent, cycle++, isFromRegistry = true)
                     delay(120) // v58.0: Aumento de delay para evitar saturación de CPU/Red
                 }

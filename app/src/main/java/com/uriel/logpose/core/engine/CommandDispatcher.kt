@@ -174,10 +174,17 @@ object CommandDispatcher {
             LogPoseInCallService.instance?.disconnectActiveCall()
         }
 
-        @Suppress("MissingPermission")
         registry.register(LogPoseCommand.Communication.Call::class) { command ->
             val call = command as LogPoseCommand.Communication.Call
-            CallManager.makeCall(call.contact)
+            if (androidx.core.content.ContextCompat.checkSelfPermission(
+                    LogPoseApplication.instance,
+                    android.Manifest.permission.CALL_PHONE
+                ) == android.content.pm.PackageManager.PERMISSION_GRANTED
+            ) {
+                CallManager.makeCall(call.contact)
+            } else {
+                LogPoseLogger.w("Dispatcher", "Permiso CALL_PHONE no concedido")
+            }
         }
 
         registry.register(LogPoseCommand.OpenApp::class) { command ->
@@ -228,6 +235,10 @@ object CommandDispatcher {
 
         registry.register(LogPoseCommand.System.GetEngineTemp::class) {
             VehicleDiagnosticsManager.getEngineTemperature()
+        }
+
+        registry.register(LogPoseCommand.System.GetWeather::class) {
+            com.uriel.logpose.core.weather.WeatherManager.reportCurrentWeather()
         }
 
         // --- SEGURIDAD PROACTIVA Y HUD ---

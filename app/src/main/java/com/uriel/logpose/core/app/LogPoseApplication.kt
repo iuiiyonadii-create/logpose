@@ -83,9 +83,8 @@ class LogPoseApplication : Application() {
                 
                 delay(500) // Escalonamiento para no saturar CPU en Xiaomi
                 
-                // PRIORIDAD 2: Managers de Feedback y Música
+                // PRIORIDAD 2: Managers de Feedback
                 com.uriel.logpose.features.voice.FeedbackManager.initialize(this@LogPoseApplication)
-                musicManager.initialize(this@LogPoseApplication)
                 
                 delay(500)
                 

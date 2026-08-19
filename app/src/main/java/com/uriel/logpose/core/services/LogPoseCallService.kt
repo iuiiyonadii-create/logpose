@@ -89,8 +89,6 @@ class LogPoseCallService : Service() {
         }
 
         voskEngine.setAttributionContext(attributionContext)
-
-        com.uriel.logpose.features.music.MusicManager.initialize(attributionContext)
         communicationManager.updateContext(attributionContext)
 
         watchdog = ListenerWatchdog(attributionContext)

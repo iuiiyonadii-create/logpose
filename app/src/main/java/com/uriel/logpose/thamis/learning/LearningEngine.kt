@@ -21,6 +21,32 @@ class LearningEngine @Inject constructor(
     private val logPoseDao: LogPoseDao
 ) {
 
+    companion object {
+        private var instance: LearningEngine? = null
+
+        fun get(): LearningEngine? = instance
+
+        fun getPhoneticCorrection(input: String): String? = instance?.getPhoneticCorrection(input)
+        fun registerUsage(intent: Intent) { instance?.registerUsage(intent) }
+        fun registerCorrection(spokenText: String, actualIntent: Intent) { instance?.registerCorrection(spokenText, actualIntent) }
+        fun learnMusicEntity(entity: String) { instance?.learnMusicEntity(entity) }
+        fun learnPlaylist(name: String) { instance?.learnPlaylist(name) }
+        fun getLearnedMusicEntities(): Set<String> = instance?.getLearnedMusicEntities() ?: emptySet()
+        fun getAffinityWeight(entity: String): Float = instance?.getAffinityWeight(entity) ?: 1.0f
+        fun addFavoriteArtist(artist: String) { instance?.addFavoriteArtist(artist) }
+        fun learnTrackArtistRelation(track: String, artist: String) { instance?.learnTrackArtistRelation(track, artist) }
+        fun getLearnedIntent(spokenText: String): Intent? = instance?.getLearnedIntent(spokenText)
+        fun isGraduated(hears: String): Boolean = instance?.isGraduated(hears) ?: false
+        fun updateMaturity(hears: String, success: Boolean) { instance?.updateMaturity(hears, success) }
+        fun forget(spokenText: String) { instance?.forget(spokenText) }
+        fun applyHotPatch(patchJson: String) { instance?.applyHotPatch(patchJson) }
+        fun getUserRegistry(): Map<String, String> = instance?.learnedPhoneticMap ?: emptyMap()
+    }
+
+    init {
+        instance = this
+    }
+
     private val userCorrections = ConcurrentHashMap<String, Intent>()
     private val actionFrequency = ConcurrentHashMap<Intent, Int>()
     private val learnedMusicEntities = java.util.Collections.synchronizedSet(mutableSetOf<String>())

@@ -44,6 +44,7 @@ object AndroidTools {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
                 packageInfo.longVersionCode
             } else {
+                // minSdk actual no soporta longVersionCode, requiere minSdk 28
                 @Suppress("DEPRECATION")
                 packageInfo.versionCode.toLong()
             }

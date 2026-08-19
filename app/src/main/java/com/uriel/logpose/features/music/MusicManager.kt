@@ -4,6 +4,7 @@ import com.uriel.logpose.core.compat.core.LogPoseLogger
 import com.uriel.logpose.features.music.engine.SpotifyRemoteManager
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
@@ -20,6 +21,58 @@ import javax.inject.Singleton
 class MusicManager @Inject constructor(
     @ApplicationContext private val context: Context
 ) {
+
+    companion object {
+        private var instance: MusicManager? = null
+
+        fun get(): MusicManager? = instance
+
+        val state: StateFlow<MusicState>
+            get() = instance?.state ?: MutableStateFlow(MusicState.IDLE).asStateFlow()
+
+        val volume: StateFlow<Float>
+            get() = instance?.volume ?: MutableStateFlow(0.7f).asStateFlow()
+
+        fun play(query: String = "") {
+            instance?.play(query)
+        }
+
+        fun pause() {
+            instance?.pause()
+        }
+
+        fun next() {
+            instance?.next()
+        }
+
+        fun previous() {
+            instance?.previous()
+        }
+
+        fun volumeUp() {
+            instance?.volumeUp()
+        }
+
+        fun volumeDown() {
+            instance?.volumeDown()
+        }
+
+        fun duck() {
+            instance?.duck()
+        }
+
+        fun unduck() {
+            instance?.unduck()
+        }
+
+        fun setDefaultPlayer(player: String) {
+            // No-op / compat
+        }
+    }
+
+    init {
+        instance = this
+    }
     private val scope = CoroutineScope(Dispatchers.Main.immediate + SupervisorJob())
     private var lastBookmark: Pair<String, Long>? = null
 

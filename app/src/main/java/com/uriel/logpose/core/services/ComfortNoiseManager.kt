@@ -13,6 +13,22 @@ import javax.inject.Singleton
  */
 @Singleton
 class ComfortNoiseManager @Inject constructor() {
+
+    companion object {
+        private var instance: ComfortNoiseManager? = null
+
+        fun duck() {
+            instance?.duck()
+        }
+
+        fun restoreVolume() {
+            instance?.restoreVolume()
+        }
+    }
+
+    init {
+        instance = this
+    }
     private var audioTrack: AudioTrack? = null
     private var isRunning = false
 

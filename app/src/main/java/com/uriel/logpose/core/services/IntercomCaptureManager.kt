@@ -53,11 +53,19 @@ object IntercomCaptureManager {
 
     fun isCapturing(): Boolean = audioRecord?.recordingState == AudioRecord.RECORDSTATE_RECORDING
 
-    @SuppressLint("MissingPermission")
     fun start(context: Context, onAudioData: (ShortArray, Int) -> Unit) {
         lastCallback = onAudioData
         isPersistent = true
         
+        if (androidx.core.content.ContextCompat.checkSelfPermission(
+                context,
+                android.Manifest.permission.RECORD_AUDIO
+            ) != android.content.pm.PackageManager.PERMISSION_GRANTED
+        ) {
+            LogPoseLogger.w("Capture", "Permiso RECORD_AUDIO no concedido en start()")
+            return
+        }
+
         if (isCapturing()) {
             LogPoseLogger.d("Capture: Micrófono ya activo. Re-usando stream.")
             return

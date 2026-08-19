@@ -88,6 +88,12 @@ dependencies {
 
     implementation(project(":core:contracts"))
     implementation(project(":core:common"))
+    implementation(project(":core:services"))
+    implementation(project(":features:bluetooth"))
+    implementation(project(":features:music"))
+    implementation(project(":features:navigation"))
+    implementation(project(":features:notifications"))
+    implementation(project(":thamis"))
 
     implementation(libs.kotlinx.coroutines.core)
     implementation(libs.kotlinx.coroutines.android)

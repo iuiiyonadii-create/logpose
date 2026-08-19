@@ -4,11 +4,14 @@ import android.bluetooth.BluetoothDevice
 import com.uriel.logpose.domain.models.LogPoseDevice
 
 object BluetoothDeviceMapper {
-    // v83.0: MissingPermission justified as this is a pure mapping from an existing device object.
-    @Suppress("MissingPermission")
     fun mapToDomain(device: BluetoothDevice): LogPoseDevice {
+        val deviceName = try {
+            device.name ?: "Unknown Device"
+        } catch (_: SecurityException) {
+            "Unknown Device"
+        }
         return LogPoseDevice(
-            name = device.name ?: "Unknown Device",
+            name = deviceName,
             mac = device.address,
             connected = false // Connection state is handled elsewhere
         )
