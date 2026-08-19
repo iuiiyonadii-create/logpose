@@ -29,8 +29,16 @@ class WorldModelEngine @Inject constructor(
             return instance?.getCurrentSnapshot() ?: WorldSnapshot()
         }
 
+        fun getSnapshot(): WorldSnapshot {
+            return getCurrentSnapshot()
+        }
+
         fun update(domain: String, reducer: (WorldSnapshot) -> WorldSnapshot) {
             instance?.update(domain, reducer)
+        }
+
+        fun restoreFromCheckpoint(context: Context): Boolean {
+            return instance?.restoreFromCheckpoint(context) ?: false
         }
     }
 
