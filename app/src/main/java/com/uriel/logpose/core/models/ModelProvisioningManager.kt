@@ -423,7 +423,16 @@ object ModelProvisioningManager {
                 // Chequeo de espacio en disco disponible
                 val parentDir = destination.parentFile
                 val usableSpace = parentDir?.usableSpace ?: 0L
-                val safetyMargin = 10 * 1024 * 1024L // 10MB de margen de seguridad
+                val minRequiredMargin = 50 * 1024 * 1024L // Margen mínimo de seguridad fijo (50MB)
+
+                // 1. Validación base de seguridad (independiente de Content-Length)
+                if (usableSpace < minRequiredMargin) {
+                    LogPoseLogger.e(TAG, "Espacio mínimo insuficiente en disco: disponible=${usableSpace / (1024 * 1024)}MB, mínimo=${minRequiredMargin / (1024 * 1024)}MB")
+                    return@withContext DownloadResult.Failure("Espacio insuficiente en el dispositivo para descargar $modelName.")
+                }
+
+                // 2. Validación precisa cuando Content-Length está disponible
+                val safetyMargin = 10 * 1024 * 1024L // 10MB de margen adicional
                 if (contentLength > 0 && usableSpace < (contentLength + safetyMargin)) {
                     val neededMb = (contentLength / (1024 * 1024)).coerceAtLeast(1)
                     LogPoseLogger.e(TAG, "Espacio insuficiente en disco: disponible=${usableSpace / (1024 * 1024)}MB, necesario=${neededMb}MB")
