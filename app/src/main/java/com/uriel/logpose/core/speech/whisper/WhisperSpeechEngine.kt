@@ -43,10 +43,7 @@ class WhisperSpeechEngine(private val context: Context) : SpeechEngine {
         
         var modelDir: File? = null
         for (dir in possibleDirs) {
-            val checkFile = File(dir, "tiny.en-encoder.int8.onnx")
-            val altCheck1 = File(dir, "tiny-encoder.int8.onnx")
-            val altCheck2 = File(dir, "encoder.onnx")
-            if (checkFile.exists() || altCheck1.exists() || altCheck2.exists()) {
+            if (WhisperModelNaming.hasAnyCandidate(dir, WhisperModelNaming.ENCODER_CANDIDATES)) {
                 modelDir = dir
                 LogPoseLogger.i("Whisper", "📍 Modelos hallados en: ${dir.absolutePath}")
                 break
@@ -58,26 +55,12 @@ class WhisperSpeechEngine(private val context: Context) : SpeechEngine {
             return@withContext false
         }
 
-        val encoder = when {
-            File(modelDir, "tiny.en-encoder.int8.onnx").exists() -> File(modelDir, "tiny.en-encoder.int8.onnx")
-            File(modelDir, "tiny-encoder.int8.onnx").exists() -> File(modelDir, "tiny-encoder.int8.onnx")
-            else -> File(modelDir, "encoder.onnx")
-        }
+        val encoder = WhisperModelNaming.findExistingFile(modelDir, WhisperModelNaming.ENCODER_CANDIDATES)
+        val decoder = WhisperModelNaming.findExistingFile(modelDir, WhisperModelNaming.DECODER_CANDIDATES)
+        val tokens = WhisperModelNaming.findExistingFile(modelDir, WhisperModelNaming.TOKENS_CANDIDATES)
 
-        val decoder = when {
-            File(modelDir, "tiny.en-decoder.int8.onnx").exists() -> File(modelDir, "tiny.en-decoder.int8.onnx")
-            File(modelDir, "tiny-decoder.int8.onnx").exists() -> File(modelDir, "tiny-decoder.int8.onnx")
-            else -> File(modelDir, "decoder.onnx")
-        }
-
-        val tokens = when {
-            File(modelDir, "tiny.en-tokens.txt").exists() -> File(modelDir, "tiny.en-tokens.txt")
-            File(modelDir, "tiny-tokens.txt").exists() -> File(modelDir, "tiny-tokens.txt")
-            else -> File(modelDir, "tokens.txt")
-        }
-
-        if (!encoder.exists() || !decoder.exists() || !tokens.exists()) {
-            LogPoseLogger.e("Whisper", "❌ Archivos de modelo incompletos en ${modelDir.absolutePath}: encoder=${encoder.exists()}, decoder=${decoder.exists()}, tokens=${tokens.exists()}")
+        if (encoder == null || decoder == null || tokens == null) {
+            LogPoseLogger.e("Whisper", "❌ Archivos de modelo incompletos en ${modelDir.absolutePath}: encoder=${encoder != null}, decoder=${decoder != null}, tokens=${tokens != null}")
             return@withContext false
         }
 
