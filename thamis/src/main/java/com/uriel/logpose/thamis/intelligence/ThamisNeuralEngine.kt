@@ -61,6 +61,16 @@ object ThamisNeuralEngine {
                 true
             } catch (e: Exception) {
                 LogPoseLogger.e("NeuralEngine", "❌ Error al despertar cerebro: ${e.message} -> Activando MODO DEGRADADO")
+                // Limpieza de modelo corrupto o incompatible para permitir re-descarga limpia
+                try {
+                    val modelFile = File(context.getExternalFilesDir(null), "llm/staff_brain.bin")
+                    if (modelFile.exists()) {
+                        val deleted = modelFile.delete()
+                        LogPoseLogger.w("NeuralEngine", "🗑️ Archivo de modelo incompatible eliminado ($deleted) en: ${modelFile.absolutePath}")
+                    }
+                } catch (cleanupEx: Exception) {
+                    LogPoseLogger.e("NeuralEngine", "Error al limpiar modelo corrupto: ${cleanupEx.message}")
+                }
                 false
             }
         } ?: false

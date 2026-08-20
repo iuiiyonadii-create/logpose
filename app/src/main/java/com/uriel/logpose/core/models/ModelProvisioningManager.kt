@@ -158,7 +158,7 @@ object ModelProvisioningManager {
             displayName = "Cerebro Neuronal Gemma 3 (LLM)",
             filename = "staff_brain.bin",
             targetDirProvider = { File(it.getExternalFilesDir(null), "llm") },
-            downloadUrl = "https://huggingface.co/litert-community/Gemma3-1B-IT/resolve/main/gemma3-1b-it-int4.task",
+            downloadUrl = "https://huggingface.co/litert-community/Gemma3-1B-IT/resolve/main/Gemma3-1B-IT_multi-prefill-seq_q4_ekv2048.task",
             requiresAuth = true
         )
     )
