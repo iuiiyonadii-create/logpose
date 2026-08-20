@@ -75,6 +75,11 @@ class LogPoseApplication : Application() {
                 
                 LogPoseLogger.d("Startup", "Despertando Cerebro Unificado...")
                 val neuralInit = com.uriel.logpose.thamis.intelligence.ThamisNeuralEngine.initialize(this@LogPoseApplication)
+                if (!neuralInit) {
+                    LogPoseLogger.w("Startup", "⚠️ ThamisNeuralEngine no disponible -> Iniciando en MODO DEGRADADO (Reglas Básicas Directas).")
+                } else {
+                    LogPoseLogger.i("Startup", "✅ ThamisNeuralEngine ONLINE -> Cerebro Neuronal Activo.")
+                }
                 com.uriel.logpose.thamis.intelligence.llm.LLMDecisionEngine.initialize()
                 
                 // v73.0 STAFF: Reportamos salud a la Motherbase (PC) para auto-descarga de modelos

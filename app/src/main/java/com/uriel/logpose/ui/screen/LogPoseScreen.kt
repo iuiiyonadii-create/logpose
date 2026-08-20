@@ -50,6 +50,7 @@ fun LogPoseScreen(
     var isPrivacyMode by remember { mutableStateOf(false) }
 
     val modelState by com.uriel.logpose.core.models.ModelProvisioningManager.state.collectAsState()
+    val isNeuralDegraded by com.uriel.logpose.thamis.intelligence.ThamisNeuralEngine.isDegraded.collectAsState()
 
     val permissionLauncher = androidx.activity.compose.rememberLauncherForActivityResult(
         androidx.activity.result.contract.ActivityResultContracts.RequestMultiplePermissions()
@@ -96,6 +97,7 @@ fun LogPoseScreen(
             uiState = uiState,
             engineState = if (isPrivacyMode) AppState.STOPPED else engineState,
             modelState = modelState,
+            isDegraded = isNeuralDegraded,
             allPermissionsGranted = allPermissionsGranted,
             isPrivacyMode = isPrivacyMode,
             isDark = isDarkTheme,
@@ -136,6 +138,7 @@ fun LogPoseScreenContent(
     isDark: Boolean,
     modifier: Modifier = Modifier,
     modelState: com.uriel.logpose.core.models.ModelProvisioningState = com.uriel.logpose.core.models.ModelProvisioningState(),
+    isDegraded: Boolean = true,
     onToggleService: () -> Unit = {},
     onTogglePrivacy: () -> Unit = {},
     onToggleTheme: () -> Unit = {},
@@ -209,10 +212,11 @@ fun LogPoseScreenContent(
                 SensorItem("GPS", "FIX", variantColor, if (isDark) accentColor else onSurfaceColor)
             }
 
-            if (!modelState.allReady || modelState.isDownloading) {
+            if (!modelState.allReady || modelState.isDownloading || isDegraded) {
                 Spacer(Modifier.height(16.dp))
                 ModelProvisioningCard(
                     state = modelState,
+                    isDegraded = isDegraded,
                     isDark = isDark,
                     onDownload = onDownloadModels
                 )
@@ -410,7 +414,8 @@ fun ModelProvisioningCard(
     state: com.uriel.logpose.core.models.ModelProvisioningState,
     isDark: Boolean,
     onDownload: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    isDegraded: Boolean = false
 ) {
     val cardBg = if (isDark) Color(0xFF1E272E) else Color(0xFFF1F2F6)
     val textColor = if (isDark) Color.White else Color(0xFF2D3436)
@@ -426,17 +431,41 @@ fun ModelProvisioningCard(
         Column(modifier = Modifier.padding(14.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Icon(
-                    imageVector = if (state.allReady) Icons.Default.CheckCircle else Icons.Default.Warning,
+                    imageVector = if (state.allReady && !isDegraded) Icons.Default.CheckCircle else Icons.Default.Warning,
                     contentDescription = null,
-                    tint = if (state.allReady) accentColor else warningColor,
+                    tint = if (state.allReady && !isDegraded) accentColor else warningColor,
                     modifier = Modifier.size(20.dp)
                 )
                 Spacer(Modifier.width(8.dp))
                 Text(
-                    text = if (state.allReady) "Modelos de Inteligencia Listos" else "Modelos de IA / Voz Requeridos",
+                    text = if (state.allReady && !isDegraded) "Modelos de Inteligencia Listos" else "Modelos de IA / Voz Requeridos",
                     style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold),
                     color = textColor
                 )
+            }
+
+            if (isDegraded) {
+                Spacer(Modifier.height(8.dp))
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .background(warningColor.copy(alpha = 0.15f), RoundedCornerShape(6.dp))
+                        .padding(horizontal = 10.dp, vertical = 6.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Icon(
+                        Icons.Default.Info,
+                        contentDescription = null,
+                        tint = warningColor,
+                        modifier = Modifier.size(16.dp)
+                    )
+                    Spacer(Modifier.width(6.dp))
+                    Text(
+                        text = "Modo básico: IA no disponible (operando con reglas fijas)",
+                        style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.SemiBold),
+                        color = warningColor
+                    )
+                }
             }
 
             if (!state.allReady && state.missingItems.isNotEmpty()) {

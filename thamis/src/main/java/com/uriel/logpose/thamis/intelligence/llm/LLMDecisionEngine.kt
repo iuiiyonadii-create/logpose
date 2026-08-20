@@ -16,6 +16,11 @@ object LLMDecisionEngine {
     }
 
     suspend fun think(text: String): Decision? {
+        if (ThamisNeuralEngine.isDegraded()) {
+            LogPoseLogger.d("LLM", "Modo degradado activo: LLM no disponible, omitiendo inferencia neuronal.")
+            return null
+        }
+
         LogPoseLogger.i("LLM", "🧠 Thamis Neural Engine analizando: '$text'...")
         
         // v67.0: Uso del motor unificado con Mutex

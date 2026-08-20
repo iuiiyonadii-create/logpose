@@ -27,9 +27,12 @@ data class ModelDescriptor(
     val displayName: String,
     val filename: String,
     val targetDirProvider: (Context) -> File,
-    val downloadUrl: String,
+    val downloadUrl: String = "",
     val isCritical: Boolean = true
 ) {
+    val isAutoDownloadable: Boolean
+        get() = downloadUrl.isNotBlank()
+
     fun getTargetFile(context: Context): File {
         val dir = targetDirProvider(context)
         if (!dir.exists()) dir.mkdirs()
@@ -55,6 +58,9 @@ data class ModelProvisioningState(
 ) {
     val missingItems: List<ModelItemStatus>
         get() = items.filter { !it.isPresent }
+
+    val hasAutoDownloadableMissing: Boolean
+        get() = missingItems.any { it.descriptor.isAutoDownloadable }
 }
 
 /**
@@ -89,10 +95,10 @@ object ModelProvisioningManager {
         ),
         ModelDescriptor(
             id = "llm_brain",
-            displayName = "Cerebro Neuronal Staff (LLM)",
+            displayName = "Cerebro Neuronal Staff (LLM - Manual)",
             filename = "staff_brain.bin",
             targetDirProvider = { File(it.getExternalFilesDir(null), "llm") },
-            downloadUrl = "https://huggingface.co/google/gemma-2b-it-gpu-int4/resolve/main/model.bin"
+            downloadUrl = "" // Provisión manual vía USB / adb
         )
     )
 
@@ -168,21 +174,23 @@ object ModelProvisioningManager {
             }
 
             val missing = checkModels(context).missingItems
-            if (missing.isEmpty()) {
+            val autoMissing = missing.filter { it.descriptor.isAutoDownloadable }
+            if (autoMissing.isEmpty()) {
+                val allReady = missing.isEmpty()
                 _state.update {
                     it.copy(
                         isDownloading = false,
-                        allReady = true,
-                        statusMessage = "Todos los modelos ya están disponibles."
+                        allReady = allReady,
+                        statusMessage = if (allReady) "Todos los modelos ya están disponibles." else "Modelos Whisper listos. Copia staff_brain.bin a la carpeta llm/"
                     )
                 }
                 return@launch
             }
 
             var success = true
-            val totalCount = missing.size
+            val totalCount = autoMissing.size
 
-            for ((index, item) in missing.withIndex()) {
+            for ((index, item) in autoMissing.withIndex()) {
                 val modelName = item.descriptor.displayName
                 val targetFile = item.targetFile
                 val tempFile = File(targetFile.parentFile, "${targetFile.name}.tmp")

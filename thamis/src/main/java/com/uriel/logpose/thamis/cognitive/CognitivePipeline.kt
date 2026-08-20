@@ -292,25 +292,32 @@ object CognitivePipeline {
                     com.uriel.logpose.thamis.decision.Decision(forcedIntent, 1.0f, entities)
                 }
                 bypassWakeWordCheck -> {
-                    // v80.0 STAFF: Prioridad LOCAL ABSOLUTA (Gemma/Llama).
-                    LogPoseLogger.i("Pipeline", "🧠 Cerebro Local (Gemma) analizando comando...")
-                    val llmDecision = com.uriel.logpose.thamis.intelligence.llm.LLMDecisionEngine.think(cleanText)
-                    
-                    if (llmDecision != null && llmDecision.intent != Intent.UNKNOWN) {
-                        LogPoseLogger.i("Pipeline", "✅ Gemma resolvió: ${llmDecision.intent}")
-                        llmDecision
-                    } else {
-                        // Fallback a reglas (Safety Net)
+                    if (com.uriel.logpose.thamis.intelligence.ThamisNeuralEngine.isDegraded()) {
+                        LogPoseLogger.w("Pipeline", "⚡ Modo Degradado: LLM ausente. Resolviendo comandos básicos por reglas directas...")
                         val detection = com.uriel.logpose.thamis.intent.IntentDetector.detect(cleanText, ignoreWakeWord = true)
                         com.uriel.logpose.thamis.decision.Decision(detection.intent, detection.score, detection.entities)
+                    } else {
+                        // v80.0 STAFF: Prioridad LOCAL ABSOLUTA (Gemma/Llama).
+                        LogPoseLogger.i("Pipeline", "🧠 Cerebro Local (Gemma) analizando comando...")
+                        val llmDecision = com.uriel.logpose.thamis.intelligence.llm.LLMDecisionEngine.think(cleanText)
+                        
+                        if (llmDecision != null && llmDecision.intent != Intent.UNKNOWN) {
+                            LogPoseLogger.i("Pipeline", "✅ Gemma resolvió: ${llmDecision.intent}")
+                            llmDecision
+                        } else {
+                            // Fallback a reglas (Safety Net)
+                            val detection = com.uriel.logpose.thamis.intent.IntentDetector.detect(cleanText, ignoreWakeWord = true)
+                            com.uriel.logpose.thamis.decision.Decision(detection.intent, detection.score, detection.entities)
+                        }
                     }
                 }
                 else -> {
                     val request = THAMISRequest(text = cleanText, speechConfidence = speechConfidence)
                     val initialDecision = ThamisBrain.process(request)
                     
-                    // v100.0: APOYO NEURONAL STAFF (Llama 3.2 / Gemma Backup)
-                    if (initialDecision.intent == Intent.UNKNOWN || initialDecision.confidence < 0.70f) {
+                    // v100.0: APOYO NEURONAL STAFF (Llama 3.2 / Gemma Backup) solo si LLM no está degradado
+                    if (!com.uriel.logpose.thamis.intelligence.ThamisNeuralEngine.isDegraded() && 
+                        (initialDecision.intent == Intent.UNKNOWN || initialDecision.confidence < 0.70f)) {
                         LogPoseLogger.i("Pipeline", "🧠 Motor de reglas duda. Consultando a Gemma...")
                         val llmDecision = com.uriel.logpose.thamis.intelligence.llm.LLMDecisionEngine.think(cleanText)
                         if (llmDecision != null && llmDecision.intent != Intent.UNKNOWN) {
@@ -333,6 +340,10 @@ object CognitivePipeline {
 
             // v67.1: Misión LAB - Reportamos UNKNOWN para que el GHOST MONITOR marque errores
             if (decision.intent == Intent.UNKNOWN || decision.confidence == 0.0f) {
+                if (com.uriel.logpose.thamis.intelligence.ThamisNeuralEngine.isDegraded()) {
+                    LogPoseLogger.w("Pipeline", "⚠️ Modo Degradado: comando no reconocido por patrones básicos.")
+                    com.uriel.logpose.core.services.FeedbackDelegator.speak("No tengo el modelo de IA cargado, solo puedo hacer comandos básicos.")
+                }
                 if (isLabsOnline) {
                     LogPoseLogger.d("Pipeline: UNKNOWN - Reportando a LAB para diagnóstico.")
                     val totalLatency = System.currentTimeMillis() - pipelineStart

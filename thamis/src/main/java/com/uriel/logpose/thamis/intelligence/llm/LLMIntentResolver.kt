@@ -11,6 +11,7 @@ import org.json.JSONObject
 class LLMIntentResolver {
 
     suspend fun resolveIntent(text: String): Resolution? {
+        if (ThamisNeuralEngine.isDegraded()) return null
         val context = com.uriel.logpose.thamis.intelligence.memory.VectorMemoryEngine.retrieveContext(text)
         
         // v66.0: Prompt Ultra-Compacto (Ahorro de 60% de tokens)

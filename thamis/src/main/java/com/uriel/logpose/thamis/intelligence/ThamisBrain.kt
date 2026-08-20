@@ -24,8 +24,8 @@ object ThamisBrain {
             return Decision(intent = Intent.UNKNOWN, confidence = 0.0f, entities = emptyMap())
         }
 
-        // v67.0: Hybrid Intelligence - Fallback al cerebro unificado si las reglas fallan
-        if (localDetection.intent == Intent.UNKNOWN) {
+        // v67.0: Hybrid Intelligence - Fallback al cerebro unificado si las reglas fallan y el LLM está activo
+        if (localDetection.intent == Intent.UNKNOWN && !ThamisNeuralEngine.isDegraded()) {
             LogPoseLogger.i("ThamisBrain", "Reglas agotadas. Activando Neural Fallback...")
             
             val offlineReasoning = kotlinx.coroutines.runBlocking {
