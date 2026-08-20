@@ -49,6 +49,8 @@ fun LogPoseScreen(
     val engineState by LogPoseEngine.state.collectAsState()
     var isPrivacyMode by remember { mutableStateOf(false) }
 
+    val modelState by com.uriel.logpose.core.models.ModelProvisioningManager.state.collectAsState()
+
     val permissionLauncher = androidx.activity.compose.rememberLauncherForActivityResult(
         androidx.activity.result.contract.ActivityResultContracts.RequestMultiplePermissions()
     ) { _ ->
@@ -62,6 +64,7 @@ fun LogPoseScreen(
     }
 
     LaunchedEffect(Unit) {
+        com.uriel.logpose.core.models.ModelProvisioningManager.checkModels(context)
         if (!allPermissionsGranted) {
             permissionLauncher.launch(PermissionManager.requiredPermissions())
         }
@@ -92,12 +95,16 @@ fun LogPoseScreen(
             modifier = modifier.padding(padding),
             uiState = uiState,
             engineState = if (isPrivacyMode) AppState.STOPPED else engineState,
+            modelState = modelState,
             allPermissionsGranted = allPermissionsGranted,
             isPrivacyMode = isPrivacyMode,
             isDark = isDarkTheme,
             onTogglePrivacy = { isPrivacyMode = !isPrivacyMode },
             onToggleTheme = {
                 settingsViewModel.settingsManager.setBoolean("dark_mode", !isDarkTheme)
+            },
+            onDownloadModels = {
+                com.uriel.logpose.core.models.ModelProvisioningManager.startDownload(context)
             },
             onToggleService = {
                 if (uiState.serviceRunning) viewModel.stopLogPose(context)
@@ -128,9 +135,11 @@ fun LogPoseScreenContent(
     isPrivacyMode: Boolean,
     isDark: Boolean,
     modifier: Modifier = Modifier,
+    modelState: com.uriel.logpose.core.models.ModelProvisioningState = com.uriel.logpose.core.models.ModelProvisioningState(),
     onToggleService: () -> Unit = {},
     onTogglePrivacy: () -> Unit = {},
     onToggleTheme: () -> Unit = {},
+    onDownloadModels: () -> Unit = {},
     onOpenDrawer: () -> Unit = {},
     onNavigateToMusic: () -> Unit = {},
     onNavigateToBluetooth: () -> Unit = {}
@@ -198,6 +207,15 @@ fun LogPoseScreenContent(
                     } else Color(0xFFD63031)
                 )
                 SensorItem("GPS", "FIX", variantColor, if (isDark) accentColor else onSurfaceColor)
+            }
+
+            if (!modelState.allReady || modelState.isDownloading) {
+                Spacer(Modifier.height(16.dp))
+                ModelProvisioningCard(
+                    state = modelState,
+                    isDark = isDark,
+                    onDownload = onDownloadModels
+                )
             }
 
             Spacer(Modifier.weight(1f))
@@ -386,3 +404,101 @@ private fun demoState() = BluetoothUiState(
         type = DeviceType.INTERCOM
     )
 )
+
+@Composable
+fun ModelProvisioningCard(
+    state: com.uriel.logpose.core.models.ModelProvisioningState,
+    isDark: Boolean,
+    onDownload: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    val cardBg = if (isDark) Color(0xFF1E272E) else Color(0xFFF1F2F6)
+    val textColor = if (isDark) Color.White else Color(0xFF2D3436)
+    val accentColor = Color(0xFF00CEC9)
+    val warningColor = Color(0xFFE17055)
+
+    Card(
+        modifier = modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(12.dp),
+        colors = CardDefaults.cardColors(containerColor = cardBg),
+        border = androidx.compose.foundation.BorderStroke(1.dp, if (state.isDownloading) accentColor else warningColor)
+    ) {
+        Column(modifier = Modifier.padding(14.dp)) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Icon(
+                    imageVector = if (state.allReady) Icons.Default.CheckCircle else Icons.Default.Warning,
+                    contentDescription = null,
+                    tint = if (state.allReady) accentColor else warningColor,
+                    modifier = Modifier.size(20.dp)
+                )
+                Spacer(Modifier.width(8.dp))
+                Text(
+                    text = if (state.allReady) "Modelos de Inteligencia Listos" else "Modelos de IA / Voz Requeridos",
+                    style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold),
+                    color = textColor
+                )
+            }
+
+            if (!state.allReady && state.missingItems.isNotEmpty()) {
+                Spacer(Modifier.height(8.dp))
+                Text(
+                    text = "Faltan ${state.missingItems.size} modelo(s) para activar STT y LLM local:",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = textColor.copy(alpha = 0.8f)
+                )
+                Spacer(Modifier.height(4.dp))
+                state.missingItems.forEach { item ->
+                    Column(modifier = Modifier.padding(vertical = 2.dp)) {
+                        Text(
+                            text = "• ${item.descriptor.displayName}",
+                            style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.SemiBold),
+                            color = textColor
+                        )
+                        Text(
+                            text = item.targetFile.absolutePath,
+                            style = MaterialTheme.typography.bodySmall.copy(fontSize = 10.sp),
+                            color = textColor.copy(alpha = 0.6f)
+                        )
+                    }
+                }
+            }
+
+            if (state.isDownloading) {
+                Spacer(Modifier.height(12.dp))
+                LinearProgressIndicator(
+                    progress = { state.totalProgress },
+                    modifier = Modifier.fillMaxWidth().height(6.dp),
+                    color = accentColor,
+                    trackColor = textColor.copy(alpha = 0.2f)
+                )
+                Spacer(Modifier.height(4.dp))
+                Text(
+                    text = "${state.statusMessage} (${(state.totalProgress * 100).toInt()}%)",
+                    style = MaterialTheme.typography.labelSmall,
+                    color = textColor.copy(alpha = 0.9f)
+                )
+            } else if (!state.allReady) {
+                Spacer(Modifier.height(12.dp))
+                Button(
+                    onClick = onDownload,
+                    colors = ButtonDefaults.buttonColors(containerColor = accentColor, contentColor = Color.Black),
+                    shape = RoundedCornerShape(8.dp),
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Icon(Icons.Default.CloudDownload, contentDescription = null, modifier = Modifier.size(16.dp))
+                    Spacer(Modifier.width(8.dp))
+                    Text("Descargar Modelos Automáticamente", style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold))
+                }
+            }
+
+            if (state.errorMessage != null) {
+                Spacer(Modifier.height(6.dp))
+                Text(
+                    text = state.errorMessage,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = Color(0xFFD63031)
+                )
+            }
+        }
+    }
+}

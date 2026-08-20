@@ -35,16 +35,18 @@ class WhisperSpeechEngine(private val context: Context) : SpeechEngine {
 
         val possibleDirs = listOf(
             modelsRoot,
+            File(context.getExternalFilesDir(null), "whisper"),
             File("/sdcard/LogPose/Models/whisper"),
             File("/storage/emulated/0/LogPose/Models/whisper"),
-            File(context.getExternalFilesDir(null), "whisper"),
             context.filesDir
         )
         
         var modelDir: File? = null
         for (dir in possibleDirs) {
             val checkFile = File(dir, "tiny.en-encoder.int8.onnx")
-            if (checkFile.exists()) {
+            val altCheck1 = File(dir, "tiny-encoder.int8.onnx")
+            val altCheck2 = File(dir, "encoder.onnx")
+            if (checkFile.exists() || altCheck1.exists() || altCheck2.exists()) {
                 modelDir = dir
                 LogPoseLogger.i("Whisper", "📍 Modelos hallados en: ${dir.absolutePath}")
                 break
@@ -56,9 +58,28 @@ class WhisperSpeechEngine(private val context: Context) : SpeechEngine {
             return@withContext false
         }
 
-        val encoder = File(modelDir, "tiny-encoder.int8.onnx").let { if (it.exists()) it else File(modelDir, "encoder.onnx") }
-        val decoder = File(modelDir, "tiny-decoder.int8.onnx").let { if (it.exists()) it else File(modelDir, "decoder.onnx") }
-        val tokens = File(modelDir, "tiny-tokens.txt").let { if (it.exists()) it else File(modelDir, "tokens.txt") }
+        val encoder = when {
+            File(modelDir, "tiny.en-encoder.int8.onnx").exists() -> File(modelDir, "tiny.en-encoder.int8.onnx")
+            File(modelDir, "tiny-encoder.int8.onnx").exists() -> File(modelDir, "tiny-encoder.int8.onnx")
+            else -> File(modelDir, "encoder.onnx")
+        }
+
+        val decoder = when {
+            File(modelDir, "tiny.en-decoder.int8.onnx").exists() -> File(modelDir, "tiny.en-decoder.int8.onnx")
+            File(modelDir, "tiny-decoder.int8.onnx").exists() -> File(modelDir, "tiny-decoder.int8.onnx")
+            else -> File(modelDir, "decoder.onnx")
+        }
+
+        val tokens = when {
+            File(modelDir, "tiny.en-tokens.txt").exists() -> File(modelDir, "tiny.en-tokens.txt")
+            File(modelDir, "tiny-tokens.txt").exists() -> File(modelDir, "tiny-tokens.txt")
+            else -> File(modelDir, "tokens.txt")
+        }
+
+        if (!encoder.exists() || !decoder.exists() || !tokens.exists()) {
+            LogPoseLogger.e("Whisper", "❌ Archivos de modelo incompletos en ${modelDir.absolutePath}: encoder=${encoder.exists()}, decoder=${decoder.exists()}, tokens=${tokens.exists()}")
+            return@withContext false
+        }
 
         try {
             val config = OfflineRecognizerConfig(

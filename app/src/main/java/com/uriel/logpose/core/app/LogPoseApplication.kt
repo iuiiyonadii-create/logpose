@@ -51,6 +51,9 @@ class LogPoseApplication : Application() {
             // 1. Inicializaciones asíncronas escalonadas (Xiaomi Staggered Startup v1.0)
             val appScope = CoroutineScope(Dispatchers.IO + SupervisorJob())
             appScope.launch {
+                // PRIORIDAD 0: Diagnóstico de Modelos Cognitivos y STT
+                val modelState = com.uriel.logpose.core.models.ModelProvisioningManager.checkModels(this@LogPoseApplication)
+                
                 // PRIORIDAD 1: Motores de Voz (Hearing path) - INICIO ESCALONADO STAFF
                 LogPoseLogger.d("Startup", "Despertando Vosk...")
                 voskEngine.start() 
@@ -75,7 +78,8 @@ class LogPoseApplication : Application() {
                 com.uriel.logpose.thamis.intelligence.llm.LLMDecisionEngine.initialize()
                 
                 // v73.0 STAFF: Reportamos salud a la Motherbase (PC) para auto-descarga de modelos
-                val whisperMissing = !File(getExternalFilesDir(null), "whisper/tiny.en-encoder.int8.onnx").exists()
+                val whisperMissing = !File(getExternalFilesDir(null), "Models/whisper/tiny.en-encoder.int8.onnx").exists() &&
+                                     !File(getExternalFilesDir(null), "whisper/tiny.en-encoder.int8.onnx").exists()
                 val gemmaMissing = !neuralInit
                 com.uriel.logpose.thamis.intelligence.MotherbaseBridge.reportSystemHealth(whisperMissing, gemmaMissing)
                 
