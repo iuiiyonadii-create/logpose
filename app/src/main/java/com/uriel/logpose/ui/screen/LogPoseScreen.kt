@@ -108,6 +108,9 @@ fun LogPoseScreen(
             onDownloadModels = {
                 com.uriel.logpose.core.models.ModelProvisioningManager.startDownload(context)
             },
+            onSaveHfToken = { token ->
+                com.uriel.logpose.core.models.ModelProvisioningManager.saveHfToken(context, token)
+            },
             onToggleService = {
                 if (uiState.serviceRunning) viewModel.stopLogPose(context)
                 else {
@@ -143,6 +146,7 @@ fun LogPoseScreenContent(
     onTogglePrivacy: () -> Unit = {},
     onToggleTheme: () -> Unit = {},
     onDownloadModels: () -> Unit = {},
+    onSaveHfToken: (String) -> Unit = {},
     onOpenDrawer: () -> Unit = {},
     onNavigateToMusic: () -> Unit = {},
     onNavigateToBluetooth: () -> Unit = {}
@@ -218,7 +222,8 @@ fun LogPoseScreenContent(
                     state = modelState,
                     isDegraded = isDegraded,
                     isDark = isDark,
-                    onDownload = onDownloadModels
+                    onDownload = onDownloadModels,
+                    onSaveHfToken = onSaveHfToken
                 )
             }
 
@@ -414,6 +419,7 @@ fun ModelProvisioningCard(
     state: com.uriel.logpose.core.models.ModelProvisioningState,
     isDark: Boolean,
     onDownload: () -> Unit,
+    onSaveHfToken: (String) -> Unit,
     modifier: Modifier = Modifier,
     isDegraded: Boolean = false
 ) {
@@ -421,6 +427,8 @@ fun ModelProvisioningCard(
     val textColor = if (isDark) Color.White else Color(0xFF2D3436)
     val accentColor = Color(0xFF00CEC9)
     val warningColor = Color(0xFFE17055)
+    var inputToken by remember(state.hfToken) { mutableStateOf(state.hfToken) }
+    var tokenVisible by remember { mutableStateOf(false) }
 
     Card(
         modifier = modifier.fillMaxWidth(),
@@ -492,6 +500,64 @@ fun ModelProvisioningCard(
                 }
             }
 
+            // Sección de Configuración de Hugging Face Token si falta el LLM
+            val isLlmMissing = state.missingItems.any { it.descriptor.id == "llm_brain" }
+            if (isLlmMissing) {
+                Spacer(Modifier.height(10.dp))
+                HorizontalDivider(color = textColor.copy(alpha = 0.15f))
+                Spacer(Modifier.height(10.dp))
+                
+                Text(
+                    text = "🔑 Hugging Face Access Token (Gemma 3):",
+                    style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold),
+                    color = textColor
+                )
+                Spacer(Modifier.height(4.dp))
+                Text(
+                    text = "1. Creá un token 'Read' en huggingface.co/settings/tokens\n2. Aceptá la licencia en huggingface.co/litert-community/Gemma3-1B-IT",
+                    style = MaterialTheme.typography.bodySmall.copy(fontSize = 11.sp),
+                    color = textColor.copy(alpha = 0.7f)
+                )
+                Spacer(Modifier.height(8.dp))
+                
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    OutlinedTextField(
+                        value = inputToken,
+                        onValueChange = { inputToken = it },
+                        modifier = Modifier.weight(1f),
+                        placeholder = { Text("hf_...", style = MaterialTheme.typography.bodySmall) },
+                        singleLine = true,
+                        visualTransformation = if (tokenVisible) androidx.compose.ui.text.input.VisualTransformation.None else androidx.compose.ui.text.input.PasswordVisualTransformation(),
+                        trailingIcon = {
+                            IconButton(onClick = { tokenVisible = !tokenVisible }) {
+                                Icon(
+                                    imageVector = if (tokenVisible) Icons.Default.VisibilityOff else Icons.Default.Visibility,
+                                    contentDescription = "Toggle token visibility",
+                                    tint = textColor.copy(alpha = 0.6f)
+                                )
+                            }
+                        },
+                        colors = OutlinedTextFieldDefaults.colors(
+                            focusedBorderColor = accentColor,
+                            unfocusedBorderColor = textColor.copy(alpha = 0.3f),
+                            focusedTextColor = textColor,
+                            unfocusedTextColor = textColor
+                        )
+                    )
+                    Spacer(Modifier.width(8.dp))
+                    Button(
+                        onClick = { onSaveHfToken(inputToken) },
+                        colors = ButtonDefaults.buttonColors(containerColor = accentColor, contentColor = Color.Black),
+                        shape = RoundedCornerShape(8.dp)
+                    ) {
+                        Text("Guardar", style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold))
+                    }
+                }
+            }
+
             if (state.isDownloading) {
                 Spacer(Modifier.height(12.dp))
                 LinearProgressIndicator(
@@ -521,12 +587,27 @@ fun ModelProvisioningCard(
             }
 
             if (state.errorMessage != null) {
-                Spacer(Modifier.height(6.dp))
-                Text(
-                    text = state.errorMessage,
-                    style = MaterialTheme.typography.bodySmall,
-                    color = Color(0xFFD63031)
-                )
+                Spacer(Modifier.height(8.dp))
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .background(Color(0xFFD63031).copy(alpha = 0.15f), RoundedCornerShape(6.dp))
+                        .padding(horizontal = 10.dp, vertical = 6.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Icon(
+                        Icons.Default.Error,
+                        contentDescription = null,
+                        tint = Color(0xFFD63031),
+                        modifier = Modifier.size(16.dp)
+                    )
+                    Spacer(Modifier.width(6.dp))
+                    Text(
+                        text = state.errorMessage,
+                        style = MaterialTheme.typography.bodySmall.copy(fontWeight = FontWeight.Medium),
+                        color = Color(0xFFD63031)
+                    )
+                }
             }
         }
     }
